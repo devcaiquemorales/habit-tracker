@@ -42,7 +42,10 @@ export function HabitHeatmap({
     density === "large" ? "gap-[3px] sm:gap-1" : "gap-[2px]";
 
   return (
-    <div ref={scrollRef} className="overflow-x-auto overscroll-x-contain">
+    <div
+      ref={scrollRef}
+      className="scrollbar-hidden overflow-x-auto overscroll-x-contain"
+    >
       <div className="flex w-max flex-row items-end gap-2 sm:gap-2.5">
         {months.map((month) => (
           <HeatmapMonthBlock

@@ -10,9 +10,6 @@ import { getUtcToday, toUtcDateKey } from "@/presentation/lib/date-key";
 import { triggerInteractionFeedback } from "@/presentation/lib/interaction-feedback";
 import { cn } from "@/presentation/lib/utils";
 
-const SCROLL_HIDE =
-  "[scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden";
-
 /** Oldest → newest (left → right); rightmost = most recent past day. */
 function getPastUtcCalendarDays(count: number): Date[] {
   const out: Date[] = [];
@@ -82,8 +79,7 @@ export function HabitUpdateActivity({
       <div
         ref={scrollRef}
         className={cn(
-          "-mx-1 overflow-x-auto overscroll-x-contain pb-1",
-          SCROLL_HIDE,
+          "scrollbar-hidden -mx-1 overflow-x-auto overscroll-x-contain pb-1",
         )}
       >
         <div className="flex w-max gap-2 px-1">

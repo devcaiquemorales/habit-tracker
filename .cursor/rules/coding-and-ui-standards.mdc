@@ -104,3 +104,12 @@ All generated code must follow:
 - Keep implementations simple and maintainable
 - Prefer readability over cleverness
 - Avoid over-engineering
+
+---
+
+## Tooling
+
+### Package manager
+
+- Use **Bun** for dependencies: `bun install`, `bun add <package>`, `bun remove <package>`, `bun run <script>`.
+- Do not use `npm` or `yarn` for installs unless the user explicitly asks to change tooling.
