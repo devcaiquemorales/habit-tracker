@@ -1,0 +1,33 @@
+"use client";
+
+import { Plus } from "lucide-react";
+import * as React from "react";
+
+import { triggerInteractionFeedback } from "@/presentation/lib/interaction-feedback";
+import { cn } from "@/presentation/lib/utils";
+
+export const AddHabitFAB = React.forwardRef<
+  HTMLButtonElement,
+  React.ComponentPropsWithoutRef<"button">
+>(function AddHabitFAB({ className, onClick, ...props }, ref) {
+  return (
+    <button
+      ref={ref}
+      type="button"
+      className={cn(
+        "fixed z-40 flex size-12 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-[transform,filter] duration-150 ease-out hover:scale-105 hover:brightness-110 active:scale-[0.97]",
+        "right-4 max-md:bottom-[max(1rem,env(safe-area-inset-bottom,0px))] md:right-8 md:bottom-8 md:h-14 md:w-14",
+        className,
+      )}
+      aria-label="Add new habit"
+      title="Add habit"
+      {...props}
+      onClick={(e) => {
+        triggerInteractionFeedback({ sound: "tap", haptic: true });
+        onClick?.(e);
+      }}
+    >
+      <Plus className="h-6 w-6" aria-hidden />
+    </button>
+  );
+});

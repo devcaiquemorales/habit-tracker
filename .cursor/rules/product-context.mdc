@@ -1,0 +1,135 @@
+---
+description: Product context, domain rules, and behavioral constraints for the Habit Tracker PWA
+alwaysApply: true
+---
+
+# Product Context — Habit Tracker PWA
+
+## Core Purpose
+
+This application is a **habit tracking tool centered on visual feedback**, inspired by GitHub contribution heatmaps.
+
+The goal is to help users:
+- Build consistency
+- See their progress visually
+- Feel immediate satisfaction when completing habits
+
+This is NOT a generic task manager or CRUD dashboard.
+
+---
+
+## Core Features (MVP Scope)
+
+The application must focus only on:
+
+1. Habit creation
+2. Daily habit completion (check-in)
+3. Heatmap visualization per habit
+4. Dashboard overview with multiple habits
+
+Avoid adding features outside this scope unless explicitly requested.
+
+---
+
+## Domain Concepts
+
+### Habit
+- A recurring activity (e.g., Gym, Study, Cardio)
+- Has a name and a color
+
+### Log (Completion)
+- Represents whether a habit was completed on a given day
+- One log per habit per day
+
+### Heatmap
+- A grid of days representing activity intensity
+- This is the **core feature of the product**
+
+---
+
+## Domain Constraints
+
+- Each habit can only have **one log per day**
+- Dates must be stored in `YYYY-MM-DD` format
+- Logging a habit should be **idempotent** (no duplicates)
+
+---
+
+## Heatmap Behavior (Critical)
+
+The heatmap is the most important part of the application.
+
+### Requirements:
+- Must be fast and responsive
+- Must update immediately after user interaction
+- Must visually reflect consistency over time
+
+### Intensity Levels:
+- 0 → no activity
+- 1 → low activity
+- 2 → medium activity
+- 3 → high activity
+
+### Design Principle:
+Visual clarity and emotional feedback are more important than statistical accuracy.
+
+---
+
+## UX Philosophy
+
+### Core Principle:
+**Maximize consistency through instant feedback**
+
+### Rules:
+- Logging a habit must take less than 1 second
+- No unnecessary confirmations or friction
+- UI must update instantly after interaction
+- Avoid complex flows (modals, multi-step actions)
+
+---
+
+## Mobile & PWA Context
+
+- The app is primarily used on mobile devices
+- Must behave like a native app when installed
+- Should support offline usage for habit logging
+- Must sync data when connection is restored
+
+---
+
+## Performance Expectations
+
+- Avoid unnecessary re-renders
+- Precompute or memoize heatmap data when possible
+- Optimize rendering for large date ranges
+
+---
+
+## What NOT to Build (Unless Requested)
+
+Do NOT introduce:
+- Gamification systems (points, levels, badges)
+- Social features (sharing, friends, leaderboards)
+- Complex analytics dashboards
+- Notifications system
+- Overly complex filters or configurations
+
+---
+
+## Decision Guidelines
+
+When making implementation decisions:
+
+1. Prefer simplicity over flexibility
+2. Prefer speed over completeness
+3. Prefer user feedback over internal complexity
+
+---
+
+## Expected AI Behavior
+
+- Stay strictly within MVP scope
+- Do not expand features on your own
+- Do not redesign the product direction
+- Ask for clarification if requirements are unclear
+- Focus on delivering clean, working implementations

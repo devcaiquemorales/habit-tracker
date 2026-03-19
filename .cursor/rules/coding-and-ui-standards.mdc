@@ -1,0 +1,106 @@
+---
+description: Coding and UI standards for the project - language conventions, design principles, code quality, and engineering practices
+alwaysApply: true
+---
+
+# Coding and UI Standards
+
+## Language Conventions
+
+### Code Must Be in English
+
+All source code must be written in English, including:
+
+- Variable names
+- Function and class names
+- Comments
+- File names
+- Commit messages suggested by the AI
+
+### UI Text Must Be in English
+
+All user-facing UI text must be in English, including:
+
+- Labels
+- Buttons
+- Messages
+- Placeholders
+- Validation errors
+- Notifications
+
+**Rule of thumb**: If unsure whether text is user-facing, assume it should be Portuguese.
+
+---
+
+## UI and Design Principles
+
+- Prefer a minimal, clean interface
+- Avoid visual clutter and unnecessary decorative elements
+- Use:
+  - Clear spacing
+  - Consistent typography
+  - Simple color usage
+  - Clear hierarchy
+- Prioritize usability and readability over visual complexity
+
+### Mobile-First Design (CRITICAL)
+
+**Mobile-first is a REQUIREMENT, not optional.** Most users will access the application on mobile devices.
+
+All UI components and layouts MUST:
+
+1. **Design for mobile first**: Start with mobile layout, then enhance for larger screens
+2. **Touch-friendly targets**: All interactive elements must be at least 44x44px (iOS) or 48x48dp (Android) for comfortable tapping
+3. **Responsive breakpoints**: Use Tailwind's responsive utilities (`sm:`, `md:`, `lg:`, `xl:`) to adapt layouts
+4. **Horizontal space**: Avoid horizontal scrolling; content should wrap or stack vertically on mobile
+5. **Text readability**: Ensure text is readable without zooming (minimum 16px font size for body text)
+6. **Navigation**: Mobile navigation should be easily accessible (hamburger menu, bottom nav, etc.)
+7. **Forms**: Form inputs should be full-width on mobile with adequate spacing between fields
+8. **Modals/Dialogs**: Should be full-screen or near-full-screen on mobile devices
+9. **Hide non-essential elements**: Use `hidden md:block` or similar to hide secondary information on mobile
+10. **Test on mobile viewports**: Always verify components work on 320px-480px width screens
+
+**Common mobile patterns:**
+
+- Stack elements vertically on mobile (`flex-col` on mobile, `md:flex-row` on desktop)
+- Hide labels/text on small screens, show icons only (`hidden sm:inline`)
+- Reduce padding/spacing on mobile (`px-2 md:px-4`)
+- Make buttons full-width on mobile when appropriate (`w-full md:w-auto`)
+- Use responsive grid columns (`grid-cols-1 md:grid-cols-2 lg:grid-cols-3`)
+
+---
+
+## Code Quality Standards
+
+All generated code must follow:
+
+### 1. Clean Code Principles
+
+- Small, focused functions
+- Descriptive naming
+- Avoid duplication
+- Clear structure
+
+### 2. SOLID Principles
+
+- Single responsibility per component/module
+- Proper abstraction
+- Dependency inversion when applicable
+
+### 3. Componentization
+
+- Prefer reusable components
+- Extract logic into hooks/services when appropriate
+- Avoid large monolithic components
+- **Each component should be in its own file**: Instead of defining multiple components in the same file, extract each component into a separate file
+- **Use index.ts for exports**: Create an `index.ts` file in each component directory to export all components from that directory, enabling clean imports like `import { ComponentA, ComponentB } from "./components/core/header"`
+- **File naming**: Use kebab-case for component file names (e.g., `whatsapp-status-indicator.tsx`, `search-bar.tsx`)
+- **Component naming**: Use PascalCase for component names (e.g., `WhatsAppStatusIndicator`, `SearchBar`)
+
+---
+
+## General Engineering Expectations
+
+- Keep implementations simple and maintainable
+- Prefer readability over cleverness
+- Avoid over-engineering
