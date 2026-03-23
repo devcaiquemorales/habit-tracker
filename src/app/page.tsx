@@ -6,12 +6,9 @@ import { MOCK_HABITS } from "@/presentation/data/mock-habits";
 export default function Home() {
   return (
     <>
-      <main className="flex flex-col pb-24">
+      <main className="flex flex-col pb-[calc(6rem+env(safe-area-inset-bottom,0px))]">
         <div
-          className="mx-auto flex w-full flex-col gap-6 px-4 pb-6 md:px-6 lg:max-w-4xl lg:px-8 xl:px-10"
-          style={{
-            paddingTop: "calc(env(safe-area-inset-top, 0px) + 1.5rem)",
-          }}
+          className="mx-auto flex w-full flex-col gap-6 pb-6 pt-[calc(1.5rem+env(safe-area-inset-top,0px))] pl-[calc(1rem+env(safe-area-inset-left,0px))] pr-[calc(1rem+env(safe-area-inset-right,0px))] md:pl-[calc(1.5rem+env(safe-area-inset-left,0px))] md:pr-[calc(1.5rem+env(safe-area-inset-right,0px))] lg:max-w-4xl lg:pl-[calc(2rem+env(safe-area-inset-left,0px))] lg:pr-[calc(2rem+env(safe-area-inset-right,0px))] xl:pl-[calc(2.5rem+env(safe-area-inset-left,0px))] xl:pr-[calc(2.5rem+env(safe-area-inset-right,0px))]"
         >
           <HomeHeader />
 

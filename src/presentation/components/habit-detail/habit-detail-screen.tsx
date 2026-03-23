@@ -58,8 +58,7 @@ export function HabitDetailScreen({
   return (
     <>
       <main
-        className="mx-auto flex min-h-dvh max-w-3xl flex-col px-4 pb-20 md:px-6 lg:px-8"
-        style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}
+        className="mx-auto flex min-h-dvh max-w-3xl flex-col pb-[calc(5rem+env(safe-area-inset-bottom,0px))] pt-[env(safe-area-inset-top,0px)] pl-[calc(1rem+env(safe-area-inset-left,0px))] pr-[calc(1rem+env(safe-area-inset-right,0px))] md:pl-[calc(1.5rem+env(safe-area-inset-left,0px))] md:pr-[calc(1.5rem+env(safe-area-inset-right,0px))] lg:pl-[calc(2rem+env(safe-area-inset-left,0px))] lg:pr-[calc(2rem+env(safe-area-inset-right,0px))]"
       >
         <HabitDetailHeader
           habitName={habit.name}

@@ -69,7 +69,7 @@ export function HeatmapCell({
     monthBoundaryLabel !== undefined && monthBoundaryLabel !== "" ? (
       <span
         className={cn(
-          "pointer-events-none absolute top-px left-px z-[1] leading-none font-medium tabular-nums tracking-tight select-none",
+          "pointer-events-none absolute top-px left-px z-1 leading-none font-medium tracking-tight tabular-nums select-none",
           BOUNDARY_MARKER_TEXT[size],
           /** High-contrast on saturated cubes: light fill + tight dark halo (no heavy badge) */
           "text-white/95 [text-shadow:0_0_1px_rgb(0_0_0/_0.95),0_0.5px_1.5px_rgb(0_0_0/_0.75)]",
