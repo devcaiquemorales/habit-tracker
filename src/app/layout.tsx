@@ -5,6 +5,8 @@ import "./global.css";
 import type { Metadata, Viewport } from "next";
 import { Fira_Code, Geist, Lora } from "next/font/google";
 
+import { RouteTransitionShell } from "./route-transition-shell";
+
 const fontSans = Geist({
   subsets: ["latin"],
   variable: "--font-sans",
@@ -50,11 +52,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className="page-scrollbar-hidden">
       <body
-        className={`${fontSans.variable} ${fontSerif.variable} ${fontMono.variable} dark antialiased`}
+        className={`${fontSans.variable} ${fontSerif.variable} ${fontMono.variable} dark page-scrollbar-hidden antialiased`}
       >
-        {children}
+        <RouteTransitionShell>{children}</RouteTransitionShell>
       </body>
     </html>
   );

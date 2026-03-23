@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import type { KeyboardEvent } from "react";
+import { type KeyboardEvent,useEffect } from "react";
 
+import { useRouteTransitionFeedback } from "@/app/route-transition-shell";
 import type { ColorVariant } from "@/domain/types/habit";
 import { getStreakLevel } from "@/domain/types/habit";
 import type { HeatmapData } from "@/domain/types/heatmap";
@@ -35,8 +36,15 @@ export function HabitCard({
   data,
 }: HabitCardProps) {
   const router = useRouter();
+  const beginRouteTransitionFeedback = useRouteTransitionFeedback();
   const { panPointerProps, shouldSuppressNavigation } =
     useHorizontalPanNavigationSuppression();
+
+  const href = `/habits/${habitId}`;
+
+  useEffect(() => {
+    router.prefetch(href);
+  }, [router, href]);
 
   const { indicatorClass, streakClasses } = COLOR_VARIANTS[colorVariant];
   const streakClass =
@@ -44,11 +52,10 @@ export function HabitCard({
       ? streakClasses[getStreakLevel(streak)]
       : undefined;
 
-  const href = `/habits/${habitId}`;
-
   const openDetail = () => {
+    beginRouteTransitionFeedback();
     triggerInteractionFeedback();
-    router.push(href);
+    router.push(href, { scroll: true });
   };
 
   const onHeatmapRegionClick = () => {
@@ -65,6 +72,7 @@ export function HabitCard({
 
   return (
     <div
+      {...panPointerProps}
       className={cn(
         "flex w-full flex-col gap-3 rounded-xl bg-white/5 p-4 pt-0 transition-[background-color] duration-150 ease-out",
         "hover:bg-white/[0.07]",
@@ -72,8 +80,16 @@ export function HabitCard({
     >
       <Link
         href={href}
-        onClick={() => triggerInteractionFeedback()}
-        className="flex flex-col gap-3 rounded-lg outline-none transition-[transform] duration-150 ease-out focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background active:scale-[0.99]"
+        scroll
+        onClick={(e) => {
+          if (shouldSuppressNavigation()) {
+            e.preventDefault();
+            return;
+          }
+          beginRouteTransitionFeedback();
+          triggerInteractionFeedback();
+        }}
+        className="flex flex-col gap-3 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background touch-manipulation"
       >
         <HabitCardHeader
           name={name}
@@ -86,11 +102,10 @@ export function HabitCard({
         </p>
       </Link>
       <div
-        {...panPointerProps}
         role="link"
         tabIndex={0}
         aria-label={`Open ${name}`}
-        className="cursor-pointer rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+        className="cursor-pointer rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background touch-manipulation"
         onClick={onHeatmapRegionClick}
         onKeyDown={onHeatmapRegionKeyDown}
       >

@@ -190,6 +190,20 @@
     width: 0;
     height: 0;
   }
+
+  /**
+   * PWA / mobile: hide the main document scrollbar while keeping scroll (wheel, touch, keys).
+   */
+  .page-scrollbar-hidden {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .page-scrollbar-hidden::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+  }
 }
 
 @layer base {
@@ -198,5 +212,46 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+/**
+ * Immediate tap feedback (before route finishes) — see route-transition-shell.tsx.
+ */
+.page-route-tap-response {
+  opacity: 0.96;
+  transform: translateY(1px);
+  transition:
+    opacity 85ms cubic-bezier(0.33, 1, 0.68, 1),
+    transform 85ms cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+/**
+ * Full-page enter after navigation commits — short, light, ~165ms ease-out.
+ */
+@keyframes app-page-enter {
+  from {
+    opacity: 0.92;
+    transform: translateY(3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-route-entering {
+  animation: app-page-enter 165ms cubic-bezier(0.33, 1, 0.68, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-route-tap-response {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .page-route-entering {
+    animation: none;
   }
 }

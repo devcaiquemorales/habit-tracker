@@ -11,13 +11,13 @@ const MOVE_THRESHOLD_PX = 10;
 const SUPPRESS_NAVIGATION_MS = 500;
 
 /**
- * Detects horizontal drag intent on a heatmap (or similar) region so parent
- * navigation / press feedback does not fire after the user scrolls sideways.
+ * Detects scroll intent on a habit card (vertical page scroll or horizontal
+ * heatmap pan) so navigation / taps do not fire after a drag gesture.
  */
 export function useHorizontalPanNavigationSuppression() {
   const phaseRef = useRef<"idle" | "tracking">("idle");
   const originRef = useRef({ x: 0, y: 0 });
-  const sawHorizontalPanRef = useRef(false);
+  const sawScrollIntentRef = useRef(false);
   const suppressUntilRef = useRef(0);
 
   const panPointerProps = useMemo(
@@ -26,7 +26,7 @@ export function useHorizontalPanNavigationSuppression() {
         if (!e.isPrimary) return;
         phaseRef.current = "tracking";
         originRef.current = { x: e.clientX, y: e.clientY };
-        sawHorizontalPanRef.current = false;
+        sawScrollIntentRef.current = false;
       },
       onPointerMoveCapture: (e: ReactPointerEvent<HTMLElement>) => {
         if (phaseRef.current !== "tracking") return;
@@ -38,21 +38,20 @@ export function useHorizontalPanNavigationSuppression() {
         ) {
           return;
         }
-        if (Math.abs(dx) > Math.abs(dy)) {
-          sawHorizontalPanRef.current = true;
-        }
+        /** Any clear drag (horizontal heatmap or vertical page scroll) suppresses tap navigation */
+        sawScrollIntentRef.current = true;
         phaseRef.current = "idle";
       },
       onPointerUpCapture: () => {
-        if (sawHorizontalPanRef.current) {
+        if (sawScrollIntentRef.current) {
           suppressUntilRef.current = Date.now() + SUPPRESS_NAVIGATION_MS;
         }
         phaseRef.current = "idle";
-        sawHorizontalPanRef.current = false;
+        sawScrollIntentRef.current = false;
       },
       onPointerCancelCapture: () => {
         phaseRef.current = "idle";
-        sawHorizontalPanRef.current = false;
+        sawScrollIntentRef.current = false;
       },
     }),
     [],

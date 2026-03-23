@@ -50,7 +50,10 @@ export function HabitDetailScreen({
     handleHeatmapDateSelect,
   } = useHabitLogState(initialHabit, MOCK_HEATMAP_DATA);
 
-  /** Always open detail at the top; home scroll is preserved via `scroll={false}` on back. */
+  /**
+   * Always open detail at the top (including when opening from a deep-scrolled home list).
+   * Home scroll when returning is preserved via `scroll={false}` on the back control.
+   */
   useLayoutEffect(() => {
     resetViewportScrollTop();
   }, [habit.id]);

@@ -63,7 +63,7 @@ export function HabitHeatmap({
   return (
     <div
       ref={scrollRef}
-      className="touch-pan-x scrollbar-hidden overflow-x-auto overscroll-x-contain"
+      className="scrollbar-hidden overflow-x-auto overscroll-x-contain [touch-action:pan-x_pan-y]"
     >
       <div className="flex w-max flex-row items-end gap-2 sm:gap-2.5">
         {months.map((month) => (
