@@ -1,5 +1,5 @@
+import type { Schedule } from "@/domain/types/schedule";
 import type { CreateScheduleValue } from "@/presentation/components/create-habit-dialog/schedule-selector";
-import type { Schedule } from "@/presentation/components/habit-heatmap/schedule-types";
 
 export function buildScheduleFromForm(form: CreateScheduleValue): Schedule {
   if (form.category === "weeklyTarget") {
@@ -26,7 +26,7 @@ export function scheduleToFormValue(schedule: Schedule): CreateScheduleValue {
     case "weeklyTarget":
       return {
         category: "weeklyTarget",
-        timesPerWeek: Math.min(7, Math.max(1, schedule.timesPerWeek ?? 4)),
+        timesPerWeek: Math.min(7, Math.max(1, schedule.timesPerWeek)),
       };
     case "daily":
     case "flexible":
@@ -37,9 +37,7 @@ export function scheduleToFormValue(schedule: Schedule): CreateScheduleValue {
       return {
         category: "fixed",
         mode: "specificDays",
-        days: [...(schedule.days ?? [])].sort((a, b) => a - b),
+        days: [...schedule.days].sort((a, b) => a - b),
       };
-    default:
-      return { category: "fixed", mode: "daily", days: [] };
   }
 }

@@ -1,7 +1,6 @@
-import type { Schedule } from "@/presentation/components/habit-heatmap/schedule-types";
-import { isDayExpected } from "@/presentation/components/habit-heatmap/schedule-types";
-
-import { getUtcWeekStartSunday, toUtcDateKey } from "./date-key";
+import { getUtcWeekStartSunday, toUtcDateKey } from "@/domain/types/date-key";
+import type { Schedule } from "@/domain/types/schedule";
+import { isDayExpected } from "@/domain/types/schedule";
 
 export type TodayStatusKind = "completed" | "not_completed" | "not_scheduled";
 
@@ -31,7 +30,7 @@ export function getTodayStatusPresentation(
   const todayKey = toUtcDateKey(referenceDate);
 
   if (schedule.type === "weeklyTarget") {
-    const target = Math.min(7, Math.max(1, schedule.timesPerWeek ?? 1));
+    const target = Math.min(7, Math.max(1, schedule.timesPerWeek));
     const weekStart = getUtcWeekStartSunday(referenceDate);
     const effective = new Set(mergedCompletedKeys);
     if (completedToday) {

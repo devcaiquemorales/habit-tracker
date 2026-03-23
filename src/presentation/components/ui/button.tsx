@@ -5,7 +5,6 @@ import { Slot } from "radix-ui";
 import * as React from "react";
 
 import { playUiHaptic } from "@/presentation/lib/ui-haptics";
-import { playClickSound } from "@/presentation/lib/ui-sound";
 import { cn } from "@/presentation/lib/utils";
 
 const buttonVariants = cva(
@@ -53,20 +52,16 @@ function Button({
   asChild = false,
   disabled,
   onClick,
-  withTapSound = false,
   ...props
 }: React.ComponentProps<"button"> &
   VariantProps<typeof buttonVariants> & {
     asChild?: boolean;
-    /** Meaningful primary actions only (FAB / Create / Save / Confirm). Haptic always applies. */
-    withTapSound?: boolean;
   }) {
   const Comp = asChild ? Slot.Root : "button";
 
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     if (disabled) return;
     playUiHaptic();
-    if (withTapSound) playClickSound();
     onClick?.(e);
   };
 

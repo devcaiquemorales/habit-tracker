@@ -33,7 +33,7 @@ export function ColorSelector({ value, onChange }: ColorSelectorProps) {
             aria-checked={selected}
             aria-label={opt.label}
             onClick={() => {
-              triggerInteractionFeedback({ sound: "tap", haptic: true });
+              triggerInteractionFeedback();
               onChange(opt.id);
             }}
             className={cn(

@@ -89,7 +89,7 @@ export function ScheduleSelector({ value, onChange }: ScheduleSelectorProps) {
             displayCategory === "fixed" && "shadow-none",
           )}
           onClick={() => {
-            triggerInteractionFeedback({ sound: "tap", haptic: false });
+            triggerInteractionFeedback({ haptic: false });
             setCategory("fixed");
           }}
         >
@@ -106,7 +106,7 @@ export function ScheduleSelector({ value, onChange }: ScheduleSelectorProps) {
             displayCategory === "weeklyTarget" && "shadow-none",
           )}
           onClick={() => {
-            triggerInteractionFeedback({ sound: "tap", haptic: false });
+            triggerInteractionFeedback({ haptic: false });
             setCategory("weeklyTarget");
           }}
         >
@@ -140,7 +140,7 @@ export function ScheduleSelector({ value, onChange }: ScheduleSelectorProps) {
                   value.mode === mode && "shadow-none",
                 )}
                 onClick={() => {
-                  triggerInteractionFeedback({ sound: "tap", haptic: false });
+                  triggerInteractionFeedback({ haptic: false });
                   setFixedMode(mode);
                 }}
               >
@@ -165,10 +165,7 @@ export function ScheduleSelector({ value, onChange }: ScheduleSelectorProps) {
                       type="button"
                       aria-pressed={on}
                       onClick={() => {
-                        triggerInteractionFeedback({
-                          sound: "none",
-                          haptic: true,
-                        });
+                        triggerInteractionFeedback();
                         toggleDay(day);
                       }}
                       className={cn(
@@ -209,7 +206,7 @@ export function ScheduleSelector({ value, onChange }: ScheduleSelectorProps) {
                   type="button"
                   aria-pressed={selected}
                   onClick={() => {
-                    triggerInteractionFeedback({ sound: "none", haptic: true });
+                    triggerInteractionFeedback();
                     onChange({
                       category: "weeklyTarget",
                       timesPerWeek: n,

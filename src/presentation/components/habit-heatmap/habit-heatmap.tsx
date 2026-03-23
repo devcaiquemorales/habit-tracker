@@ -1,20 +1,24 @@
 "use client";
 
+import { toUtcDateKey } from "@/domain/types/date-key";
+import type { CellColorClasses } from "@/domain/types/heatmap";
+import type { HeatmapData } from "@/domain/types/heatmap";
+import type { Schedule } from "@/domain/types/schedule";
+import { MOCK_HEATMAP_DATA } from "@/presentation/data/mock-heatmap";
 import { useScrollToFarRight } from "@/presentation/hooks/use-scroll-to-far-right";
-import { toUtcDateKey } from "@/presentation/lib/date-key";
 
 import { COLOR_VARIANTS, type ColorVariant } from "./color-variants";
 import { HeatmapMonthBlock } from "./heatmap-month-block";
-import { type HeatmapData, MOCK_HEATMAP_DATA } from "./mock-data";
-import type { Schedule } from "./schedule-types";
 
 interface HabitHeatmapProps {
   data?: HeatmapData;
   schedule: Schedule;
   colorVariant?: ColorVariant;
   density?: "default" | "comfortable" | "large";
-  forceCompletedKeys?: Set<string>;
-  forceIncompleteKeys?: Set<string>;
+  completionOverrides?: Set<string>;
+  removalOverrides?: Set<string>;
+  onDateSelect?: (dateKey: string) => void;
+  selectedDateKey?: string | null;
 }
 
 export function HabitHeatmap({
@@ -22,8 +26,10 @@ export function HabitHeatmap({
   schedule,
   colorVariant = "green",
   density = "default",
-  forceCompletedKeys,
-  forceIncompleteKeys,
+  completionOverrides,
+  removalOverrides,
+  onDateSelect,
+  selectedDateKey,
 }: HabitHeatmapProps) {
   const scrollRef = useScrollToFarRight<HTMLDivElement>();
 
@@ -35,8 +41,21 @@ export function HabitHeatmap({
         : "default";
   const { months, today } = data;
   const todayHighlightKey = toUtcDateKey(today);
-  const { doneClass, missedClass, notExpectedClass, emptyDayClass } =
-    COLOR_VARIANTS[colorVariant];
+  const {
+    doneClass,
+    missedClass,
+    notExpectedClass,
+    emptyDayClass,
+    monthPaddingClass,
+  } = COLOR_VARIANTS[colorVariant];
+
+  const cellColors: CellColorClasses = {
+    done: doneClass,
+    missed: missedClass,
+    notExpected: notExpectedClass,
+    emptyDay: emptyDayClass,
+    monthPadding: monthPaddingClass,
+  };
 
   const weekColumnGap =
     density === "large" ? "gap-[3px] sm:gap-1" : "gap-[2px]";
@@ -52,16 +71,15 @@ export function HabitHeatmap({
             key={month.id}
             month={month}
             schedule={schedule}
-            doneClass={doneClass}
-            missedClass={missedClass}
-            disabledClass={notExpectedClass}
-            emptyDayClass={emptyDayClass}
+            cellColors={cellColors}
             cellSize={cellSize}
             weekColumnGapClass={weekColumnGap}
             todayHighlightKey={todayHighlightKey}
             today={today}
-            forceCompletedKeys={forceCompletedKeys}
-            forceIncompleteKeys={forceIncompleteKeys}
+            completionOverrides={completionOverrides}
+            removalOverrides={removalOverrides}
+            onDateSelect={onDateSelect}
+            selectedDateKey={selectedDateKey}
           />
         ))}
       </div>

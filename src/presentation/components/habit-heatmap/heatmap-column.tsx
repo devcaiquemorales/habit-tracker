@@ -1,22 +1,23 @@
-import { toUtcDateKey } from "@/presentation/lib/date-key";
+import { toUtcDateKey } from "@/domain/types/date-key";
+import type { CellColorClasses, HeatmapDayCell } from "@/domain/types/heatmap";
+import type { Schedule } from "@/domain/types/schedule";
+import { isDayExpected, isWeeklyTargetSchedule } from "@/domain/types/schedule";
 
 import { HeatmapCell, type HeatmapCellSize } from "./heatmap-cell";
-import type { HeatmapDayCell } from "./mock-data";
-import type { Schedule } from "./schedule-types";
-import { isDayExpected, isWeeklyTargetSchedule } from "./schedule-types";
 
 interface HeatmapColumnProps {
   week: HeatmapDayCell[];
   schedule: Schedule;
-  doneClass: string;
-  missedClass: string;
-  disabledClass: string;
-  emptyDayClass: string;
+  cellColors: CellColorClasses;
   cellSize?: HeatmapCellSize;
   today: Date;
   todayHighlightKey: string;
-  forceCompletedKeys?: Set<string>;
-  forceIncompleteKeys?: Set<string>;
+  completionOverrides?: Set<string>;
+  removalOverrides?: Set<string>;
+  /** When set, past/today cells (not padding, not future) call this with their UTC date key. */
+  onDateSelect?: (dateKey: string) => void;
+  /** Highlights the cell that matches the Update activity selection. */
+  selectedDateKey?: string | null;
 }
 
 function getCellTooltip(
@@ -39,15 +40,14 @@ function getCellTooltip(
 export function HeatmapColumn({
   week,
   schedule,
-  doneClass,
-  missedClass,
-  disabledClass,
-  emptyDayClass,
+  cellColors,
   cellSize = "default",
   today,
   todayHighlightKey,
-  forceCompletedKeys,
-  forceIncompleteKeys,
+  completionOverrides,
+  removalOverrides,
+  onDateSelect,
+  selectedDateKey,
 }: HeatmapColumnProps) {
   const tt = today.getTime();
   const weekly = isWeeklyTargetSchedule(schedule);
@@ -59,11 +59,8 @@ export function HeatmapColumn({
           return (
             <HeatmapCell
               key={dayIndex}
-              status="notExpected"
-              doneClass={doneClass}
-              missedClass={missedClass}
-              disabledClass={disabledClass}
-              emptyDayClass={emptyDayClass}
+              status="monthPadding"
+              cellColors={cellColors}
               size={cellSize}
               isToday={false}
             />
@@ -78,10 +75,7 @@ export function HeatmapColumn({
             <HeatmapCell
               key={dayIndex}
               status="notExpected"
-              doneClass={doneClass}
-              missedClass={missedClass}
-              disabledClass={disabledClass}
-              emptyDayClass={emptyDayClass}
+              cellColors={cellColors}
               tooltip="Future"
               size={cellSize}
               isToday={false}
@@ -89,13 +83,23 @@ export function HeatmapColumn({
           );
         }
 
-        const forcedComplete = forceCompletedKeys?.has(dateKey) ?? false;
-        const forcedIncomplete = forceIncompleteKeys?.has(dateKey) ?? false;
-        const effectiveDone = forcedComplete
-          ? 1
-          : forcedIncomplete
-            ? 0
+        const forcedComplete = completionOverrides?.has(dateKey) ?? false;
+        const forcedIncomplete = removalOverrides?.has(dateKey) ?? false;
+        /** Explicit removal must win over forced completion (e.g. clear “today” or mock data). */
+        const effectiveDone = forcedIncomplete
+          ? 0
+          : forcedComplete
+            ? 1
             : cell.done;
+
+        const onActivate =
+          onDateSelect !== undefined
+            ? () => {
+                onDateSelect(dateKey);
+              }
+            : undefined;
+        const isStripSelected = selectedDateKey === dateKey;
+        const selectDayLabel = `Select day ${dateKey}`;
 
         if (weekly) {
           const status = effectiveDone > 0 ? "completed" : "neutralEmpty";
@@ -103,37 +107,41 @@ export function HeatmapColumn({
             <HeatmapCell
               key={dayIndex}
               status={status}
-              doneClass={doneClass}
-              missedClass={missedClass}
-              disabledClass={disabledClass}
-              emptyDayClass={emptyDayClass}
+              cellColors={cellColors}
               tooltip={status === "completed" ? "Completed" : "Not logged"}
               size={cellSize}
               isToday={dateKey === todayHighlightKey}
+              isStripSelected={isStripSelected}
+              onActivate={onActivate}
+              selectDayLabel={selectDayLabel}
             />
           );
         }
 
         const isExpected = isDayExpected(schedule, cell.date);
-        const status = forcedComplete
-          ? "completed"
-          : isExpected
-            ? effectiveDone > 0
-              ? "completed"
-              : "expectedMissed"
-            : "notExpected";
+        const status = forcedIncomplete
+          ? isExpected
+            ? "expectedMissed"
+            : "notExpected"
+          : forcedComplete
+            ? "completed"
+            : isExpected
+              ? effectiveDone > 0
+                ? "completed"
+                : "expectedMissed"
+              : "notExpected";
 
         return (
           <HeatmapCell
             key={dayIndex}
             status={status}
-            doneClass={doneClass}
-            missedClass={missedClass}
-            disabledClass={disabledClass}
-            emptyDayClass={emptyDayClass}
+            cellColors={cellColors}
             tooltip={getCellTooltip(status)}
             size={cellSize}
             isToday={dateKey === todayHighlightKey}
+            isStripSelected={isStripSelected}
+            onActivate={onActivate}
+            selectDayLabel={selectDayLabel}
           />
         );
       })}

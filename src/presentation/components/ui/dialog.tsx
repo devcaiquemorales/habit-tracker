@@ -1,12 +1,12 @@
 "use client";
 
-import * as React from "react";
-import { Dialog as DialogPrimitive } from "radix-ui";
-
-import { cn } from "@/presentation/lib/utils";
-import { triggerInteractionFeedback } from "@/presentation/lib/interaction-feedback";
-import { Button } from "@/presentation/components/ui/button";
 import { XIcon } from "lucide-react";
+import { Dialog as DialogPrimitive } from "radix-ui";
+import * as React from "react";
+
+import { Button } from "@/presentation/components/ui/button";
+import { triggerInteractionFeedback } from "@/presentation/lib/interaction-feedback";
+import { cn } from "@/presentation/lib/utils";
 
 function Dialog({
   ...props
@@ -74,9 +74,7 @@ function DialogContent({
               variant="ghost"
               className="absolute top-2 right-2 transition-transform duration-150 ease-out active:scale-[0.96]"
               size="icon-sm"
-              onClick={() =>
-                triggerInteractionFeedback({ sound: "tap", haptic: false })
-              }
+              onClick={() => triggerInteractionFeedback({ haptic: false })}
             >
               <XIcon />
               <span className="sr-only">Close</span>

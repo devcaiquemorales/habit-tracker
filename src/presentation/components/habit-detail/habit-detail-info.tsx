@@ -1,8 +1,9 @@
 import { Flame } from "lucide-react";
 
+import type { ColorVariant } from "@/domain/types/habit";
+import { getStreakLevel } from "@/domain/types/habit";
 import {
   COLOR_VARIANTS,
-  type ColorVariant,
   STATUS_ACCENT_TEXT,
 } from "@/presentation/components/habit-heatmap/color-variants";
 import type { TodayStatusKind } from "@/presentation/lib/habit-today-status";
@@ -16,12 +17,6 @@ interface HabitDetailInfoProps {
   scheduleLabel: string;
   todayStatusLabel: string;
   todayStatusKind: TodayStatusKind;
-}
-
-function getStreakLevel(streak: number): "low" | "medium" | "high" {
-  if (streak <= 2) return "low";
-  if (streak <= 6) return "medium";
-  return "high";
 }
 
 function getStatusColorClass(

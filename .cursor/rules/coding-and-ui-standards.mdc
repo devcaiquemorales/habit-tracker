@@ -28,7 +28,7 @@ All user-facing UI text must be in English, including:
 - Validation errors
 - Notifications
 
-**Rule of thumb**: If unsure whether text is user-facing, assume it should be Portuguese.
+**Rule of thumb**: If unsure whether text is user-facing, assume it should be English.
 
 ---
 

@@ -5,8 +5,6 @@ import "./global.css";
 import type { Metadata, Viewport } from "next";
 import { Fira_Code, Geist, Lora } from "next/font/google";
 
-import { UiSoundPreload } from "@/presentation/components/ui-sound-preload";
-
 const fontSans = Geist({
   subsets: ["latin"],
   variable: "--font-sans",
@@ -28,6 +26,8 @@ export const viewport: Viewport = {
   colorScheme: "dark",
   width: "device-width",
   initialScale: 1,
+  /** Lets `env(safe-area-inset-*)` reflect notches and home indicators in PWAs / Safari. */
+  viewportFit: "cover",
 };
 
 export const metadata: Metadata = {
@@ -54,7 +54,6 @@ export default function RootLayout({
       <body
         className={`${fontSans.variable} ${fontSerif.variable} ${fontMono.variable} dark antialiased`}
       >
-        <UiSoundPreload />
         {children}
       </body>
     </html>

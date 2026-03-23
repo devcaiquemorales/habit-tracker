@@ -1,41 +1,43 @@
+import type {
+  CellColorClasses,
+  HeatmapMonthData,
+} from "@/domain/types/heatmap";
+import type { Schedule } from "@/domain/types/schedule";
+
 import type { HeatmapCellSize } from "./heatmap-cell";
 import { HeatmapColumn } from "./heatmap-column";
-import type { HeatmapMonthData } from "./mock-data";
-import type { Schedule } from "./schedule-types";
 
 interface HeatmapMonthBlockProps {
   month: HeatmapMonthData;
   schedule: Schedule;
-  doneClass: string;
-  missedClass: string;
-  disabledClass: string;
-  emptyDayClass: string;
+  cellColors: CellColorClasses;
   cellSize: HeatmapCellSize;
   weekColumnGapClass: string;
   todayHighlightKey: string;
   today: Date;
-  forceCompletedKeys?: Set<string>;
-  forceIncompleteKeys?: Set<string>;
+  completionOverrides?: Set<string>;
+  removalOverrides?: Set<string>;
+  onDateSelect?: (dateKey: string) => void;
+  selectedDateKey?: string | null;
 }
 
 export function HeatmapMonthBlock({
   month,
   schedule,
-  doneClass,
-  missedClass,
-  disabledClass,
-  emptyDayClass,
+  cellColors,
   cellSize,
   weekColumnGapClass,
   todayHighlightKey,
   today,
-  forceCompletedKeys,
-  forceIncompleteKeys,
+  completionOverrides,
+  removalOverrides,
+  onDateSelect,
+  selectedDateKey,
 }: HeatmapMonthBlockProps) {
   return (
-    <div className="flex shrink-0 flex-col gap-1.5">
-      <div className="flex h-4 min-w-0 items-end justify-start">
-        <span className="text-[10px] leading-none font-medium tracking-wide text-white/40">
+    <div className="flex shrink-0 flex-col gap-2">
+      <div className="flex min-h-4 min-w-0 items-end justify-start">
+        <span className="text-[10px] leading-none font-semibold tracking-wide text-white/55">
           {month.label}
         </span>
       </div>
@@ -45,15 +47,14 @@ export function HeatmapMonthBlock({
             key={`${month.id}-w${weekIndex}`}
             week={week}
             schedule={schedule}
-            doneClass={doneClass}
-            missedClass={missedClass}
-            disabledClass={disabledClass}
-            emptyDayClass={emptyDayClass}
+            cellColors={cellColors}
             cellSize={cellSize}
             today={today}
             todayHighlightKey={todayHighlightKey}
-            forceCompletedKeys={forceCompletedKeys}
-            forceIncompleteKeys={forceIncompleteKeys}
+            completionOverrides={completionOverrides}
+            removalOverrides={removalOverrides}
+            onDateSelect={onDateSelect}
+            selectedDateKey={selectedDateKey}
           />
         ))}
       </div>

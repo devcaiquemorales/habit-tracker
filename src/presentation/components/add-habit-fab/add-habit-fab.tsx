@@ -16,14 +16,17 @@ export const AddHabitFAB = React.forwardRef<
       type="button"
       className={cn(
         "fixed z-40 flex size-12 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-[transform,filter] duration-150 ease-out hover:scale-105 hover:brightness-110 active:scale-[0.97]",
-        "right-4 max-md:bottom-[max(1rem,env(safe-area-inset-bottom,0px))] md:right-8 md:bottom-8 md:h-14 md:w-14",
+        /* Mobile: base margin + safe area (gesture bar / curved corners). */
+        "right-[calc(1.25rem+env(safe-area-inset-right,0px))] bottom-[calc(1.25rem+env(safe-area-inset-bottom,0px))]",
+        /* Desktop / tablet: larger float, still respects safe area (e.g. iPad). */
+        "md:right-[calc(2rem+env(safe-area-inset-right,0px))] md:bottom-[calc(2rem+env(safe-area-inset-bottom,0px))] md:h-14 md:w-14",
         className,
       )}
-      aria-label="Add new habit"
+      aria-label="Add habit"
       title="Add habit"
       {...props}
       onClick={(e) => {
-        triggerInteractionFeedback({ sound: "tap", haptic: true });
+        triggerInteractionFeedback();
         onClick?.(e);
       }}
     >

@@ -2,16 +2,13 @@
 
 import Link from "next/link";
 
-import {
-  HabitHeatmap,
-  type HeatmapData,
-} from "@/presentation/components/habit-heatmap";
-import {
-  COLOR_VARIANTS,
-  type ColorVariant,
-} from "@/presentation/components/habit-heatmap/color-variants";
-import type { Schedule } from "@/presentation/components/habit-heatmap/schedule-types";
-import { formatScheduleLabel } from "@/presentation/components/habit-heatmap/schedule-types";
+import type { ColorVariant } from "@/domain/types/habit";
+import { getStreakLevel } from "@/domain/types/habit";
+import type { HeatmapData } from "@/domain/types/heatmap";
+import type { Schedule } from "@/domain/types/schedule";
+import { formatScheduleLabel } from "@/domain/types/schedule";
+import { HabitHeatmap } from "@/presentation/components/habit-heatmap";
+import { COLOR_VARIANTS } from "@/presentation/components/habit-heatmap/color-variants";
 import { triggerInteractionFeedback } from "@/presentation/lib/interaction-feedback";
 
 import { HabitCardHeader } from "./habit-card-header";
@@ -23,12 +20,6 @@ interface HabitCardProps {
   streak?: number;
   colorVariant?: ColorVariant;
   data?: HeatmapData;
-}
-
-function getStreakLevel(streak: number): "low" | "medium" | "high" {
-  if (streak <= 2) return "low";
-  if (streak <= 6) return "medium";
-  return "high";
 }
 
 export function HabitCard({
@@ -48,7 +39,7 @@ export function HabitCard({
   return (
     <Link
       href={`/habits/${habitId}`}
-      onClick={() => triggerInteractionFeedback({ sound: "tap", haptic: true })}
+      onClick={() => triggerInteractionFeedback()}
       className="flex w-full flex-col gap-3 rounded-xl bg-white/5 p-4 pt-0 transition-[transform,opacity,background-color] duration-150 ease-out outline-none hover:bg-white/[0.07] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background active:scale-[0.99]"
     >
       <HabitCardHeader

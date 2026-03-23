@@ -1,25 +1,27 @@
-import {
-  HabitHeatmap,
-  type HeatmapData,
-} from "@/presentation/components/habit-heatmap";
-import type { ColorVariant } from "@/presentation/components/habit-heatmap/color-variants";
-import type { Schedule } from "@/presentation/components/habit-heatmap/schedule-types";
-import { isWeeklyTargetSchedule } from "@/presentation/components/habit-heatmap/schedule-types";
+import type { ColorVariant } from "@/domain/types/habit";
+import type { HeatmapData } from "@/domain/types/heatmap";
+import type { Schedule } from "@/domain/types/schedule";
+import { isWeeklyTargetSchedule } from "@/domain/types/schedule";
+import { HabitHeatmap } from "@/presentation/components/habit-heatmap";
 
 interface HabitDetailHeatmapProps {
   schedule: Schedule;
   colorVariant: ColorVariant;
   data?: HeatmapData;
-  forceCompletedKeys?: Set<string>;
-  forceIncompleteKeys?: Set<string>;
+  completionOverrides?: Set<string>;
+  removalOverrides?: Set<string>;
+  onDateSelect?: (dateKey: string) => void;
+  selectedDateKey?: string | null;
 }
 
 export function HabitDetailHeatmap({
   schedule,
   colorVariant,
   data,
-  forceCompletedKeys,
-  forceIncompleteKeys,
+  completionOverrides,
+  removalOverrides,
+  onDateSelect,
+  selectedDateKey,
 }: HabitDetailHeatmapProps) {
   return (
     <section className="flex min-w-0 flex-col gap-3">
@@ -27,8 +29,7 @@ export function HabitDetailHeatmap({
         <p className="text-sm font-medium text-white/50">Activity</p>
         {isWeeklyTargetSchedule(schedule) ? (
           <p className="text-[10px] leading-snug text-white/30">
-            Flexible schedule · Goal: {schedule.timesPerWeek ?? 1} times this
-            week
+            Flexible schedule · Goal: {schedule.timesPerWeek} times this week
           </p>
         ) : null}
       </div>
@@ -38,8 +39,10 @@ export function HabitDetailHeatmap({
           schedule={schedule}
           colorVariant={colorVariant}
           density="large"
-          forceCompletedKeys={forceCompletedKeys}
-          forceIncompleteKeys={forceIncompleteKeys}
+          completionOverrides={completionOverrides}
+          removalOverrides={removalOverrides}
+          onDateSelect={onDateSelect}
+          selectedDateKey={selectedDateKey}
         />
       </div>
     </section>

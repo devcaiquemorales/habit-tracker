@@ -1,17 +1,6 @@
-import type { ColorVariant } from "@/presentation/components/habit-heatmap/color-variants";
-import type { Schedule } from "@/presentation/components/habit-heatmap/schedule-types";
+import type { Habit } from "@/domain/types/habit";
 
-export interface MockHabit {
-  id: string;
-  name: string;
-  colorVariant: ColorVariant;
-  schedule: Schedule;
-  streak: number;
-  /** Mock only — whether the habit is marked done for the current calendar day */
-  completedToday: boolean;
-}
-
-export const MOCK_HABITS: MockHabit[] = [
+export const MOCK_HABITS: Habit[] = [
   {
     id: "gym",
     name: "Gym",
@@ -46,6 +35,6 @@ export const MOCK_HABITS: MockHabit[] = [
   },
 ];
 
-export function getMockHabitById(id: string): MockHabit | undefined {
+export function getMockHabitById(id: string): Habit | undefined {
   return MOCK_HABITS.find((h) => h.id === id);
 }
