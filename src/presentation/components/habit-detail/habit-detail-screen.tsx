@@ -57,7 +57,10 @@ export function HabitDetailScreen({
 
   return (
     <>
-      <main className="mx-auto flex min-h-dvh max-w-3xl flex-col px-4 pt-0 pb-20 md:px-6 lg:px-8">
+      <main
+        className="mx-auto flex min-h-dvh max-w-3xl flex-col px-4 pb-20 md:px-6 lg:px-8"
+        style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}
+      >
         <HabitDetailHeader
           habitName={habit.name}
           onEdit={() => {

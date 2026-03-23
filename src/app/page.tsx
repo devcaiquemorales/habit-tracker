@@ -7,7 +7,12 @@ export default function Home() {
   return (
     <>
       <main className="flex flex-col pb-24">
-        <div className="mx-auto flex w-full flex-col gap-6 px-4 py-6 md:px-6 lg:max-w-4xl lg:px-8 xl:px-10">
+        <div
+          className="mx-auto flex w-full flex-col gap-6 px-4 pb-6 md:px-6 lg:max-w-4xl lg:px-8 xl:px-10"
+          style={{
+            paddingTop: "calc(env(safe-area-inset-top, 0px) + 1.5rem)",
+          }}
+        >
           <HomeHeader />
 
           <div className="flex flex-col gap-4">

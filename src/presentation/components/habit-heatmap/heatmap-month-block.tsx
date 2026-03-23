@@ -3,6 +3,7 @@ import type {
   HeatmapMonthData,
 } from "@/domain/types/heatmap";
 import type { Schedule } from "@/domain/types/schedule";
+import { buildMonthBoundaryLabelByDateKey } from "@/presentation/lib/heatmap-month-boundaries";
 
 import type { HeatmapCellSize } from "./heatmap-cell";
 import { HeatmapColumn } from "./heatmap-column";
@@ -34,6 +35,8 @@ export function HeatmapMonthBlock({
   onDateSelect,
   selectedDateKey,
 }: HeatmapMonthBlockProps) {
+  const boundaryLabelByDateKey = buildMonthBoundaryLabelByDateKey(month);
+
   return (
     <div className="flex shrink-0 flex-col gap-2">
       <div className="flex min-h-4 min-w-0 items-end justify-start">
@@ -55,6 +58,7 @@ export function HeatmapMonthBlock({
             removalOverrides={removalOverrides}
             onDateSelect={onDateSelect}
             selectedDateKey={selectedDateKey}
+            boundaryLabelByDateKey={boundaryLabelByDateKey}
           />
         ))}
       </div>

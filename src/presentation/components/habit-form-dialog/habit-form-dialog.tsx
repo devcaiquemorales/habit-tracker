@@ -219,10 +219,12 @@ export function HabitFormDialog({
       {trigger ? <DialogTrigger asChild>{trigger}</DialogTrigger> : null}
       <DialogContent
         showCloseButton
+        closeButtonClassName="top-[calc(env(safe-area-inset-top,0px)+0.5rem)] sm:top-2"
         className={cn(
           "flex max-h-dvh flex-col gap-0 overflow-hidden border-0 p-0 shadow-xl",
-          "inset-0! h-dvh! translate-x-0! translate-y-0! rounded-none sm:inset-auto! sm:top-1/2! sm:left-1/2! sm:h-auto! sm:max-h-[min(90dvh,640px)]! sm:w-full! sm:max-w-md! sm:-translate-x-1/2! sm:-translate-y-1/2! sm:rounded-xl! sm:border! sm:p-0!",
+          "inset-0! h-dvh! max-w-none! w-full! translate-x-0! translate-y-0! rounded-none sm:inset-auto! sm:top-1/2! sm:left-1/2! sm:h-auto! sm:max-h-[min(90dvh,640px)]! sm:w-full! sm:max-w-md! sm:-translate-x-1/2! sm:-translate-y-1/2! sm:rounded-xl! sm:border! sm:p-0!",
         )}
+        style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}
       >
         <HabitFormDialogFields
           key={formKey}

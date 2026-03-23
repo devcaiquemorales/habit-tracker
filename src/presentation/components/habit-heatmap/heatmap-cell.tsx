@@ -10,6 +10,13 @@ const SIZE_CLASS: Record<HeatmapCellSize, string> = {
   large: "h-4 w-4 sm:h-[18px] sm:w-[18px] md:h-5 md:w-5",
 };
 
+/** Tiny month boundary annotation (1st / last day); scales slightly with cell size */
+const BOUNDARY_MARKER_TEXT: Record<HeatmapCellSize, string> = {
+  default: "text-[5px]",
+  comfortable: "text-[5px] sm:text-[5.5px]",
+  large: "text-[5.5px] sm:text-[6px]",
+};
+
 interface HeatmapCellProps {
   status: CellStatus;
   cellColors: CellColorClasses;
@@ -23,6 +30,8 @@ interface HeatmapCellProps {
   onActivate?: () => void;
   /** Accessible label when `onActivate` is set */
   selectDayLabel?: string;
+  /** First/last calendar day of month — tiny top-left label, non-interactive */
+  monthBoundaryLabel?: string;
 }
 
 export function HeatmapCell({
@@ -34,6 +43,7 @@ export function HeatmapCell({
   isStripSelected = false,
   onActivate,
   selectDayLabel,
+  monthBoundaryLabel,
 }: HeatmapCellProps) {
   const statusClass =
     status === "monthPadding"
@@ -47,13 +57,28 @@ export function HeatmapCell({
             : cellColors.notExpected;
 
   const sharedClass = cn(
-    "shrink-0 rounded-[2px]",
+    "relative shrink-0 rounded-[2px]",
     SIZE_CLASS[size],
     statusClass,
     isToday && "ring-1 ring-white/25 ring-inset",
     isStripSelected && "ring-2 ring-white/70 ring-inset",
     onActivate && "cursor-pointer touch-manipulation",
   );
+
+  const boundaryMarker =
+    monthBoundaryLabel !== undefined && monthBoundaryLabel !== "" ? (
+      <span
+        className={cn(
+          "pointer-events-none absolute top-px left-px z-[1] leading-none font-medium tabular-nums tracking-tight select-none",
+          BOUNDARY_MARKER_TEXT[size],
+          /** High-contrast on saturated cubes: light fill + tight dark halo (no heavy badge) */
+          "text-white/95 [text-shadow:0_0_1px_rgb(0_0_0/_0.95),0_0.5px_1.5px_rgb(0_0_0/_0.75)]",
+        )}
+        aria-hidden
+      >
+        {monthBoundaryLabel}
+      </span>
+    ) : null;
 
   if (onActivate) {
     return (
@@ -70,7 +95,9 @@ export function HeatmapCell({
           e.stopPropagation();
           onActivate();
         }}
-      />
+      >
+        {boundaryMarker}
+      </button>
     );
   }
 
@@ -79,6 +106,8 @@ export function HeatmapCell({
       className={sharedClass}
       title={tooltip}
       aria-hidden={status === "monthPadding" ? true : undefined}
-    />
+    >
+      {boundaryMarker}
+    </div>
   );
 }

@@ -52,9 +52,11 @@ function DialogContent({
   className,
   children,
   showCloseButton = true,
+  closeButtonClassName,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
   showCloseButton?: boolean;
+  closeButtonClassName?: string;
 }) {
   return (
     <DialogPortal>
@@ -72,7 +74,10 @@ function DialogContent({
           <DialogPrimitive.Close data-slot="dialog-close" asChild>
             <Button
               variant="ghost"
-              className="absolute top-2 right-2 transition-transform duration-150 ease-out active:scale-[0.96]"
+              className={cn(
+                "absolute top-2 right-2 transition-transform duration-150 ease-out active:scale-[0.96]",
+                closeButtonClassName,
+              )}
               size="icon-sm"
               onClick={() => triggerInteractionFeedback({ haptic: false })}
             >

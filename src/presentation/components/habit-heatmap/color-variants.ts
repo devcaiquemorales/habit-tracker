@@ -15,8 +15,8 @@ interface VariantConfig {
   /** Past day with no log on weekly-target habits (not a fixed “miss”). */
   emptyDayClass: string;
   /**
-   * Week-alignment placeholders (no calendar date). Fainter than real cells —
-   * near-background “empty grid” space, not another day state.
+   * Week-alignment placeholders (no calendar date). More visible than page
+   * background but still below real inactive cells (e.g. emptyDay / notExpected).
    */
   monthPaddingClass: string;
   indicatorClass: string;
@@ -37,7 +37,7 @@ export const COLOR_VARIANTS: Record<ColorVariant, VariantConfig> = {
     missedClass: "bg-white/15",
     notExpectedClass: "bg-white/[0.02]",
     emptyDayClass: "bg-white/[0.08]",
-    monthPaddingClass: "bg-white/[0.008]",
+    monthPaddingClass: "bg-white/[0.045]",
     indicatorClass: "bg-emerald-500",
     streakClasses: {
       low: "text-white/40",
@@ -50,7 +50,7 @@ export const COLOR_VARIANTS: Record<ColorVariant, VariantConfig> = {
     missedClass: "bg-white/15",
     notExpectedClass: "bg-white/[0.02]",
     emptyDayClass: "bg-white/[0.08]",
-    monthPaddingClass: "bg-white/[0.008]",
+    monthPaddingClass: "bg-white/[0.045]",
     indicatorClass: "bg-blue-500",
     streakClasses: {
       low: "text-white/40",
@@ -63,7 +63,7 @@ export const COLOR_VARIANTS: Record<ColorVariant, VariantConfig> = {
     missedClass: "bg-white/15",
     notExpectedClass: "bg-white/[0.02]",
     emptyDayClass: "bg-white/[0.08]",
-    monthPaddingClass: "bg-white/[0.008]",
+    monthPaddingClass: "bg-white/[0.045]",
     indicatorClass: "bg-amber-500",
     streakClasses: {
       low: "text-white/40",
@@ -76,7 +76,7 @@ export const COLOR_VARIANTS: Record<ColorVariant, VariantConfig> = {
     missedClass: "bg-white/15",
     notExpectedClass: "bg-white/[0.02]",
     emptyDayClass: "bg-white/[0.08]",
-    monthPaddingClass: "bg-white/[0.008]",
+    monthPaddingClass: "bg-white/[0.045]",
     indicatorClass: "bg-purple-500",
     streakClasses: {
       low: "text-white/40",

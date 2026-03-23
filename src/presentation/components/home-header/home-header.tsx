@@ -24,9 +24,10 @@ export function HomeHeader({
   const [editOpen, setEditOpen] = useState(false);
   const [motivationFormResetKey, setMotivationFormResetKey] = useState(0);
 
-  const at = new Date();
-  const greeting = getTimeAwareGreeting(userName, at);
-  const dateStr = at.toLocaleDateString("en-US", {
+  const [greeting] = useState(() =>
+    getTimeAwareGreeting(userName, new Date()),
+  );
+  const dateStr = new Date().toLocaleDateString("en-US", {
     weekday: "long",
     day: "numeric",
     month: "long",

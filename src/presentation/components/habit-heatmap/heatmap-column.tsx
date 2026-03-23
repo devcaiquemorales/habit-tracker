@@ -5,6 +5,8 @@ import { isDayExpected, isWeeklyTargetSchedule } from "@/domain/types/schedule";
 
 import { HeatmapCell, type HeatmapCellSize } from "./heatmap-cell";
 
+const EMPTY_BOUNDARY_LABELS = new Map<string, string>();
+
 interface HeatmapColumnProps {
   week: HeatmapDayCell[];
   schedule: Schedule;
@@ -18,6 +20,8 @@ interface HeatmapColumnProps {
   onDateSelect?: (dateKey: string) => void;
   /** Highlights the cell that matches the Update activity selection. */
   selectedDateKey?: string | null;
+  /** Month start/end tiny labels keyed by UTC `YYYY-MM-DD` */
+  boundaryLabelByDateKey?: ReadonlyMap<string, string>;
 }
 
 function getCellTooltip(
@@ -48,6 +52,7 @@ export function HeatmapColumn({
   removalOverrides,
   onDateSelect,
   selectedDateKey,
+  boundaryLabelByDateKey = EMPTY_BOUNDARY_LABELS,
 }: HeatmapColumnProps) {
   const tt = today.getTime();
   const weekly = isWeeklyTargetSchedule(schedule);
@@ -69,6 +74,7 @@ export function HeatmapColumn({
 
         const dateKey = toUtcDateKey(cell.date);
         const t = cell.date.getTime();
+        const monthBoundaryLabel = boundaryLabelByDateKey.get(dateKey);
 
         if (t > tt) {
           return (
@@ -79,6 +85,7 @@ export function HeatmapColumn({
               tooltip="Future"
               size={cellSize}
               isToday={false}
+              monthBoundaryLabel={monthBoundaryLabel}
             />
           );
         }
@@ -114,6 +121,7 @@ export function HeatmapColumn({
               isStripSelected={isStripSelected}
               onActivate={onActivate}
               selectDayLabel={selectDayLabel}
+              monthBoundaryLabel={monthBoundaryLabel}
             />
           );
         }
@@ -142,6 +150,7 @@ export function HeatmapColumn({
             isStripSelected={isStripSelected}
             onActivate={onActivate}
             selectDayLabel={selectDayLabel}
+            monthBoundaryLabel={monthBoundaryLabel}
           />
         );
       })}
