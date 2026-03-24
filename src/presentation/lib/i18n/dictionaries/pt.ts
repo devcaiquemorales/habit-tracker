@@ -27,11 +27,13 @@ export const ptMessages: EnMessages = {
   },
   auth: {
     welcomeBack: "Bem-vindo de volta",
-    signInSubtitle: "Entre para continuar acompanhando seus hábitos.",
-    createAccountTitle: "Crie sua conta",
+    signInSubtitle:
+      "Continue de onde parou—seus hábitos e o mapa de atividade ficam aqui.",
+    createAccountTitle: "Comece com intenção",
     createAccountSubtitle:
-      "Alguns dados e você já pode construir consistência.",
+      "Seu nome, um ritmo possível e o motivo que te faz voltar.",
     brandName: "Habit Tracker",
+    brandTagline: "Consistência, no silêncio",
     email: "E-mail",
     password: "Senha",
     displayName: "Nome de exibição",
@@ -55,6 +57,28 @@ export const ptMessages: EnMessages = {
     checkInboxSignup:
       "Verifique sua caixa de entrada para confirmar o e-mail. Depois de confirmar, você pode entrar.",
     creatingAccount: "Criando conta...",
+    forgotPasswordLink: "Esqueceu a senha?",
+    forgotPasswordTitle: "Redefinir senha",
+    forgotPasswordSubtitle:
+      "Informe seu e-mail e enviaremos um link para escolher uma nova senha.",
+    forgotPasswordSubmit: "Enviar link",
+    forgotPasswordSending: "Enviando...",
+    forgotPasswordSuccess:
+      "Se existir uma conta com esse e-mail, você receberá as instruções em instantes.",
+    backToSignIn: "Voltar ao login",
+    updatePasswordTitle: "Nova senha",
+    updatePasswordSubtitle:
+      "Use uma senha que você ainda não usou aqui. É com ela que você vai entrar daqui pra frente.",
+    newPassword: "Nova senha",
+    confirmPassword: "Confirmar senha",
+    confirmPasswordMismatch: "As senhas não coincidem.",
+    updatePasswordSubmit: "Atualizar senha",
+    updatingPassword: "Atualizando...",
+    recoveryLinkInvalid:
+      "Este link de redefinição é inválido ou expirou. Solicite outro na tela de login.",
+    resetCompleteSignIn: "Senha atualizada. Entre com a nova senha abaixo.",
+    reasonFieldHint:
+      "Usamos isso na tela inicial—uma frase honesta vale mais que um lema perfeito.",
   },
   authErrors: {
     invalidCredentials: "E-mail ou senha inválidos.",

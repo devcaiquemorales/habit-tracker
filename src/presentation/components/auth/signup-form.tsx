@@ -5,12 +5,14 @@ import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
 
 import { createBrowserSupabaseClient } from "@/infrastructure/supabase/client";
+import { AuthFormNotice } from "@/presentation/components/auth/auth-form-notice";
 import { Button } from "@/presentation/components/ui/button";
 import { Input } from "@/presentation/components/ui/input";
 import { Label } from "@/presentation/components/ui/label";
 import { formatAuthErrorMessage } from "@/presentation/lib/auth-error-message";
 import { useI18n } from "@/presentation/lib/i18n/i18n-provider";
 import { triggerInteractionFeedback } from "@/presentation/lib/interaction-feedback";
+import { cn } from "@/presentation/lib/utils";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MOTIVATION_MAX = 120;
@@ -72,22 +74,8 @@ export function SignupForm() {
 
   return (
     <form className="flex flex-col gap-5" onSubmit={handleSubmit} noValidate>
-      {error ? (
-        <p
-          className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive"
-          role="alert"
-        >
-          {error}
-        </p>
-      ) : null}
-      {info ? (
-        <p
-          className="rounded-lg border border-border/60 bg-muted/40 px-3 py-2 text-sm text-foreground"
-          role="status"
-        >
-          {info}
-        </p>
-      ) : null}
+      {error ? <AuthFormNotice variant="error">{error}</AuthFormNotice> : null}
+      {info ? <AuthFormNotice variant="info">{info}</AuthFormNotice> : null}
 
       <div className="space-y-2">
         <Label htmlFor="signup-name">{t("auth.displayName")}</Label>
@@ -120,9 +108,7 @@ export function SignupForm() {
           aria-invalid={email.length > 0 && !emailValid}
         />
         {email.length > 0 && !emailValid ? (
-          <p className="text-xs text-destructive">
-            {t("auth.validEmail")}
-          </p>
+          <p className="text-xs text-destructive">{t("auth.validEmail")}</p>
         ) : null}
       </div>
 
@@ -142,10 +128,14 @@ export function SignupForm() {
         />
       </div>
 
-      <div className="space-y-2">
+      <div
+        className={cn(
+          "space-y-2 rounded-r-lg border-l-2 border-primary/35 pl-3.5",
+        )}
+      >
         <Label htmlFor="signup-reason">{t("auth.yourReason")}</Label>
-        <p className="text-xs text-muted-foreground">
-          {t("auth.whatKeepsYouGoing")}
+        <p className="text-xs leading-relaxed text-muted-foreground">
+          {t("auth.reasonFieldHint")}
         </p>
         <Input
           id="signup-reason"
@@ -160,7 +150,7 @@ export function SignupForm() {
           placeholder={t("auth.motivationPlaceholder")}
           aria-invalid={motivationPhrase.length > 0 && !motivationOk}
         />
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs tabular-nums text-muted-foreground/90">
           {motivationPhrase.length}/{MOTIVATION_MAX}
         </p>
       </div>
@@ -176,11 +166,11 @@ export function SignupForm() {
         {t("auth.createAccount")}
       </Button>
 
-      <p className="text-center text-sm text-muted-foreground">
+      <p className="border-t border-white/5 pt-5 text-center text-sm text-muted-foreground">
         {t("auth.alreadyHaveAccount")}{" "}
         <Link
           href="/login"
-          className="font-medium text-primary underline-offset-4 hover:underline"
+          className="font-semibold text-primary/95 underline-offset-4 transition-colors hover:text-primary hover:underline"
         >
           {t("auth.signInLink")}
         </Link>

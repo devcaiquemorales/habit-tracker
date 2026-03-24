@@ -1,8 +1,11 @@
 import { getServerAppLocale } from "@/lib/get-server-app-locale";
-import { AuthShell, SignupForm } from "@/presentation/components/auth";
+import {
+  AuthShell,
+  UpdatePasswordForm,
+} from "@/presentation/components/auth";
 import { createTranslator, getMessages } from "@/presentation/lib/i18n/messages";
 
-export default async function SignupPage() {
+export default async function UpdatePasswordPage() {
   const locale = await getServerAppLocale();
   const t = createTranslator(getMessages(locale));
 
@@ -10,10 +13,10 @@ export default async function SignupPage() {
     <AuthShell
       brandLabel={t("auth.brandName")}
       brandTagline={t("auth.brandTagline")}
-      title={t("auth.createAccountTitle")}
-      subtitle={t("auth.createAccountSubtitle")}
+      title={t("auth.updatePasswordTitle")}
+      subtitle={t("auth.updatePasswordSubtitle")}
     >
-      <SignupForm />
+      <UpdatePasswordForm />
     </AuthShell>
   );
 }

@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { type FormEvent, useState } from "react";
 
 import { createBrowserSupabaseClient } from "@/infrastructure/supabase/client";
+import { AuthFormNotice } from "@/presentation/components/auth/auth-form-notice";
 import { Button } from "@/presentation/components/ui/button";
 import { Input } from "@/presentation/components/ui/input";
 import { Label } from "@/presentation/components/ui/label";
@@ -24,6 +25,15 @@ export function LoginForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const recoveryHint =
+    searchParams.get("error") === "recovery"
+      ? t("auth.recoveryLinkInvalid")
+      : null;
+  const resetHint =
+    searchParams.get("reset") === "success"
+      ? t("auth.resetCompleteSignIn")
+      : null;
 
   const emailValid = EMAIL_RE.test(email.trim());
   const canSubmit = emailValid && password.length >= 6 && !loading;
@@ -54,14 +64,13 @@ export function LoginForm() {
 
   return (
     <form className="flex flex-col gap-5" onSubmit={handleSubmit} noValidate>
-      {error ? (
-        <p
-          className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive"
-          role="alert"
-        >
-          {error}
-        </p>
+      {recoveryHint ? (
+        <AuthFormNotice variant="info">{recoveryHint}</AuthFormNotice>
       ) : null}
+      {resetHint ? (
+        <AuthFormNotice variant="success">{resetHint}</AuthFormNotice>
+      ) : null}
+      {error ? <AuthFormNotice variant="error">{error}</AuthFormNotice> : null}
 
       <div className="space-y-2">
         <Label htmlFor="login-email">{t("auth.email")}</Label>
@@ -79,14 +88,20 @@ export function LoginForm() {
           aria-invalid={email.length > 0 && !emailValid}
         />
         {email.length > 0 && !emailValid ? (
-          <p className="text-xs text-destructive">
-            {t("auth.validEmail")}
-          </p>
+          <p className="text-xs text-destructive">{t("auth.validEmail")}</p>
         ) : null}
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="login-password">{t("auth.password")}</Label>
+        <div className="flex items-end justify-between gap-3">
+          <Label htmlFor="login-password">{t("auth.password")}</Label>
+          <Link
+            href="/forgot-password"
+            className="shrink-0 text-xs font-medium text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
+          >
+            {t("auth.forgotPasswordLink")}
+          </Link>
+        </div>
         <Input
           id="login-password"
           name="password"
@@ -100,9 +115,7 @@ export function LoginForm() {
           aria-invalid={password.length > 0 && password.length < 6}
         />
         {password.length > 0 && password.length < 6 ? (
-          <p className="text-xs text-muted-foreground">
-            {t("auth.passwordMin")}
-          </p>
+          <p className="text-xs text-muted-foreground">{t("auth.passwordMin")}</p>
         ) : null}
       </div>
 
@@ -117,11 +130,11 @@ export function LoginForm() {
         {t("auth.signIn")}
       </Button>
 
-      <p className="text-center text-sm text-muted-foreground">
+      <p className="border-t border-white/5 pt-5 text-center text-sm text-muted-foreground">
         {t("auth.noAccount")}{" "}
         <Link
           href="/signup"
-          className="font-medium text-primary underline-offset-4 hover:underline"
+          className="font-semibold text-primary/95 underline-offset-4 transition-colors hover:text-primary hover:underline"
         >
           {t("auth.createOne")}
         </Link>

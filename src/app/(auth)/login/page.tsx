@@ -2,16 +2,8 @@ import { Suspense } from "react";
 
 import { getServerAppLocale } from "@/lib/get-server-app-locale";
 import { AuthShell, LoginForm } from "@/presentation/components/auth";
+import { AuthShellSkeleton } from "@/presentation/components/auth";
 import { createTranslator, getMessages } from "@/presentation/lib/i18n/messages";
-
-function LoginFormFallback() {
-  return (
-    <div
-      className="min-h-[280px] animate-pulse rounded-lg bg-muted/25"
-      aria-hidden
-    />
-  );
-}
 
 export default async function LoginPage() {
   const locale = await getServerAppLocale();
@@ -20,10 +12,11 @@ export default async function LoginPage() {
   return (
     <AuthShell
       brandLabel={t("auth.brandName")}
+      brandTagline={t("auth.brandTagline")}
       title={t("auth.welcomeBack")}
       subtitle={t("auth.signInSubtitle")}
     >
-      <Suspense fallback={<LoginFormFallback />}>
+      <Suspense fallback={<AuthShellSkeleton statusLabel={t("common.loading")} />}>
         <LoginForm />
       </Suspense>
     </AuthShell>

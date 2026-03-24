@@ -1,5 +1,8 @@
 import { getServerAppLocale } from "@/lib/get-server-app-locale";
-import { createTranslator, getMessages } from "@/presentation/lib/i18n/messages";
+import {
+  createTranslator,
+  getMessages,
+} from "@/presentation/lib/i18n/messages";
 
 export default async function HabitDetailLoading() {
   const locale = await getServerAppLocale();

@@ -24,11 +24,13 @@ export const enMessages = {
   },
   auth: {
     welcomeBack: "Welcome back",
-    signInSubtitle: "Sign in to continue tracking your habits.",
-    createAccountTitle: "Create your account",
+    signInSubtitle:
+      "Pick up where you left off—your habits and heatmap stay right here.",
+    createAccountTitle: "Start with intention",
     createAccountSubtitle:
-      "A few details and you're ready to build consistency.",
+      "Your name, a steady rhythm, and the reason you keep showing up.",
     brandName: "Habit Tracker",
+    brandTagline: "Consistency, quietly built",
     email: "Email",
     password: "Password",
     displayName: "Display name",
@@ -52,6 +54,28 @@ export const enMessages = {
     checkInboxSignup:
       "Check your inbox to confirm your email. After confirming, you can sign in.",
     creatingAccount: "Creating account...",
+    forgotPasswordLink: "Forgot password?",
+    forgotPasswordTitle: "Reset your password",
+    forgotPasswordSubtitle:
+      "Enter your email and we’ll send a link to choose a new password. It only takes a moment.",
+    forgotPasswordSubmit: "Send reset link",
+    forgotPasswordSending: "Sending...",
+    forgotPasswordSuccess:
+      "If an account exists for that email, you’ll receive reset instructions shortly.",
+    backToSignIn: "Back to sign in",
+    updatePasswordTitle: "Choose a new password",
+    updatePasswordSubtitle:
+      "Use a password you haven’t used here before. You’ll sign in with it from now on.",
+    newPassword: "New password",
+    confirmPassword: "Confirm password",
+    confirmPasswordMismatch: "Passwords do not match.",
+    updatePasswordSubmit: "Update password",
+    updatingPassword: "Updating...",
+    recoveryLinkInvalid:
+      "This reset link is invalid or has expired. Request a new one from the sign-in screen.",
+    resetCompleteSignIn: "Password updated. Sign in with your new password.",
+    reasonFieldHint:
+      "We use this on your home screen—one honest line beats a perfect motto.",
   },
   authErrors: {
     invalidCredentials: "Invalid email or password.",

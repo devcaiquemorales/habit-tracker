@@ -8,6 +8,7 @@ function isPublicPath(pathname: string): boolean {
   return (
     pathname.startsWith("/login") ||
     pathname.startsWith("/signup") ||
+    pathname.startsWith("/forgot-password") ||
     pathname === "/_offline" ||
     pathname.startsWith("/auth/") ||
     pathname === "/manifest.webmanifest" ||
@@ -60,7 +61,12 @@ export async function updateSession(
     return NextResponse.redirect(redirectUrl);
   }
 
-  if (user && (pathname === "/login" || pathname === "/signup")) {
+  if (
+    user &&
+    (pathname === "/login" ||
+      pathname === "/signup" ||
+      pathname.startsWith("/forgot-password"))
+  ) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/";
     redirectUrl.searchParams.delete("next");
