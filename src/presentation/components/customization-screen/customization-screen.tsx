@@ -13,7 +13,9 @@ import { SignOutForm } from "@/presentation/components/sign-out-form";
 import { Button } from "@/presentation/components/ui/button";
 import { Input } from "@/presentation/components/ui/input";
 import { Label } from "@/presentation/components/ui/label";
+import { formatActionError } from "@/presentation/lib/action-error";
 import { patchDashboardProfile } from "@/presentation/lib/dashboard-swr";
+import { useI18n } from "@/presentation/lib/i18n/i18n-provider";
 import { triggerInteractionFeedback } from "@/presentation/lib/interaction-feedback";
 import { cn } from "@/presentation/lib/utils";
 
@@ -26,6 +28,7 @@ export function CustomizationScreen({
   initialDisplayName,
   initialMotivationPhrase,
 }: CustomizationScreenProps) {
+  const { t } = useI18n();
   const [displayName, setDisplayName] = useState(initialDisplayName);
   const [motivationPhrase, setMotivationPhrase] = useState(
     initialMotivationPhrase,
@@ -56,12 +59,13 @@ export function CustomizationScreen({
       const nextMotivation = motivationPhrase
         .trim()
         .slice(0, PROFILE_MOTIVATION_PHRASE_MAX);
-      const { error } = await updateProfileCustomizationAction({
+      const result = await updateProfileCustomizationAction({
         displayName: trimmedName.slice(0, PROFILE_DISPLAY_NAME_MAX),
         motivationPhrase: nextMotivation,
       });
-      if (error) {
-        setSaveError(error);
+      const errMsg = formatActionError(result, t);
+      if (errMsg) {
+        setSaveError(errMsg);
         return;
       }
       patchDashboardProfile({
@@ -95,21 +99,18 @@ export function CustomizationScreen({
             scroll={false}
             onClick={() => triggerInteractionFeedback()}
             className="flex min-h-11 min-w-11 items-center justify-center rounded-lg text-white/75 transition-[transform,colors] duration-150 ease-out hover:text-white focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none active:scale-[0.96]"
-            aria-label="Back to home"
+            aria-label={t("settings.backHomeAria")}
           >
             <ArrowLeft className="h-5 w-5" aria-hidden />
           </Link>
           <h1 className="min-w-0 flex-1 text-lg font-semibold tracking-tight text-white">
-            Customization
+            {t("settings.title")}
           </h1>
         </div>
       </header>
 
       <div className="flex flex-1 flex-col gap-8 pt-8">
-        <p className="text-sm leading-relaxed text-white/45">
-          Update how you appear on the home screen and the line that keeps you
-          grounded.
-        </p>
+        <p className="text-sm leading-relaxed text-white/45">{t("settings.intro")}</p>
 
         <form
           onSubmit={(e) => void handleSubmit(e)}
@@ -117,7 +118,7 @@ export function CustomizationScreen({
         >
           <div className="space-y-2">
             <Label htmlFor="settings-display-name" className="text-white/70">
-              Display name
+              {t("settings.displayName")}
             </Label>
             <Input
               id="settings-display-name"
@@ -141,7 +142,7 @@ export function CustomizationScreen({
 
           <div className="space-y-2">
             <Label htmlFor="settings-motivation" className="text-white/70">
-              Your reason
+              {t("settings.yourReason")}
             </Label>
             <Input
               id="settings-motivation"
@@ -152,7 +153,7 @@ export function CustomizationScreen({
                   ev.target.value.slice(0, PROFILE_MOTIVATION_PHRASE_MAX),
                 )
               }
-              placeholder="Why these habits matter to you"
+              placeholder={t("settings.reasonPlaceholder")}
               className="min-h-11 text-base sm:min-h-10 sm:text-sm"
             />
             <p className="text-xs text-white/35">
@@ -169,17 +170,17 @@ export function CustomizationScreen({
           <Button
             type="submit"
             loading={saving}
-            loadingText="Saving..."
+            loadingText={t("settings.saving")}
             disabled={!canSave}
             className="min-h-11 w-full sm:w-auto"
           >
-            Save changes
+            {t("settings.saveChanges")}
           </Button>
         </form>
 
         <div className="mt-auto flex flex-col gap-3 border-t border-white/10 pt-8">
           <p className="text-xs font-medium tracking-wide text-white/35 uppercase">
-            Account
+            {t("settings.account")}
           </p>
           <SignOutForm />
         </div>

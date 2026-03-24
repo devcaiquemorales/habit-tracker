@@ -2,6 +2,9 @@ import { toUtcDateKey } from "@/domain/types/date-key";
 import type { CellColorClasses, HeatmapDayCell } from "@/domain/types/heatmap";
 import type { Schedule } from "@/domain/types/schedule";
 import { isDayExpected, isWeeklyTargetSchedule } from "@/domain/types/schedule";
+import type { AppLocale } from "@/lib/app-locale";
+import { formatUtcDateKeyLong } from "@/presentation/lib/i18n/format";
+import type { TranslateFn } from "@/presentation/lib/i18n/messages";
 
 import { HeatmapCell, type HeatmapCellSize } from "./heatmap-cell";
 
@@ -22,20 +25,23 @@ interface HeatmapColumnProps {
   selectedDateKey?: string | null;
   /** Month start/end tiny labels keyed by UTC `YYYY-MM-DD` */
   boundaryLabelByDateKey?: ReadonlyMap<string, string>;
+  translate: TranslateFn;
+  locale: AppLocale;
 }
 
-function getCellTooltip(
+function tooltipForStatus(
   status: "notExpected" | "expectedMissed" | "completed" | "neutralEmpty",
+  t: TranslateFn,
 ): string {
   switch (status) {
     case "completed":
-      return "Completed";
+      return t("heatmap.completed");
     case "expectedMissed":
-      return "Missed (expected)";
+      return t("heatmap.missedExpected");
     case "neutralEmpty":
-      return "Not logged";
+      return t("heatmap.notLogged");
     case "notExpected":
-      return "Not scheduled";
+      return t("heatmap.notScheduled");
     default:
       return "";
   }
@@ -53,6 +59,8 @@ export function HeatmapColumn({
   onDateSelect,
   selectedDateKey,
   boundaryLabelByDateKey = EMPTY_BOUNDARY_LABELS,
+  translate,
+  locale,
 }: HeatmapColumnProps) {
   const tt = today.getTime();
   const weekly = isWeeklyTargetSchedule(schedule);
@@ -73,16 +81,16 @@ export function HeatmapColumn({
         }
 
         const dateKey = toUtcDateKey(cell.date);
-        const t = cell.date.getTime();
+        const cellTimeMs = cell.date.getTime();
         const monthBoundaryLabel = boundaryLabelByDateKey.get(dateKey);
 
-        if (t > tt) {
+        if (cellTimeMs > tt) {
           return (
             <HeatmapCell
               key={dayIndex}
               status="notExpected"
               cellColors={cellColors}
-              tooltip="Future"
+              tooltip={translate("heatmap.future")}
               size={cellSize}
               isToday={false}
               monthBoundaryLabel={monthBoundaryLabel}
@@ -106,7 +114,9 @@ export function HeatmapColumn({
               }
             : undefined;
         const isStripSelected = selectedDateKey === dateKey;
-        const selectDayLabel = `Select day ${dateKey}`;
+        const selectDayLabel = translate("heatmap.selectDayAria", {
+          date: formatUtcDateKeyLong(dateKey, locale),
+        });
 
         /** Logs-only schedules: cell color follows habit_logs, not fixed weekdays. */
         const logDrivenHeatmap = weekly || schedule.type === "flexible";
@@ -118,7 +128,11 @@ export function HeatmapColumn({
               key={dayIndex}
               status={status}
               cellColors={cellColors}
-              tooltip={status === "completed" ? "Completed" : "Not logged"}
+              tooltip={
+                status === "completed"
+                  ? translate("heatmap.completed")
+                  : translate("heatmap.notLogged")
+              }
               size={cellSize}
               isToday={dateKey === todayHighlightKey}
               isStripSelected={isStripSelected}
@@ -147,7 +161,7 @@ export function HeatmapColumn({
             key={dayIndex}
             status={status}
             cellColors={cellColors}
-            tooltip={getCellTooltip(status)}
+            tooltip={tooltipForStatus(status, translate)}
             size={cellSize}
             isToday={dateKey === todayHighlightKey}
             isStripSelected={isStripSelected}

@@ -4,6 +4,8 @@ import type {
   HeatmapDayCell,
   HeatmapMonthData,
 } from "@/domain/types/heatmap";
+import type { AppLocale } from "@/lib/app-locale";
+import { formatHeatmapMonthLabel } from "@/presentation/lib/i18n/format";
 
 function utcMidnight(year: number, month: number, day: number): Date {
   return new Date(Date.UTC(year, month, day));
@@ -29,29 +31,14 @@ function pad2(n: number): string {
   return n < 10 ? `0${n}` : String(n);
 }
 
-const EN_MONTH_SHORT = [
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dec",
-] as const;
-
 function formatMonthLabel(
   year: number,
   month: number,
   prevYear: number | undefined,
+  locale: AppLocale,
 ): { label: string; prevYearForNext: number } {
-  const short = EN_MONTH_SHORT[month];
-  const label =
-    prevYear !== undefined && year !== prevYear ? `${short} ${year}` : short;
+  const includeYear = prevYear !== undefined && year !== prevYear;
+  const label = formatHeatmapMonthLabel(year, month, locale, includeYear);
   return { label, prevYearForNext: year };
 }
 
@@ -98,6 +85,7 @@ function buildWeekGridForUtcMonth(
 export function buildHeatmapDataFromCompletedKeys(
   completedKeys: ReadonlySet<string>,
   now: Date = new Date(),
+  locale: AppLocale = "en",
 ): HeatmapData {
   const today = utcMidnight(
     now.getUTCFullYear(),
@@ -119,7 +107,7 @@ export function buildHeatmapDataFromCompletedKeys(
   for (let i = 0; i < 12; i += 1) {
     const y = cursor.getUTCFullYear();
     const m = cursor.getUTCMonth();
-    const { label, prevYearForNext } = formatMonthLabel(y, m, prevYear);
+    const { label, prevYearForNext } = formatMonthLabel(y, m, prevYear, locale);
     prevYear = prevYearForNext;
 
     months.push({

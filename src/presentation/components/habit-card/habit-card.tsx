@@ -9,10 +9,11 @@ import type { ColorVariant } from "@/domain/types/habit";
 import { getStreakLevel } from "@/domain/types/habit";
 import type { HeatmapData } from "@/domain/types/heatmap";
 import type { Schedule } from "@/domain/types/schedule";
-import { formatScheduleLabel } from "@/domain/types/schedule";
 import { HabitHeatmap } from "@/presentation/components/habit-heatmap";
 import { COLOR_VARIANTS } from "@/presentation/components/habit-heatmap/color-variants";
 import { useHorizontalPanNavigationSuppression } from "@/presentation/hooks/use-horizontal-pan-navigation-suppression";
+import { formatScheduleLabel } from "@/presentation/lib/i18n/format-schedule";
+import { useI18n } from "@/presentation/lib/i18n/i18n-provider";
 import { triggerInteractionFeedback } from "@/presentation/lib/interaction-feedback";
 import { cn } from "@/presentation/lib/utils";
 
@@ -35,6 +36,7 @@ export function HabitCard({
   colorVariant = "green",
   data,
 }: HabitCardProps) {
+  const { t, locale } = useI18n();
   const router = useRouter();
   const beginRouteTransitionFeedback = useRouteTransitionFeedback();
   const { panPointerProps, shouldSuppressNavigation } =
@@ -98,13 +100,13 @@ export function HabitCard({
           streakClass={streakClass}
         />
         <p className="text-xs text-white/30">
-          Schedule: {formatScheduleLabel(schedule)}
+          {t("common.schedulePrefix")} {formatScheduleLabel(schedule, locale)}
         </p>
       </Link>
       <div
         role="link"
         tabIndex={0}
-        aria-label={`Open ${name}`}
+        aria-label={t("habitCard.openHabit", { name })}
         className="cursor-pointer touch-manipulation rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         onClick={onHeatmapRegionClick}
         onKeyDown={onHeatmapRegionKeyDown}

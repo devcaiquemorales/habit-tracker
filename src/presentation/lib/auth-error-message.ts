@@ -1,14 +1,19 @@
-/** Map common Supabase Auth errors to short, readable English copy. */
-export function formatAuthErrorMessage(raw: string): string {
+import type { TranslateFn } from "@/presentation/lib/i18n/messages";
+
+/** Map common Supabase Auth errors to localized copy. */
+export function formatAuthErrorMessage(
+  raw: string,
+  t: TranslateFn,
+): string {
   const m = raw.toLowerCase();
   if (m.includes("invalid login credentials")) {
-    return "Invalid email or password.";
+    return t("authErrors.invalidCredentials");
   }
   if (m.includes("email not confirmed")) {
-    return "Please confirm your email before signing in.";
+    return t("authErrors.emailNotConfirmed");
   }
   if (m.includes("user already registered")) {
-    return "An account with this email already exists. Try signing in.";
+    return t("authErrors.userAlreadyRegistered");
   }
   if (m.includes("password")) {
     return raw;

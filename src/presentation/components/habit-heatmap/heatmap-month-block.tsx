@@ -3,7 +3,9 @@ import type {
   HeatmapMonthData,
 } from "@/domain/types/heatmap";
 import type { Schedule } from "@/domain/types/schedule";
+import type { AppLocale } from "@/lib/app-locale";
 import { buildMonthBoundaryLabelByDateKey } from "@/presentation/lib/heatmap-month-boundaries";
+import type { TranslateFn } from "@/presentation/lib/i18n/messages";
 
 import type { HeatmapCellSize } from "./heatmap-cell";
 import { HeatmapColumn } from "./heatmap-column";
@@ -20,6 +22,8 @@ interface HeatmapMonthBlockProps {
   removalOverrides?: Set<string>;
   onDateSelect?: (dateKey: string) => void;
   selectedDateKey?: string | null;
+  translate: TranslateFn;
+  locale: AppLocale;
 }
 
 export function HeatmapMonthBlock({
@@ -34,6 +38,8 @@ export function HeatmapMonthBlock({
   removalOverrides,
   onDateSelect,
   selectedDateKey,
+  translate,
+  locale,
 }: HeatmapMonthBlockProps) {
   const boundaryLabelByDateKey = buildMonthBoundaryLabelByDateKey(month);
 
@@ -59,6 +65,8 @@ export function HeatmapMonthBlock({
             onDateSelect={onDateSelect}
             selectedDateKey={selectedDateKey}
             boundaryLabelByDateKey={boundaryLabelByDateKey}
+            translate={translate}
+            locale={locale}
           />
         ))}
       </div>

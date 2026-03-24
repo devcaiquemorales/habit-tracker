@@ -13,6 +13,8 @@ import {
   AlertDialogTitle,
 } from "@/presentation/components/ui/alert-dialog";
 import { Button } from "@/presentation/components/ui/button";
+import { formatActionError } from "@/presentation/lib/action-error";
+import { useI18n } from "@/presentation/lib/i18n/i18n-provider";
 
 type HabitDeleteConfirmDialogProps = {
   open: boolean;
@@ -29,6 +31,7 @@ export function HabitDeleteConfirmDialog({
   habitName,
   onDeleted,
 }: HabitDeleteConfirmDialogProps) {
+  const { t } = useI18n();
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -40,7 +43,8 @@ export function HabitDeleteConfirmDialog({
     setError(null);
     setDeleting(true);
     try {
-      const { error: msg } = await deleteHabitAction(habitId);
+      const result = await deleteHabitAction(habitId);
+      const msg = formatActionError(result, t);
       if (msg) {
         setError(msg);
         return;
@@ -56,11 +60,11 @@ export function HabitDeleteConfirmDialog({
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent className="max-w-[min(100%-2rem,22rem)]">
         <AlertDialogHeader>
-          <AlertDialogTitle>Delete habit?</AlertDialogTitle>
+          <AlertDialogTitle>{t("deleteHabit.title")}</AlertDialogTitle>
           <AlertDialogDescription>
-            This will permanently remove{" "}
-            <span className="font-medium text-foreground">{habitName}</span> and
-            its activity history.
+            {t("deleteHabit.descriptionBefore")}{" "}
+            <span className="font-medium text-foreground">{habitName}</span>{" "}
+            {t("deleteHabit.descriptionAfter")}
           </AlertDialogDescription>
         </AlertDialogHeader>
         {error ? (
@@ -76,7 +80,7 @@ export function HabitDeleteConfirmDialog({
               className="min-h-11 w-full sm:w-auto"
               disabled={deleting}
             >
-              Cancel
+              {t("deleteHabit.cancel")}
             </Button>
           </AlertDialogCancel>
           <Button
@@ -84,10 +88,10 @@ export function HabitDeleteConfirmDialog({
             variant="destructive"
             className="min-h-11 w-full sm:w-auto"
             loading={deleting}
-            loadingText="Deleting..."
+            loadingText={t("common.deleting")}
             onClick={() => void handleConfirm()}
           >
-            Delete habit
+            {t("deleteHabit.confirm")}
           </Button>
         </AlertDialogFooter>
       </AlertDialogContent>

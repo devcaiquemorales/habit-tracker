@@ -3,6 +3,7 @@
 import { Plus } from "lucide-react";
 import * as React from "react";
 
+import { useI18n } from "@/presentation/lib/i18n/i18n-provider";
 import { triggerInteractionFeedback } from "@/presentation/lib/interaction-feedback";
 import { cn } from "@/presentation/lib/utils";
 
@@ -10,6 +11,8 @@ export const AddHabitFAB = React.forwardRef<
   HTMLButtonElement,
   React.ComponentPropsWithoutRef<"button">
 >(function AddHabitFAB({ className, onClick, ...props }, ref) {
+  const { t } = useI18n();
+  const label = t("addHabitFab.aria");
   return (
     <button
       ref={ref}
@@ -22,8 +25,8 @@ export const AddHabitFAB = React.forwardRef<
         "md:right-[calc(2rem+env(safe-area-inset-right,0px))] md:bottom-[calc(2rem+env(safe-area-inset-bottom,0px))] md:h-14 md:w-14",
         className,
       )}
-      aria-label="Add habit"
-      title="Add habit"
+      aria-label={label}
+      title={label}
       {...props}
       onClick={(e) => {
         triggerInteractionFeedback();

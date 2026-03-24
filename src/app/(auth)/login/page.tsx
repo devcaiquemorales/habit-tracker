@@ -1,6 +1,8 @@
 import { Suspense } from "react";
 
+import { getServerAppLocale } from "@/lib/get-server-app-locale";
 import { AuthShell, LoginForm } from "@/presentation/components/auth";
+import { createTranslator, getMessages } from "@/presentation/lib/i18n/messages";
 
 function LoginFormFallback() {
   return (
@@ -11,11 +13,15 @@ function LoginFormFallback() {
   );
 }
 
-export default function LoginPage() {
+export default async function LoginPage() {
+  const locale = await getServerAppLocale();
+  const t = createTranslator(getMessages(locale));
+
   return (
     <AuthShell
-      title="Welcome back"
-      subtitle="Sign in to continue tracking your habits."
+      brandLabel={t("auth.brandName")}
+      title={t("auth.welcomeBack")}
+      subtitle={t("auth.signInSubtitle")}
     >
       <Suspense fallback={<LoginFormFallback />}>
         <LoginForm />

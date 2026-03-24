@@ -3,6 +3,7 @@ import Link from "next/link";
 import { cn } from "@/presentation/lib/utils";
 
 interface AuthShellProps {
+  brandLabel: string;
   title: string;
   subtitle: string;
   children: React.ReactNode;
@@ -11,6 +12,7 @@ interface AuthShellProps {
 }
 
 export function AuthShell({
+  brandLabel,
   title,
   subtitle,
   children,
@@ -32,7 +34,7 @@ export function AuthShell({
             href="/login"
             className="text-lg font-semibold tracking-tight text-foreground"
           >
-            Habit Tracker
+            {brandLabel}
           </Link>
         </header>
 

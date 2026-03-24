@@ -1,14 +1,15 @@
 "use client";
 
 import type { ColorVariant } from "@/presentation/components/habit-heatmap/color-variants";
+import { useI18n } from "@/presentation/lib/i18n/i18n-provider";
 import { triggerInteractionFeedback } from "@/presentation/lib/interaction-feedback";
 import { cn } from "@/presentation/lib/utils";
 
-const OPTIONS: { id: ColorVariant; swatch: string; label: string }[] = [
-  { id: "green", swatch: "bg-emerald-500", label: "Green" },
-  { id: "blue", swatch: "bg-blue-500", label: "Blue" },
-  { id: "amber", swatch: "bg-amber-500", label: "Amber" },
-  { id: "purple", swatch: "bg-purple-500", label: "Purple" },
+const OPTIONS: { id: ColorVariant; swatch: string; labelKey: string }[] = [
+  { id: "green", swatch: "bg-emerald-500", labelKey: "colors.green" },
+  { id: "blue", swatch: "bg-blue-500", labelKey: "colors.blue" },
+  { id: "amber", swatch: "bg-amber-500", labelKey: "colors.amber" },
+  { id: "purple", swatch: "bg-purple-500", labelKey: "colors.purple" },
 ];
 
 interface ColorSelectorProps {
@@ -17,21 +18,23 @@ interface ColorSelectorProps {
 }
 
 export function ColorSelector({ value, onChange }: ColorSelectorProps) {
+  const { t } = useI18n();
   return (
     <div
       className="flex flex-wrap gap-3"
       role="radiogroup"
-      aria-label="Habit color"
+      aria-label={t("colors.habitColorAria")}
     >
       {OPTIONS.map((opt) => {
         const selected = value === opt.id;
+        const label = t(opt.labelKey);
         return (
           <button
             key={opt.id}
             type="button"
             role="radio"
             aria-checked={selected}
-            aria-label={opt.label}
+            aria-label={label}
             onClick={() => {
               triggerInteractionFeedback();
               onChange(opt.id);

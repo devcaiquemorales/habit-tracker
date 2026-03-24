@@ -14,6 +14,7 @@ import {
 } from "@/presentation/components/ui/dialog";
 import { Input } from "@/presentation/components/ui/input";
 import { Label } from "@/presentation/components/ui/label";
+import { useI18n } from "@/presentation/lib/i18n/i18n-provider";
 import { triggerInteractionFeedback } from "@/presentation/lib/interaction-feedback";
 
 export interface EditMotivationDialogProps {
@@ -40,6 +41,7 @@ function EditMotivationDialogFields({
   onSave,
   onRequestClose,
 }: EditMotivationDialogFieldsProps) {
+  const { t } = useI18n();
   const [draft, setDraft] = useState(initialDraft);
   const [remoteError, setRemoteError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -57,7 +59,7 @@ function EditMotivationDialogFields({
       onRequestClose();
     } catch (err) {
       setRemoteError(
-        err instanceof Error ? err.message : "Something went wrong. Try again.",
+        err instanceof Error ? err.message : t("editMotivation.genericError"),
       );
     } finally {
       setSaving(false);
@@ -68,10 +70,10 @@ function EditMotivationDialogFields({
     <>
       <DialogHeader className="space-y-1 border-b border-border/40 px-5 py-4 sm:px-6">
         <DialogTitle className="text-lg font-semibold tracking-tight">
-          Your reason
+          {t("editMotivation.title")}
         </DialogTitle>
         <DialogDescription className="text-sm text-muted-foreground">
-          Keep your motivation close
+          {t("editMotivation.description")}
         </DialogDescription>
       </DialogHeader>
 
@@ -85,7 +87,7 @@ function EditMotivationDialogFields({
           </p>
         ) : null}
         <Label htmlFor="motivation-phrase" className="text-muted-foreground">
-          What keeps you going?
+          {t("editMotivation.label")}
         </Label>
         <Input
           id="motivation-phrase"
@@ -94,7 +96,7 @@ function EditMotivationDialogFields({
             setDraft(e.target.value.slice(0, PROFILE_MOTIVATION_PHRASE_MAX))
           }
           disabled={saving}
-          placeholder="For my future"
+          placeholder={t("editMotivation.placeholder")}
           maxLength={PROFILE_MOTIVATION_PHRASE_MAX}
           autoComplete="off"
           className="min-h-11 text-base sm:min-h-10 sm:text-sm"
@@ -119,18 +121,18 @@ function EditMotivationDialogFields({
             className="min-h-11 w-full sm:min-h-9 sm:w-auto"
             onClick={() => triggerInteractionFeedback({ haptic: false })}
           >
-            Cancel
+            {t("common.cancel")}
           </Button>
         </DialogClose>
         <Button
           type="button"
           loading={saving}
-          loadingText="Saving..."
+          loadingText={t("common.saving")}
           disabled={!canSave}
-          className="min-h-11 w-full min-w-[7.5rem] sm:min-h-9 sm:w-auto"
+          className="min-h-11 w-full min-w-30 sm:min-h-9 sm:w-auto"
           onClick={() => void handleSave()}
         >
-          Save
+          {t("editMotivation.save")}
         </Button>
       </div>
     </>

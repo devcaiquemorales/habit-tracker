@@ -14,6 +14,7 @@ import {
   patchDashboardHabit,
   removeHabitFromDashboard,
 } from "@/presentation/lib/dashboard-swr";
+import { useI18n } from "@/presentation/lib/i18n/i18n-provider";
 import { triggerInteractionFeedback } from "@/presentation/lib/interaction-feedback";
 
 import { HabitDetailHeader } from "./habit-detail-header";
@@ -40,6 +41,7 @@ export function HabitDetailScreen({
   habit: initialHabit,
   heatmapData,
 }: HabitDetailScreenProps) {
+  const { t } = useI18n();
   const router = useRouter();
   const [editOpen, setEditOpen] = useState(false);
   const [editFormResetKey, setEditFormResetKey] = useState(0);
@@ -140,7 +142,7 @@ export function HabitDetailScreen({
                 setDeleteOpen(true);
               }}
             >
-              Delete habit
+              {t("habitDetail.deleteHabit")}
             </Button>
           </div>
         </div>

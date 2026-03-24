@@ -9,12 +9,14 @@ import { Button } from "@/presentation/components/ui/button";
 import { Input } from "@/presentation/components/ui/input";
 import { Label } from "@/presentation/components/ui/label";
 import { formatAuthErrorMessage } from "@/presentation/lib/auth-error-message";
+import { useI18n } from "@/presentation/lib/i18n/i18n-provider";
 import { triggerInteractionFeedback } from "@/presentation/lib/interaction-feedback";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MOTIVATION_MAX = 120;
 
 export function SignupForm() {
+  const { t } = useI18n();
   const router = useRouter();
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
@@ -55,7 +57,7 @@ export function SignupForm() {
     setLoading(false);
 
     if (signUpError) {
-      setError(formatAuthErrorMessage(signUpError.message));
+      setError(formatAuthErrorMessage(signUpError.message, t));
       return;
     }
 
@@ -65,9 +67,7 @@ export function SignupForm() {
       return;
     }
 
-    setInfo(
-      "Check your inbox to confirm your email. After confirming, you can sign in.",
-    );
+    setInfo(t("auth.checkInboxSignup"));
   }
 
   return (
@@ -90,7 +90,7 @@ export function SignupForm() {
       ) : null}
 
       <div className="space-y-2">
-        <Label htmlFor="signup-name">Display name</Label>
+        <Label htmlFor="signup-name">{t("auth.displayName")}</Label>
         <Input
           id="signup-name"
           name="displayName"
@@ -99,13 +99,13 @@ export function SignupForm() {
           onChange={(ev) => setDisplayName(ev.target.value)}
           disabled={loading}
           className="min-h-11 text-base sm:min-h-10 sm:text-sm"
-          placeholder="How we greet you"
+          placeholder={t("auth.displayNamePlaceholder")}
           aria-invalid={displayName.length > 0 && !nameOk}
         />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="signup-email">Email</Label>
+        <Label htmlFor="signup-email">{t("auth.email")}</Label>
         <Input
           id="signup-email"
           name="email"
@@ -116,18 +116,18 @@ export function SignupForm() {
           onChange={(ev) => setEmail(ev.target.value)}
           disabled={loading}
           className="min-h-11 text-base sm:min-h-10 sm:text-sm"
-          placeholder="you@example.com"
+          placeholder={t("auth.emailPlaceholder")}
           aria-invalid={email.length > 0 && !emailValid}
         />
         {email.length > 0 && !emailValid ? (
           <p className="text-xs text-destructive">
-            Enter a valid email address.
+            {t("auth.validEmail")}
           </p>
         ) : null}
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="signup-password">Password</Label>
+        <Label htmlFor="signup-password">{t("auth.password")}</Label>
         <Input
           id="signup-password"
           name="password"
@@ -137,14 +137,16 @@ export function SignupForm() {
           onChange={(ev) => setPassword(ev.target.value)}
           disabled={loading}
           className="min-h-11 text-base sm:min-h-10 sm:text-sm"
-          placeholder="At least 6 characters"
+          placeholder={t("auth.passwordMinPlaceholder")}
           aria-invalid={password.length > 0 && !passwordOk}
         />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="signup-reason">Your reason</Label>
-        <p className="text-xs text-muted-foreground">What keeps you going?</p>
+        <Label htmlFor="signup-reason">{t("auth.yourReason")}</Label>
+        <p className="text-xs text-muted-foreground">
+          {t("auth.whatKeepsYouGoing")}
+        </p>
         <Input
           id="signup-reason"
           name="motivationPhrase"
@@ -155,7 +157,7 @@ export function SignupForm() {
           }
           disabled={loading}
           className="min-h-11 text-base sm:min-h-10 sm:text-sm"
-          placeholder="For my future"
+          placeholder={t("auth.motivationPlaceholder")}
           aria-invalid={motivationPhrase.length > 0 && !motivationOk}
         />
         <p className="text-xs text-muted-foreground">
@@ -168,19 +170,19 @@ export function SignupForm() {
         size="lg"
         className="min-h-11 w-full min-w-0"
         loading={loading}
-        loadingText="Creating account..."
+        loadingText={t("auth.creatingAccount")}
         disabled={!canSubmit}
       >
-        Create account
+        {t("auth.createAccount")}
       </Button>
 
       <p className="text-center text-sm text-muted-foreground">
-        Already have an account?{" "}
+        {t("auth.alreadyHaveAccount")}{" "}
         <Link
           href="/login"
           className="font-medium text-primary underline-offset-4 hover:underline"
         >
-          Sign in
+          {t("auth.signInLink")}
         </Link>
       </p>
     </form>

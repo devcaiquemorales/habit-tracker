@@ -8,26 +8,29 @@ import {
 } from "@/domain/constants/profile-limits";
 import { updateProfileCustomizationForUser } from "@/infrastructure/repositories";
 import { createServerSupabaseClient } from "@/infrastructure/supabase/server";
+import type { LocalizedActionResult } from "@/presentation/lib/action-error";
 
 export async function updateProfileCustomizationAction(input: {
   displayName: string;
   motivationPhrase: string;
-}): Promise<{ error: string | null }> {
+}): Promise<LocalizedActionResult> {
   const displayName = input.displayName.trim();
   const motivationPhrase = input.motivationPhrase
     .trim()
     .slice(0, PROFILE_MOTIVATION_PHRASE_MAX);
 
   if (!displayName) {
-    return { error: "Please enter a display name." };
+    return { error: null, errorKey: "errors.enterDisplayName" };
   }
   if (displayName.length > PROFILE_DISPLAY_NAME_MAX) {
     return {
-      error: `Display name must be at most ${PROFILE_DISPLAY_NAME_MAX} characters.`,
+      error: null,
+      errorKey: "errors.displayNameMax",
+      errorParams: { max: PROFILE_DISPLAY_NAME_MAX },
     };
   }
   if (!motivationPhrase) {
-    return { error: "Please enter your reason." };
+    return { error: null, errorKey: "errors.enterReason" };
   }
 
   const supabase = await createServerSupabaseClient();
@@ -35,7 +38,7 @@ export async function updateProfileCustomizationAction(input: {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) {
-    return { error: "You are not signed in." };
+    return { error: null, errorKey: "errors.notSignedIn" };
   }
 
   try {
@@ -48,17 +51,18 @@ export async function updateProfileCustomizationAction(input: {
     return { error: null };
   } catch (e) {
     return {
-      error: e instanceof Error ? e.message : "Could not save your profile.",
+      error: e instanceof Error ? e.message : "",
+      errorKey: "errors.saveProfileFailed",
     };
   }
 }
 
 export async function updateMotivationPhraseAction(
   phrase: string,
-): Promise<{ error: string | null }> {
+): Promise<LocalizedActionResult> {
   const trimmed = phrase.trim().slice(0, PROFILE_MOTIVATION_PHRASE_MAX);
   if (!trimmed) {
-    return { error: "Please enter your reason." };
+    return { error: null, errorKey: "errors.enterReason" };
   }
 
   const supabase = await createServerSupabaseClient();
@@ -66,7 +70,7 @@ export async function updateMotivationPhraseAction(
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) {
-    return { error: "You are not signed in." };
+    return { error: null, errorKey: "errors.notSignedIn" };
   }
 
   const { error } = await supabase

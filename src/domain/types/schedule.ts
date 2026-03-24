@@ -14,8 +14,6 @@ export type Schedule =
   | { type: "flexible" }
   | { type: "weeklyTarget"; timesPerWeek: number };
 
-const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-
 export function isWeeklyTargetSchedule(
   schedule: Schedule,
 ): schedule is Extract<Schedule, { type: "weeklyTarget" }> {
@@ -63,25 +61,3 @@ export function isPastDayLoggable(
   return isDayExpected(schedule, date);
 }
 
-export function formatScheduleLabel(schedule: Schedule): string {
-  switch (schedule.type) {
-    case "daily":
-      return "Every day";
-    case "specificDays":
-      if (schedule.days.length === 0) return "—";
-      return schedule.days
-        .slice()
-        .sort((a, b) => a - b)
-        .map((d) => DAY_NAMES[d])
-        .join(", ");
-    case "everyOtherDay":
-      return "Every other day";
-    case "flexible":
-      return "Flexible";
-    case "weeklyTarget": {
-      const n = schedule.timesPerWeek;
-      const unit = n === 1 ? "time" : "times";
-      return `${n} ${unit} per week`;
-    }
-  }
-}

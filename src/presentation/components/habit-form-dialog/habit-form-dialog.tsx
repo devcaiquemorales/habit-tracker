@@ -21,10 +21,13 @@ import {
 } from "@/presentation/components/ui/dialog";
 import { Input } from "@/presentation/components/ui/input";
 import { Label } from "@/presentation/components/ui/label";
+import type { LocalizedActionResult } from "@/presentation/lib/action-error";
+import { formatActionError } from "@/presentation/lib/action-error";
 import {
   buildScheduleFromForm,
   scheduleToFormValue,
 } from "@/presentation/lib/habit-schedule-form";
+import { useI18n } from "@/presentation/lib/i18n/i18n-provider";
 import { triggerInteractionFeedback } from "@/presentation/lib/interaction-feedback";
 import { cn } from "@/presentation/lib/utils";
 
@@ -84,10 +87,10 @@ export interface HabitFormDialogProps {
     colorVariant: ColorVariant;
     schedule: Schedule;
   };
-  /** Persist habit; return `{ error: null }` on success or an error message. */
+  /** Persist habit; return `{ error: null }` on success or a localized error. */
   onSave?: (
     payload: HabitFormPayload,
-  ) => Promise<{ error: string | null }> | { error: string | null };
+  ) => Promise<LocalizedActionResult> | LocalizedActionResult;
 }
 
 interface HabitFormDialogFieldsProps {
@@ -103,6 +106,7 @@ function HabitFormDialogFields({
   onSave,
   onRequestClose,
 }: HabitFormDialogFieldsProps) {
+  const { t } = useI18n();
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [name, setName] = useState(() =>
@@ -130,8 +134,9 @@ function HabitFormDialogFields({
       setSaveError(null);
       try {
         const result = await Promise.resolve(onSave(payload));
-        if (result.error) {
-          setSaveError(result.error);
+        const errMsg = formatActionError(result, t);
+        if (errMsg) {
+          setSaveError(errMsg);
           return;
         }
       } finally {
@@ -144,11 +149,12 @@ function HabitFormDialogFields({
 
   const submitEnabled = canSubmit(name, schedule) && !saving;
 
-  const title = mode === "create" ? "New habit" : "Edit habit";
+  const title =
+    mode === "create" ? t("habitForm.newHabit") : t("habitForm.editHabit");
   const description =
     mode === "create"
-      ? "Start building consistency"
-      : "Update name, color, and schedule";
+      ? t("habitForm.newHabitDesc")
+      : t("habitForm.editHabitDesc");
 
   return (
     <form
@@ -166,11 +172,11 @@ function HabitFormDialogFields({
 
       <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-5 pb-6 sm:px-6">
         <div className="space-y-2">
-          <Label htmlFor="habit-name">Name</Label>
+          <Label htmlFor="habit-name">{t("habitForm.name")}</Label>
           <Input
             id="habit-name"
             name="name"
-            placeholder="e.g. Gym, Study, Cardio"
+            placeholder={t("habitForm.namePlaceholder")}
             value={name}
             onChange={(e) => setName(e.target.value)}
             autoComplete="off"
@@ -180,12 +186,14 @@ function HabitFormDialogFields({
         </div>
 
         <div className="space-y-3">
-          <Label className="text-muted-foreground">Color</Label>
+          <Label className="text-muted-foreground">{t("habitForm.color")}</Label>
           <ColorSelector value={color} onChange={setColor} />
         </div>
 
         <div className="space-y-3">
-          <Label className="text-muted-foreground">Schedule</Label>
+          <Label className="text-muted-foreground">
+            {t("habitForm.schedule")}
+          </Label>
           <ScheduleSelector value={schedule} onChange={setSchedule} />
         </div>
 
@@ -214,17 +222,21 @@ function HabitFormDialogFields({
             className="min-h-11 w-full transition-transform duration-150 ease-out active:scale-[0.98] sm:min-h-9 sm:w-auto"
             onClick={() => triggerInteractionFeedback({ haptic: false })}
           >
-            Cancel
+            {t("common.cancel")}
           </Button>
         </DialogClose>
         <Button
           type="submit"
           loading={saving}
-          loadingText={mode === "create" ? "Creating..." : "Saving..."}
+          loadingText={
+            mode === "create" ? t("common.creating") : t("common.saving")
+          }
           disabled={!submitEnabled}
-          className="min-h-11 w-full min-w-[10.5rem] transition-transform duration-150 ease-out enabled:active:scale-[0.98] sm:min-h-9 sm:w-auto"
+          className="min-h-11 w-full min-w-42 transition-transform duration-150 ease-out enabled:active:scale-[0.98] sm:min-h-9 sm:w-auto"
         >
-          {mode === "create" ? "Create habit" : "Save changes"}
+          {mode === "create"
+            ? t("habitForm.createHabit")
+            : t("habitForm.saveChanges")}
         </Button>
       </div>
     </form>

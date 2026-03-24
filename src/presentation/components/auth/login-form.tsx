@@ -9,11 +9,13 @@ import { Button } from "@/presentation/components/ui/button";
 import { Input } from "@/presentation/components/ui/input";
 import { Label } from "@/presentation/components/ui/label";
 import { formatAuthErrorMessage } from "@/presentation/lib/auth-error-message";
+import { useI18n } from "@/presentation/lib/i18n/i18n-provider";
 import { triggerInteractionFeedback } from "@/presentation/lib/interaction-feedback";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function LoginForm() {
+  const { t } = useI18n();
   const router = useRouter();
   const searchParams = useSearchParams();
   const nextPath = searchParams.get("next") || "/";
@@ -42,7 +44,7 @@ export function LoginForm() {
     setLoading(false);
 
     if (authError) {
-      setError(formatAuthErrorMessage(authError.message));
+      setError(formatAuthErrorMessage(authError.message, t));
       return;
     }
 
@@ -62,7 +64,7 @@ export function LoginForm() {
       ) : null}
 
       <div className="space-y-2">
-        <Label htmlFor="login-email">Email</Label>
+        <Label htmlFor="login-email">{t("auth.email")}</Label>
         <Input
           id="login-email"
           name="email"
@@ -73,18 +75,18 @@ export function LoginForm() {
           onChange={(ev) => setEmail(ev.target.value)}
           disabled={loading}
           className="min-h-11 text-base sm:min-h-10 sm:text-sm"
-          placeholder="you@example.com"
+          placeholder={t("auth.emailPlaceholder")}
           aria-invalid={email.length > 0 && !emailValid}
         />
         {email.length > 0 && !emailValid ? (
           <p className="text-xs text-destructive">
-            Enter a valid email address.
+            {t("auth.validEmail")}
           </p>
         ) : null}
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="login-password">Password</Label>
+        <Label htmlFor="login-password">{t("auth.password")}</Label>
         <Input
           id="login-password"
           name="password"
@@ -94,12 +96,12 @@ export function LoginForm() {
           onChange={(ev) => setPassword(ev.target.value)}
           disabled={loading}
           className="min-h-11 text-base sm:min-h-10 sm:text-sm"
-          placeholder="••••••••"
+          placeholder={t("auth.passwordPlaceholder")}
           aria-invalid={password.length > 0 && password.length < 6}
         />
         {password.length > 0 && password.length < 6 ? (
           <p className="text-xs text-muted-foreground">
-            At least 6 characters.
+            {t("auth.passwordMin")}
           </p>
         ) : null}
       </div>
@@ -109,19 +111,19 @@ export function LoginForm() {
         size="lg"
         className="min-h-11 w-full min-w-0"
         loading={loading}
-        loadingText="Signing in..."
+        loadingText={t("common.signingIn")}
         disabled={!canSubmit}
       >
-        Sign in
+        {t("auth.signIn")}
       </Button>
 
       <p className="text-center text-sm text-muted-foreground">
-        No account?{" "}
+        {t("auth.noAccount")}{" "}
         <Link
           href="/signup"
           className="font-medium text-primary underline-offset-4 hover:underline"
         >
-          Create one
+          {t("auth.createOne")}
         </Link>
       </p>
     </form>

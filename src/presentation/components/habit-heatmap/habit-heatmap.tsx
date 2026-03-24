@@ -5,6 +5,7 @@ import type { CellColorClasses } from "@/domain/types/heatmap";
 import type { HeatmapData } from "@/domain/types/heatmap";
 import type { Schedule } from "@/domain/types/schedule";
 import { useScrollToFarRight } from "@/presentation/hooks/use-scroll-to-far-right";
+import { useI18n } from "@/presentation/lib/i18n/i18n-provider";
 
 import { COLOR_VARIANTS, type ColorVariant } from "./color-variants";
 import { HeatmapMonthBlock } from "./heatmap-month-block";
@@ -30,6 +31,7 @@ export function HabitHeatmap({
   onDateSelect,
   selectedDateKey,
 }: HabitHeatmapProps) {
+  const { t, locale } = useI18n();
   const scrollRef = useScrollToFarRight<HTMLDivElement>();
 
   const cellSize =
@@ -79,6 +81,8 @@ export function HabitHeatmap({
             removalOverrides={removalOverrides}
             onDateSelect={onDateSelect}
             selectedDateKey={selectedDateKey}
+            translate={t}
+            locale={locale}
           />
         ))}
       </div>

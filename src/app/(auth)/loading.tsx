@@ -1,4 +1,10 @@
-export default function AuthLoading() {
+import { getServerAppLocale } from "@/lib/get-server-app-locale";
+import { createTranslator, getMessages } from "@/presentation/lib/i18n/messages";
+
+export default async function AuthLoading() {
+  const locale = await getServerAppLocale();
+  const t = createTranslator(getMessages(locale));
+
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center gap-3 bg-background px-6">
       <div
@@ -10,7 +16,7 @@ export default function AuthLoading() {
         role="status"
         aria-live="polite"
       >
-        Loading...
+        {t("common.loading")}
       </p>
     </div>
   );

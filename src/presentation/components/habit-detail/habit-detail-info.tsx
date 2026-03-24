@@ -1,3 +1,5 @@
+"use client";
+
 import { Flame } from "lucide-react";
 
 import type { ColorVariant } from "@/domain/types/habit";
@@ -7,6 +9,7 @@ import {
   STATUS_ACCENT_TEXT,
 } from "@/presentation/components/habit-heatmap/color-variants";
 import type { TodayStatusKind } from "@/presentation/lib/habit-today-status";
+import { useI18n } from "@/presentation/lib/i18n/i18n-provider";
 import { cn } from "@/presentation/lib/utils";
 
 export type { TodayStatusKind };
@@ -39,6 +42,7 @@ export function HabitDetailInfo({
   todayStatusLabel,
   todayStatusKind,
 }: HabitDetailInfoProps) {
+  const { t } = useI18n();
   const { streakClasses } = COLOR_VARIANTS[colorVariant];
   const streakClass =
     streak > 0 ? streakClasses[getStreakLevel(streak)] : "text-white/45";
@@ -61,11 +65,11 @@ export function HabitDetailInfo({
           )}
         >
           <Flame className="h-4 w-4 shrink-0 opacity-90" aria-hidden />
-          <span>{streak} days</span>
+          <span>{t("detailInfo.daysStreak", { n: streak })}</span>
         </p>
       ) : (
         <p className="text-sm leading-snug font-medium text-white/45">
-          No streak yet
+          {t("detailInfo.noStreakYet")}
         </p>
       )}
 

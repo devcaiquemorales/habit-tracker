@@ -10,18 +10,19 @@ import {
   updateHabitForUser,
 } from "@/infrastructure/repositories";
 import { createServerSupabaseClient } from "@/infrastructure/supabase/server";
+import type { LocalizedActionResult } from "@/presentation/lib/action-error";
 
 export async function createHabitAction(input: {
   name: string;
   colorVariant: ColorVariant;
   schedule: Schedule;
-}): Promise<{ error: string | null }> {
+}): Promise<LocalizedActionResult> {
   const supabase = await createServerSupabaseClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) {
-    return { error: "You are not signed in." };
+    return { error: null, errorKey: "errors.notSignedIn" };
   }
 
   try {
@@ -34,7 +35,8 @@ export async function createHabitAction(input: {
     return { error: null };
   } catch (e) {
     return {
-      error: e instanceof Error ? e.message : "Could not create habit.",
+      error: e instanceof Error ? e.message : "",
+      errorKey: "errors.createHabitFailed",
     };
   }
 }
@@ -46,13 +48,13 @@ export async function updateHabitAction(
     colorVariant: ColorVariant;
     schedule: Schedule;
   },
-): Promise<{ error: string | null }> {
+): Promise<LocalizedActionResult> {
   const supabase = await createServerSupabaseClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) {
-    return { error: "You are not signed in." };
+    return { error: null, errorKey: "errors.notSignedIn" };
   }
 
   try {
@@ -66,20 +68,21 @@ export async function updateHabitAction(
     return { error: null };
   } catch (e) {
     return {
-      error: e instanceof Error ? e.message : "Could not update habit.",
+      error: e instanceof Error ? e.message : "",
+      errorKey: "errors.updateHabitFailed",
     };
   }
 }
 
 export async function deleteHabitAction(
   habitId: string,
-): Promise<{ error: string | null }> {
+): Promise<LocalizedActionResult> {
   const supabase = await createServerSupabaseClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) {
-    return { error: "You are not signed in." };
+    return { error: null, errorKey: "errors.notSignedIn" };
   }
 
   try {
@@ -88,8 +91,13 @@ export async function deleteHabitAction(
     revalidatePath(`/habits/${habitId}`);
     return { error: null };
   } catch (e) {
+    const msg = e instanceof Error ? e.message : "";
+    if (msg.includes("Habit not found")) {
+      return { error: msg, errorKey: "errors.habitNotFound" };
+    }
     return {
-      error: e instanceof Error ? e.message : "Could not delete habit.",
+      error: msg,
+      errorKey: "errors.deleteHabitFailed",
     };
   }
 }

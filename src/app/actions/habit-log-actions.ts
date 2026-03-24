@@ -7,17 +7,18 @@ import {
   insertHabitLog,
 } from "@/infrastructure/repositories/habit-log-repository";
 import { createServerSupabaseClient } from "@/infrastructure/supabase/server";
+import type { LocalizedActionResult } from "@/presentation/lib/action-error";
 
 export async function logHabitDayAction(
   habitId: string,
   loggedDate: string,
-): Promise<{ error: string | null }> {
+): Promise<LocalizedActionResult> {
   const supabase = await createServerSupabaseClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) {
-    return { error: "You are not signed in." };
+    return { error: null, errorKey: "errors.notSignedIn" };
   }
 
   const result = await insertHabitLog(supabase, user.id, habitId, loggedDate);
@@ -32,13 +33,13 @@ export async function logHabitDayAction(
 export async function unlogHabitDayAction(
   habitId: string,
   loggedDate: string,
-): Promise<{ error: string | null }> {
+): Promise<LocalizedActionResult> {
   const supabase = await createServerSupabaseClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) {
-    return { error: "You are not signed in." };
+    return { error: null, errorKey: "errors.notSignedIn" };
   }
 
   const result = await deleteHabitLog(supabase, user.id, habitId, loggedDate);

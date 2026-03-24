@@ -4,6 +4,8 @@ import { Settings } from "lucide-react";
 import Link from "next/link";
 import { useMemo } from "react";
 
+import { formatHomeHeaderDate } from "@/presentation/lib/i18n/format";
+import { useI18n } from "@/presentation/lib/i18n/i18n-provider";
 import { triggerInteractionFeedback } from "@/presentation/lib/interaction-feedback";
 import { getTimeAwareGreeting } from "@/presentation/lib/time-aware-greeting";
 
@@ -18,15 +20,17 @@ export function HomeHeader({
   userName = "there",
   initialMotivationPhrase = "",
 }: HomeHeaderProps) {
+  const { t, locale } = useI18n();
+
   const greeting = useMemo(
-    () => getTimeAwareGreeting(userName, new Date()),
-    [userName],
+    () => getTimeAwareGreeting(userName, new Date(), locale),
+    [userName, locale],
   );
-  const dateStr = new Date().toLocaleDateString("en-US", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-  });
+
+  const dateStr = useMemo(
+    () => formatHomeHeaderDate(new Date(), locale),
+    [locale],
+  );
 
   const phrase = initialMotivationPhrase.trim();
 
@@ -41,7 +45,7 @@ export function HomeHeader({
             {greeting}
           </h1>
           <p
-            className="text-sm leading-snug text-white/40 capitalize"
+            className="text-sm leading-snug text-white/40"
             suppressHydrationWarning
           >
             {dateStr}
@@ -52,7 +56,7 @@ export function HomeHeader({
           scroll={false}
           onClick={() => triggerInteractionFeedback({ haptic: false })}
           className="mt-0.5 flex size-11 h-max shrink-0 items-center justify-center rounded-lg text-white/45 transition-[transform,colors] duration-150 ease-out hover:bg-white/5 hover:text-white/75 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none active:scale-[0.96]"
-          aria-label="Customization and account"
+          aria-label={t("home.settingsAria")}
         >
           <Settings className="size-5" aria-hidden />
         </Link>
@@ -61,7 +65,7 @@ export function HomeHeader({
       {phrase ? (
         <p className="mt-3 min-w-0 leading-relaxed wrap-break-word">
           <span className="text-xs font-medium text-white/40">
-            Motivation:{" "}
+            {t("home.motivationPrefix")}{" "}
           </span>
           <span className="text-sm font-semibold text-white/78">{phrase}</span>
         </p>

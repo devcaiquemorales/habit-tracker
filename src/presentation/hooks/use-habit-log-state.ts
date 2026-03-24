@@ -9,11 +9,14 @@ import {
 import { getUtcToday, toUtcDateKey } from "@/domain/types/date-key";
 import type { Habit } from "@/domain/types/habit";
 import type { HeatmapData } from "@/domain/types/heatmap";
-import { formatScheduleLabel, isTodayScheduled } from "@/domain/types/schedule";
+import { isTodayScheduled } from "@/domain/types/schedule";
 import type { HabitFormPayload } from "@/presentation/components/habit-form-dialog";
+import { formatActionError } from "@/presentation/lib/action-error";
 import { patchDashboardAfterLogMutation } from "@/presentation/lib/dashboard-swr";
 import { getTodayStatusPresentation } from "@/presentation/lib/habit-today-status";
 import { getCompletedKeysFromHeatmapData } from "@/presentation/lib/heatmap-completed-keys";
+import { formatScheduleLabel } from "@/presentation/lib/i18n/format-schedule";
+import { useI18n } from "@/presentation/lib/i18n/i18n-provider";
 import { triggerInteractionFeedback } from "@/presentation/lib/interaction-feedback";
 import {
   ACTIVITY_STRIP_DAY_COUNT,
@@ -26,6 +29,7 @@ export function useHabitLogState(
   heatmapData: HeatmapData,
   habitId: string,
 ) {
+  const { t, locale } = useI18n();
   const [habit, setHabit] = useState(initialHabit);
   const [completedToday, setCompletedToday] = useState(
     initialHabit.completedToday,
@@ -132,22 +136,27 @@ export function useHabitLogState(
     todayKey,
   ]);
 
-  const { label: todayLabel, kind: todayStatusKind } =
-    getTodayStatusPresentation(
-      habit.schedule,
-      completedToday,
-      today,
-      stripCompletedKeys,
-    );
+  const { label: todayLabel, kind: todayStatusKind } = useMemo(
+    () =>
+      getTodayStatusPresentation(
+        habit.schedule,
+        completedToday,
+        today,
+        stripCompletedKeys,
+        t,
+      ),
+    [habit.schedule, completedToday, today, stripCompletedKeys, t],
+  );
 
   const handleMarkPastDay = useCallback(
     async (dateKey: string) => {
       setPersistenceError(null);
       setLogActionPending("mark");
       try {
-        const { error } = await logHabitDayAction(habitId, dateKey);
-        if (error) {
-          setPersistenceError(error);
+        const result = await logHabitDayAction(habitId, dateKey);
+        const msg = formatActionError(result, t);
+        if (msg) {
+          setPersistenceError(msg);
           return;
         }
         setRemovalOverrides((prev) => {
@@ -164,7 +173,7 @@ export function useHabitLogState(
         setLogActionPending(null);
       }
     },
-    [habitId, todayKey],
+    [habitId, todayKey, t],
   );
 
   const handleRemovePastDay = useCallback(
@@ -172,9 +181,10 @@ export function useHabitLogState(
       setPersistenceError(null);
       setLogActionPending("remove");
       try {
-        const { error } = await unlogHabitDayAction(habitId, dateKey);
-        if (error) {
-          setPersistenceError(error);
+        const result = await unlogHabitDayAction(habitId, dateKey);
+        const msg = formatActionError(result, t);
+        if (msg) {
+          setPersistenceError(msg);
           return;
         }
         setExtraPastCompleted((prev) => {
@@ -193,7 +203,7 @@ export function useHabitLogState(
         setLogActionPending(null);
       }
     },
-    [habitId, baseCompletedKeys, todayKey],
+    [habitId, baseCompletedKeys, todayKey, t],
   );
 
   const handleSaveEdit = useCallback((payload: HabitFormPayload) => {
@@ -205,7 +215,10 @@ export function useHabitLogState(
     }));
   }, []);
 
-  const scheduleLabel = formatScheduleLabel(habit.schedule);
+  const scheduleLabel = useMemo(
+    () => formatScheduleLabel(habit.schedule, locale),
+    [habit.schedule, locale],
+  );
 
   const editInitialHabit = useMemo(
     () => ({

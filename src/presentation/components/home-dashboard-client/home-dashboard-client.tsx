@@ -9,10 +9,12 @@ import {
   DASHBOARD_SWR_KEY,
   fetchDashboardJson,
 } from "@/presentation/lib/dashboard-swr";
+import { useI18n } from "@/presentation/lib/i18n/i18n-provider";
 
 import { HabitCardWithHeatmap } from "./habit-card-with-heatmap";
 
 export function HomeDashboardClient() {
+  const { t } = useI18n();
   const { data, error, isLoading } = useSWR(
     DASHBOARD_SWR_KEY,
     fetchDashboardJson,
@@ -75,7 +77,7 @@ export function HomeDashboardClient() {
           <div className="flex flex-col gap-4">
             {error ? (
               <p className="text-base leading-relaxed text-red-400/90">
-                Could not load your habits. Pull to refresh or try again.
+                {t("home.loadError")}
               </p>
             ) : showSkeleton ? (
               <div className="flex flex-col gap-4" aria-hidden>
@@ -85,10 +87,10 @@ export function HomeDashboardClient() {
             ) : showEmptyState ? (
               <div className="flex max-w-md flex-col gap-2 pt-1">
                 <h2 className="text-base font-semibold tracking-tight text-white/90">
-                  No habits yet
+                  {t("home.emptyTitle")}
                 </h2>
                 <p className="text-sm leading-relaxed text-white/45">
-                  Create your first habit to start your heatmap.
+                  {t("home.emptyBody")}
                 </p>
               </div>
             ) : (

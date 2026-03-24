@@ -1,10 +1,16 @@
+import { getServerAppLocale } from "@/lib/get-server-app-locale";
 import { AuthShell, SignupForm } from "@/presentation/components/auth";
+import { createTranslator, getMessages } from "@/presentation/lib/i18n/messages";
 
-export default function SignupPage() {
+export default async function SignupPage() {
+  const locale = await getServerAppLocale();
+  const t = createTranslator(getMessages(locale));
+
   return (
     <AuthShell
-      title="Create your account"
-      subtitle="A few details and you’re ready to build consistency."
+      brandLabel={t("auth.brandName")}
+      title={t("auth.createAccountTitle")}
+      subtitle={t("auth.createAccountSubtitle")}
     >
       <SignupForm />
     </AuthShell>

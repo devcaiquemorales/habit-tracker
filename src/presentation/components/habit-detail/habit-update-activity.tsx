@@ -5,17 +5,11 @@ import { useLayoutEffect, useMemo, useRef } from "react";
 import { getUtcToday, toUtcDateKey } from "@/domain/types/date-key";
 import type { Schedule } from "@/domain/types/schedule";
 import { Button } from "@/presentation/components/ui/button";
+import { formatActivityChipDate } from "@/presentation/lib/i18n/format";
+import { useI18n } from "@/presentation/lib/i18n/i18n-provider";
 import { triggerInteractionFeedback } from "@/presentation/lib/interaction-feedback";
 import { isUpdateActivitySelectable } from "@/presentation/lib/update-activity-selectable";
 import { cn } from "@/presentation/lib/utils";
-
-function formatChipLabel(d: Date): string {
-  return d.toLocaleDateString("en-US", {
-    weekday: "short",
-    day: "numeric",
-    timeZone: "UTC",
-  });
-}
 
 interface HabitUpdateActivityProps {
   schedule: Schedule;
@@ -40,6 +34,7 @@ export function HabitUpdateActivity({
   onRemoveEntry,
   logActionPending = null,
 }: HabitUpdateActivityProps) {
+  const { t, locale } = useI18n();
   const scrollRef = useRef<HTMLDivElement>(null);
   const selectedChipRef = useRef<HTMLButtonElement>(null);
 
@@ -52,7 +47,7 @@ export function HabitUpdateActivity({
         dateKey: null as string | null,
         isCompleted: false,
         isSelectable: false,
-        buttonLabel: "Select a day",
+        buttonLabel: t("updateActivity.selectDay"),
         buttonVariant: "default" as const,
       };
     }
@@ -65,7 +60,7 @@ export function HabitUpdateActivity({
         dateKey: selectedKey,
         isCompleted: false,
         isSelectable: false,
-        buttonLabel: "Select a day",
+        buttonLabel: t("updateActivity.selectDay"),
         buttonVariant: "default" as const,
       };
     }
@@ -79,10 +74,10 @@ export function HabitUpdateActivity({
     const isCompleted = completedKeys.has(selectedKey);
 
     const buttonLabel = !isSelectable
-      ? "Select a day"
+      ? t("updateActivity.selectDay")
       : isCompleted
-        ? "Remove entry"
-        : "Mark as completed";
+        ? t("common.removeEntry")
+        : t("updateActivity.markCompleted");
 
     return {
       dateKey: selectedKey,
@@ -94,7 +89,7 @@ export function HabitUpdateActivity({
           ? ("outline" as const)
           : ("default" as const),
     };
-  }, [selectedKey, days, schedule, todayDate, completedKeys]);
+  }, [selectedKey, days, schedule, todayDate, completedKeys, t]);
 
   useLayoutEffect(() => {
     const chip = selectedChipRef.current;
@@ -122,9 +117,11 @@ export function HabitUpdateActivity({
       aria-busy={logBusy || undefined}
     >
       <div className="flex flex-col gap-2">
-        <p className="text-sm font-medium text-white/50">Update activity</p>
+        <p className="text-sm font-medium text-white/50">
+          {t("updateActivity.sectionTitle")}
+        </p>
         <p className="text-sm leading-relaxed text-white/45">
-          Log a day you completed but forgot to record.
+          {t("updateActivity.subtitle")}
         </p>
       </div>
 
@@ -167,11 +164,11 @@ export function HabitUpdateActivity({
                 )}
               >
                 <span className="text-xs leading-snug font-medium tabular-nums">
-                  {formatChipLabel(d)}
+                  {formatActivityChipDate(d, locale)}
                 </span>
                 {done ? (
                   <span className="mt-0.5 text-[0.65rem] font-medium text-emerald-400/80">
-                    Done
+                    {t("common.done")}
                   </span>
                 ) : (
                   <span
@@ -180,7 +177,7 @@ export function HabitUpdateActivity({
                       selectable ? "text-white/30" : "text-white/20",
                     )}
                   >
-                    {selectable ? "Tap" : "—"}
+                    {selectable ? t("common.tap") : t("common.dash")}
                   </span>
                 )}
               </button>
@@ -193,13 +190,13 @@ export function HabitUpdateActivity({
         type="button"
         size="lg"
         variant={updateActivitySelection.buttonVariant}
-        className="min-h-11 w-full min-w-[11rem] sm:w-auto"
+        className="min-h-11 w-full min-w-44 sm:w-auto"
         loading={logBusy}
         loadingText={
           logActionPending === "remove"
-            ? "Removing..."
+            ? t("common.removing")
             : logActionPending === "mark"
-              ? "Saving..."
+              ? t("common.saving")
               : undefined
         }
         disabled={

@@ -89,7 +89,7 @@ export function HeatmapCell({
           "border-0 p-0 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-0",
         )}
         title={tooltip}
-        aria-label={selectDayLabel ?? tooltip ?? "Select day"}
+        aria-label={selectDayLabel ?? tooltip ?? undefined}
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();

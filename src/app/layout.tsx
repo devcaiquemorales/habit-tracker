@@ -5,6 +5,10 @@ import "./global.css";
 import type { Metadata, Viewport } from "next";
 import { Fira_Code, Geist, Lora } from "next/font/google";
 
+import { intlLocaleForAppLocale } from "@/lib/app-locale";
+import { getServerAppLocale } from "@/lib/get-server-app-locale";
+import { I18nProvider } from "@/presentation/lib/i18n/i18n-provider";
+
 import { RouteTransitionShell } from "./route-transition-shell";
 
 const fontSans = Geist({
@@ -46,17 +50,22 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = await getServerAppLocale();
+  const htmlLang = intlLocaleForAppLocale(locale);
+
   return (
-    <html lang="en" className="page-scrollbar-hidden">
+    <html lang={htmlLang} className="page-scrollbar-hidden">
       <body
         className={`${fontSans.variable} ${fontSerif.variable} ${fontMono.variable} dark page-scrollbar-hidden antialiased`}
       >
-        <RouteTransitionShell>{children}</RouteTransitionShell>
+        <I18nProvider initialLocale={locale}>
+          <RouteTransitionShell>{children}</RouteTransitionShell>
+        </I18nProvider>
       </body>
     </html>
   );
