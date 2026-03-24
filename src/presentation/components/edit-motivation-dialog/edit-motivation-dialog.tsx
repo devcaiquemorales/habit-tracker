@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import { PROFILE_MOTIVATION_PHRASE_MAX } from "@/domain/constants/profile-limits";
 import { Button } from "@/presentation/components/ui/button";
 import {
   Dialog,
@@ -14,8 +15,6 @@ import {
 import { Input } from "@/presentation/components/ui/input";
 import { Label } from "@/presentation/components/ui/label";
 import { triggerInteractionFeedback } from "@/presentation/lib/interaction-feedback";
-
-const MOTIVATION_MAX_LENGTH = 120;
 
 export interface EditMotivationDialogProps {
   open: boolean;
@@ -92,11 +91,11 @@ function EditMotivationDialogFields({
           id="motivation-phrase"
           value={draft}
           onChange={(e) =>
-            setDraft(e.target.value.slice(0, MOTIVATION_MAX_LENGTH))
+            setDraft(e.target.value.slice(0, PROFILE_MOTIVATION_PHRASE_MAX))
           }
           disabled={saving}
           placeholder="For my future"
-          maxLength={MOTIVATION_MAX_LENGTH}
+          maxLength={PROFILE_MOTIVATION_PHRASE_MAX}
           autoComplete="off"
           className="min-h-11 text-base sm:min-h-10 sm:text-sm"
           onKeyDown={(e) => {
@@ -107,7 +106,7 @@ function EditMotivationDialogFields({
           }}
         />
         <p className="text-xs text-muted-foreground">
-          {draft.length}/{MOTIVATION_MAX_LENGTH}
+          {draft.length}/{PROFILE_MOTIVATION_PHRASE_MAX}
         </p>
       </div>
 

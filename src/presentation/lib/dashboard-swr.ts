@@ -25,6 +25,32 @@ export function revalidateDashboardCache(): void {
   void mutate(DASHBOARD_SWR_KEY, undefined, { revalidate: true });
 }
 
+export function patchDashboardProfile(updates: {
+  displayName?: string;
+  motivationPhrase?: string;
+}): void {
+  void mutate(
+    DASHBOARD_SWR_KEY,
+    (current: DashboardJson | undefined) => {
+      if (!current) return current;
+      return {
+        ...current,
+        profile: {
+          ...current.profile,
+          ...(updates.displayName !== undefined && {
+            displayName: updates.displayName,
+          }),
+          ...(updates.motivationPhrase !== undefined && {
+            motivationPhrase: updates.motivationPhrase,
+          }),
+        },
+      };
+    },
+    { revalidate: false },
+  );
+  revalidateDashboardCache();
+}
+
 export function patchDashboardMotivationPhrase(phrase: string): void {
   void mutate(
     DASHBOARD_SWR_KEY,
@@ -33,6 +59,24 @@ export function patchDashboardMotivationPhrase(phrase: string): void {
       return {
         ...current,
         profile: { ...current.profile, motivationPhrase: phrase },
+      };
+    },
+    { revalidate: false },
+  );
+  revalidateDashboardCache();
+}
+
+export function removeHabitFromDashboard(habitId: string): void {
+  void mutate(
+    DASHBOARD_SWR_KEY,
+    (current: DashboardJson | undefined) => {
+      if (!current) return current;
+      const logKeysRecord = { ...current.logKeysRecord };
+      delete logKeysRecord[habitId];
+      return {
+        ...current,
+        habits: current.habits.filter((h) => h.id !== habitId),
+        logKeysRecord,
       };
     },
     { revalidate: false },

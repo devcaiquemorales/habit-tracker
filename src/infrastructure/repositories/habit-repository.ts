@@ -169,3 +169,46 @@ export async function updateHabitForUser(
     if (insError) throw new Error(insError.message);
   }
 }
+
+/**
+ * Removes logs and schedule rows, then the habit. Safe when FKs have no cascade.
+ */
+export async function deleteHabitForUser(
+  supabase: SupabaseClient<Database>,
+  userId: string,
+  habitId: string,
+): Promise<void> {
+  const { data: row, error: selError } = await supabase
+    .from("habits")
+    .select("id")
+    .eq("id", habitId)
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (selError) throw new Error(selError.message);
+  if (!row) {
+    throw new Error("Habit not found.");
+  }
+
+  const { error: logError } = await supabase
+    .from("habit_logs")
+    .delete()
+    .eq("habit_id", habitId);
+
+  if (logError) throw new Error(logError.message);
+
+  const { error: fdError } = await supabase
+    .from("habit_fixed_days")
+    .delete()
+    .eq("habit_id", habitId);
+
+  if (fdError) throw new Error(fdError.message);
+
+  const { error: delError } = await supabase
+    .from("habits")
+    .delete()
+    .eq("id", habitId)
+    .eq("user_id", userId);
+
+  if (delError) throw new Error(delError.message);
+}

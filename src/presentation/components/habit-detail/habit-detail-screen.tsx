@@ -6,9 +6,15 @@ import { useEffect, useLayoutEffect, useState } from "react";
 import { updateHabitAction } from "@/app/actions/habit-actions";
 import type { Habit } from "@/domain/types/habit";
 import type { HeatmapData } from "@/domain/types/heatmap";
+import { HabitDeleteConfirmDialog } from "@/presentation/components/habit-delete-confirm-dialog";
 import { HabitFormDialog } from "@/presentation/components/habit-form-dialog";
+import { Button } from "@/presentation/components/ui/button";
 import { useHabitLogState } from "@/presentation/hooks/use-habit-log-state";
-import { patchDashboardHabit } from "@/presentation/lib/dashboard-swr";
+import {
+  patchDashboardHabit,
+  removeHabitFromDashboard,
+} from "@/presentation/lib/dashboard-swr";
+import { triggerInteractionFeedback } from "@/presentation/lib/interaction-feedback";
 
 import { HabitDetailHeader } from "./habit-detail-header";
 import { HabitDetailHeatmap } from "./habit-detail-heatmap";
@@ -37,6 +43,7 @@ export function HabitDetailScreen({
   const router = useRouter();
   const [editOpen, setEditOpen] = useState(false);
   const [editFormResetKey, setEditFormResetKey] = useState(0);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   const {
     habit,
@@ -124,6 +131,20 @@ export function HabitDetailScreen({
             onRemoveEntry={handleRemovePastDay}
             logActionPending={logActionPending}
           />
+
+          <div className="border-t border-white/10 pt-2">
+            <Button
+              type="button"
+              variant="ghost"
+              className="min-h-11 w-full justify-center text-sm font-medium text-red-400/85 hover:bg-red-500/10 hover:text-red-300 sm:w-auto"
+              onClick={() => {
+                triggerInteractionFeedback({ haptic: false });
+                setDeleteOpen(true);
+              }}
+            >
+              Delete habit
+            </Button>
+          </div>
         </div>
       </main>
 
@@ -149,6 +170,17 @@ export function HabitDetailScreen({
           });
           handleSaveEdit(payload);
           return { error: null };
+        }}
+      />
+
+      <HabitDeleteConfirmDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        habitId={habit.id}
+        habitName={habit.name}
+        onDeleted={() => {
+          removeHabitFromDashboard(habit.id);
+          router.replace("/");
         }}
       />
     </>

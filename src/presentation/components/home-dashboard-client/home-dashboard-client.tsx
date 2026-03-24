@@ -85,10 +85,14 @@ export function HomeDashboardClient() {
                 <div className="h-40 w-full animate-pulse rounded-xl bg-white/5" />
               </div>
             ) : showEmptyState ? (
-              <p className="text-base leading-relaxed text-white/45">
-                No habits yet. Tap the button below to add your first one and
-                start your heatmap.
-              </p>
+              <div className="flex max-w-md flex-col gap-2 pt-1">
+                <h2 className="text-base font-semibold tracking-tight text-white/90">
+                  No habits yet
+                </h2>
+                <p className="text-sm leading-relaxed text-white/45">
+                  Create your first habit to start your heatmap.
+                </p>
+              </div>
             ) : (
               habits.map((habit) => (
                 <HabitCardWithHeatmap

@@ -39,3 +39,22 @@ export async function getHomeProfile(
 
   return { displayName, motivationPhrase };
 }
+
+export async function updateProfileCustomizationForUser(
+  supabase: SupabaseClient<Database>,
+  userId: string,
+  input: { displayName: string; motivationPhrase: string },
+): Promise<void> {
+  const { error } = await supabase.from("profiles").upsert(
+    {
+      id: userId,
+      display_name: input.displayName,
+      motivation_phrase: input.motivationPhrase,
+    },
+    { onConflict: "id" },
+  );
+
+  if (error) {
+    throw new Error(error.message);
+  }
+}
