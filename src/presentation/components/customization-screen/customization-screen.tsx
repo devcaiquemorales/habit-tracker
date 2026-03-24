@@ -111,7 +111,10 @@ export function CustomizationScreen({
           grounded.
         </p>
 
-        <form onSubmit={(e) => void handleSubmit(e)} className="flex flex-col gap-6">
+        <form
+          onSubmit={(e) => void handleSubmit(e)}
+          className="flex flex-col gap-6"
+        >
           <div className="space-y-2">
             <Label htmlFor="settings-display-name" className="text-white/70">
               Display name
@@ -121,7 +124,9 @@ export function CustomizationScreen({
               name="displayName"
               value={displayName}
               onChange={(ev) =>
-                setDisplayName(ev.target.value.slice(0, PROFILE_DISPLAY_NAME_MAX))
+                setDisplayName(
+                  ev.target.value.slice(0, PROFILE_DISPLAY_NAME_MAX),
+                )
               }
               autoComplete="name"
               className="min-h-11 text-base sm:min-h-10 sm:text-sm"

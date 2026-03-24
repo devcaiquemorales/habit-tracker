@@ -120,7 +120,9 @@ export function SignupForm() {
           aria-invalid={email.length > 0 && !emailValid}
         />
         {email.length > 0 && !emailValid ? (
-          <p className="text-xs text-destructive">Enter a valid email address.</p>
+          <p className="text-xs text-destructive">
+            Enter a valid email address.
+          </p>
         ) : null}
       </div>
 
@@ -164,7 +166,7 @@ export function SignupForm() {
       <Button
         type="submit"
         size="lg"
-        className="min-h-11 min-w-0 w-full"
+        className="min-h-11 w-full min-w-0"
         loading={loading}
         loadingText="Creating account..."
         disabled={!canSubmit}

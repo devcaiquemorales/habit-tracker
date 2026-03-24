@@ -22,7 +22,7 @@ export function AuthShell({
       className={cn(
         "flex min-h-dvh flex-col bg-background px-4 py-8",
         "pt-[calc(2rem+env(safe-area-inset-top,0px))] pb-[calc(2rem+env(safe-area-inset-bottom,0px))]",
-        "pl-[calc(1rem+env(safe-area-inset-left,0px))] pr-[calc(1rem+env(safe-area-inset-right,0px))]",
+        "pr-[calc(1rem+env(safe-area-inset-right,0px))] pl-[calc(1rem+env(safe-area-inset-left,0px))]",
         className,
       )}
     >

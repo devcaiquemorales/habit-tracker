@@ -59,8 +59,8 @@ export function HabitDeleteConfirmDialog({
           <AlertDialogTitle>Delete habit?</AlertDialogTitle>
           <AlertDialogDescription>
             This will permanently remove{" "}
-            <span className="font-medium text-foreground">{habitName}</span>{" "}
-            and its activity history.
+            <span className="font-medium text-foreground">{habitName}</span> and
+            its activity history.
           </AlertDialogDescription>
         </AlertDialogHeader>
         {error ? (

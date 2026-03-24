@@ -127,7 +127,7 @@ function EditMotivationDialogFields({
           loading={saving}
           loadingText="Saving..."
           disabled={!canSave}
-          className="min-h-11 min-w-[7.5rem] w-full sm:min-h-9 sm:w-auto"
+          className="min-h-11 w-full min-w-[7.5rem] sm:min-h-9 sm:w-auto"
           onClick={() => void handleSave()}
         >
           Save

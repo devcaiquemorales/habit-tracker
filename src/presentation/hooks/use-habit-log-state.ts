@@ -2,7 +2,10 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { logHabitDayAction, unlogHabitDayAction } from "@/app/actions/habit-log-actions";
+import {
+  logHabitDayAction,
+  unlogHabitDayAction,
+} from "@/app/actions/habit-log-actions";
 import { getUtcToday, toUtcDateKey } from "@/domain/types/date-key";
 import type { Habit } from "@/domain/types/habit";
 import type { HeatmapData } from "@/domain/types/heatmap";

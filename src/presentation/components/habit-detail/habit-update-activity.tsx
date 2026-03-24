@@ -193,7 +193,7 @@ export function HabitUpdateActivity({
         type="button"
         size="lg"
         variant={updateActivitySelection.buttonVariant}
-        className="min-h-11 min-w-[11rem] w-full sm:w-auto"
+        className="min-h-11 w-full min-w-[11rem] sm:w-auto"
         loading={logBusy}
         loadingText={
           logActionPending === "remove"

@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  type PointerEvent as ReactPointerEvent,
-  useMemo,
-  useRef,
-} from "react";
+import { type PointerEvent as ReactPointerEvent, useMemo, useRef } from "react";
 
 const MOVE_THRESHOLD_PX = 10;
 /** After a horizontal pan, ignore navigation clicks briefly (ghost taps). */

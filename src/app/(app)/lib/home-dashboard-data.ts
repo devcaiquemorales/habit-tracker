@@ -40,4 +40,3 @@ export async function getDashboardPayload(): Promise<DashboardPayload> {
 
   return { profile, habits, logKeysByHabitId };
 }
-

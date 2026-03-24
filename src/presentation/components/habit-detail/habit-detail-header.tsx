@@ -17,7 +17,7 @@ export function HabitDetailHeader({
 }: HabitDetailHeaderProps) {
   return (
     <header
-      className="sticky z-20 -mx-4 bg-background/85 py-3 backdrop-blur-md supports-backdrop-filter:bg-background/70 md:-mx-6 lg:-mx-8 pl-[calc(1rem+env(safe-area-inset-left,0px))] pr-[calc(1rem+env(safe-area-inset-right,0px))] md:pl-[calc(1.5rem+env(safe-area-inset-left,0px))] md:pr-[calc(1.5rem+env(safe-area-inset-right,0px))] lg:pl-[calc(2rem+env(safe-area-inset-left,0px))] lg:pr-[calc(2rem+env(safe-area-inset-right,0px))]"
+      className="sticky z-20 -mx-4 bg-background/85 py-3 pr-[calc(1rem+env(safe-area-inset-right,0px))] pl-[calc(1rem+env(safe-area-inset-left,0px))] backdrop-blur-md supports-backdrop-filter:bg-background/70 md:-mx-6 md:pr-[calc(1.5rem+env(safe-area-inset-right,0px))] md:pl-[calc(1.5rem+env(safe-area-inset-left,0px))] lg:-mx-8 lg:pr-[calc(2rem+env(safe-area-inset-right,0px))] lg:pl-[calc(2rem+env(safe-area-inset-left,0px))]"
       style={{ top: "env(safe-area-inset-top, 0px)" }}
     >
       <div className="mx-auto grid max-w-3xl grid-cols-[2.75rem_minmax(0,1fr)_2.75rem] items-center gap-2">

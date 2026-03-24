@@ -109,8 +109,7 @@ export function HeatmapColumn({
         const selectDayLabel = `Select day ${dateKey}`;
 
         /** Logs-only schedules: cell color follows habit_logs, not fixed weekdays. */
-        const logDrivenHeatmap =
-          weekly || schedule.type === "flexible";
+        const logDrivenHeatmap = weekly || schedule.type === "flexible";
 
         if (logDrivenHeatmap) {
           const status = effectiveDone > 0 ? "completed" : "neutralEmpty";

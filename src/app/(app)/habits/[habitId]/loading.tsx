@@ -1,13 +1,13 @@
 export default function HabitDetailLoading() {
   return (
     <main
-      className="mx-auto flex min-h-dvh max-w-3xl flex-col bg-background pb-[calc(5rem+env(safe-area-inset-bottom,0px))] pt-[env(safe-area-inset-top,0px)] pl-[calc(1rem+env(safe-area-inset-left,0px))] pr-[calc(1rem+env(safe-area-inset-right,0px))] text-foreground md:pl-[calc(1.5rem+env(safe-area-inset-left,0px))] md:pr-[calc(1.5rem+env(safe-area-inset-right,0px))] lg:pl-[calc(2rem+env(safe-area-inset-left,0px))] lg:pr-[calc(2rem+env(safe-area-inset-right,0px))]"
+      className="mx-auto flex min-h-dvh max-w-3xl flex-col bg-background pt-[env(safe-area-inset-top,0px)] pr-[calc(1rem+env(safe-area-inset-right,0px))] pb-[calc(5rem+env(safe-area-inset-bottom,0px))] pl-[calc(1rem+env(safe-area-inset-left,0px))] text-foreground md:pr-[calc(1.5rem+env(safe-area-inset-right,0px))] md:pl-[calc(1.5rem+env(safe-area-inset-left,0px))] lg:pr-[calc(2rem+env(safe-area-inset-right,0px))] lg:pl-[calc(2rem+env(safe-area-inset-left,0px))]"
       aria-busy="true"
       aria-label="Loading habit"
     >
       <div className="flex items-center gap-3 pt-2">
         <div className="size-10 shrink-0 animate-pulse rounded-lg bg-white/10" />
-        <div className="h-7 flex-1 max-w-[12rem] animate-pulse rounded-lg bg-white/10" />
+        <div className="h-7 max-w-[12rem] flex-1 animate-pulse rounded-lg bg-white/10" />
       </div>
 
       <div className="mx-auto mt-6 flex w-full max-w-3xl flex-col gap-6">

@@ -14,10 +14,9 @@ export async function updateProfileCustomizationAction(input: {
   motivationPhrase: string;
 }): Promise<{ error: string | null }> {
   const displayName = input.displayName.trim();
-  const motivationPhrase = input.motivationPhrase.trim().slice(
-    0,
-    PROFILE_MOTIVATION_PHRASE_MAX,
-  );
+  const motivationPhrase = input.motivationPhrase
+    .trim()
+    .slice(0, PROFILE_MOTIVATION_PHRASE_MAX);
 
   if (!displayName) {
     return { error: "Please enter a display name." };
@@ -57,9 +56,7 @@ export async function updateProfileCustomizationAction(input: {
 export async function updateMotivationPhraseAction(
   phrase: string,
 ): Promise<{ error: string | null }> {
-  const trimmed = phrase
-    .trim()
-    .slice(0, PROFILE_MOTIVATION_PHRASE_MAX);
+  const trimmed = phrase.trim().slice(0, PROFILE_MOTIVATION_PHRASE_MAX);
   if (!trimmed) {
     return { error: "Please enter your reason." };
   }

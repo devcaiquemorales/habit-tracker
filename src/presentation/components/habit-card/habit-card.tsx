@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { type KeyboardEvent,useEffect } from "react";
+import { type KeyboardEvent, useEffect } from "react";
 
 import { useRouteTransitionFeedback } from "@/app/route-transition-shell";
 import type { ColorVariant } from "@/domain/types/habit";
@@ -89,7 +89,7 @@ export function HabitCard({
           beginRouteTransitionFeedback();
           triggerInteractionFeedback();
         }}
-        className="flex flex-col gap-3 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background touch-manipulation"
+        className="flex touch-manipulation flex-col gap-3 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
       >
         <HabitCardHeader
           name={name}
@@ -105,7 +105,7 @@ export function HabitCard({
         role="link"
         tabIndex={0}
         aria-label={`Open ${name}`}
-        className="cursor-pointer rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background touch-manipulation"
+        className="cursor-pointer touch-manipulation rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         onClick={onHeatmapRegionClick}
         onKeyDown={onHeatmapRegionKeyDown}
       >

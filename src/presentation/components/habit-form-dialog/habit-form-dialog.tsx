@@ -151,7 +151,10 @@ function HabitFormDialogFields({
       : "Update name, color, and schedule";
 
   return (
-    <form onSubmit={(e) => void handleSubmit(e)} className="flex min-h-0 flex-1 flex-col">
+    <form
+      onSubmit={(e) => void handleSubmit(e)}
+      className="flex min-h-0 flex-1 flex-col"
+    >
       <DialogHeader className="shrink-0 space-y-1 px-5 pt-6 pr-14 pb-4 sm:px-6 sm:pr-16">
         <DialogTitle className="text-xl font-semibold tracking-tight">
           {title}
@@ -219,7 +222,7 @@ function HabitFormDialogFields({
           loading={saving}
           loadingText={mode === "create" ? "Creating..." : "Saving..."}
           disabled={!submitEnabled}
-          className="min-h-11 min-w-[10.5rem] w-full transition-transform duration-150 ease-out enabled:active:scale-[0.98] sm:min-h-9 sm:w-auto"
+          className="min-h-11 w-full min-w-[10.5rem] transition-transform duration-150 ease-out enabled:active:scale-[0.98] sm:min-h-9 sm:w-auto"
         >
           {mode === "create" ? "Create habit" : "Save changes"}
         </Button>
@@ -251,7 +254,7 @@ export function HabitFormDialog({
         closeButtonClassName="top-[calc(env(safe-area-inset-top,0px)+0.5rem)] right-[calc(env(safe-area-inset-right,0px)+0.5rem)]"
         className={cn(
           "flex max-h-dvh flex-col gap-0 overflow-hidden border-0 p-0 shadow-xl",
-          "inset-0! h-dvh! max-w-none! w-full! translate-x-0! translate-y-0! rounded-none sm:inset-auto! sm:top-1/2! sm:left-1/2! sm:h-auto! sm:max-h-[min(90dvh,640px)]! sm:w-full! sm:max-w-md! sm:-translate-x-1/2! sm:-translate-y-1/2! sm:rounded-xl! sm:border! sm:p-0!",
+          "inset-0! h-dvh! w-full! max-w-none! translate-x-0! translate-y-0! rounded-none sm:inset-auto! sm:top-1/2! sm:left-1/2! sm:h-auto! sm:max-h-[min(90dvh,640px)]! sm:w-full! sm:max-w-md! sm:-translate-x-1/2! sm:-translate-y-1/2! sm:rounded-xl! sm:border! sm:p-0!",
         )}
         style={{
           paddingTop: "env(safe-area-inset-top, 0px)",

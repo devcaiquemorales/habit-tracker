@@ -25,8 +25,9 @@ function mapRowToHabit(
   completedDateKeys: ReadonlySet<string>,
 ): Habit {
   const fixed =
-    row.habit_fixed_days?.map((r) => r.weekday).filter((d) => d >= 0 && d <= 6) ??
-    [];
+    row.habit_fixed_days
+      ?.map((r) => r.weekday)
+      .filter((d) => d >= 0 && d <= 6) ?? [];
   const schedule = scheduleFromDb(row.schedule_type, row.weekly_target, fixed);
   const todayKey = toUtcDateKey(getUtcToday());
   return {
