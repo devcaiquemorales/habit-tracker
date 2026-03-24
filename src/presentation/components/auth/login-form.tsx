@@ -26,10 +26,6 @@ export function LoginForm() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const recoveryHint =
-    searchParams.get("error") === "recovery"
-      ? t("auth.recoveryLinkInvalid")
-      : null;
   const resetHint =
     searchParams.get("reset") === "success"
       ? t("auth.resetCompleteSignIn")
@@ -64,9 +60,6 @@ export function LoginForm() {
 
   return (
     <form className="flex flex-col gap-5" onSubmit={handleSubmit} noValidate>
-      {recoveryHint ? (
-        <AuthFormNotice variant="info">{recoveryHint}</AuthFormNotice>
-      ) : null}
       {resetHint ? (
         <AuthFormNotice variant="success">{resetHint}</AuthFormNotice>
       ) : null}

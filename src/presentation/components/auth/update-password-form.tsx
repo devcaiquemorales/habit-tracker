@@ -75,7 +75,12 @@ export function UpdatePasswordForm() {
   if (!hasRecoverySession) {
     return (
       <div className="flex flex-col gap-5">
-        <AuthFormNotice variant="info">{t("auth.recoveryLinkInvalid")}</AuthFormNotice>
+        <AuthFormNotice variant="info">
+          {t("auth.recoveryLinkInvalid")}
+        </AuthFormNotice>
+        <Button asChild size="lg" className="min-h-11 w-full">
+          <Link href="/forgot-password">{t("auth.requestNewResetLink")}</Link>
+        </Button>
         <Button asChild variant="outline" size="lg" className="min-h-11 w-full">
           <Link href="/login">{t("auth.backToSignIn")}</Link>
         </Button>

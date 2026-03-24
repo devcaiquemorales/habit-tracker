@@ -72,10 +72,19 @@ export const enMessages = {
     updatePasswordSubmit: "Update password",
     updatingPassword: "Updating...",
     recoveryLinkInvalid:
-      "This reset link is invalid or has expired. Request a new one from the sign-in screen.",
+      "We couldn’t open a valid password reset session. The link may have expired or already been used.",
+    requestNewResetLink: "Email me a new link",
     resetCompleteSignIn: "Password updated. Sign in with your new password.",
     reasonFieldHint:
       "We use this on your home screen—one honest line beats a perfect motto.",
+    callbackTitle: "Almost there",
+    callbackSubtitle:
+      "We’re confirming your link so you can choose a new password.",
+    callbackWorking: "Verifying link…",
+    recoveryExpiredTitle: "This reset link has expired",
+    recoveryExpiredSubtitle:
+      "Reset links are time-limited and usually work once. Request a new link and we’ll send a fresh email.",
+    recoveryExpiredCtaForgot: "Request a new reset link",
   },
   authErrors: {
     invalidCredentials: "Invalid email or password.",

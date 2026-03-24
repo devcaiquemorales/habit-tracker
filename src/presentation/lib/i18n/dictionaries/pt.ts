@@ -75,10 +75,19 @@ export const ptMessages: EnMessages = {
     updatePasswordSubmit: "Atualizar senha",
     updatingPassword: "Atualizando...",
     recoveryLinkInvalid:
-      "Este link de redefinição é inválido ou expirou. Solicite outro na tela de login.",
+      "Não foi possível abrir uma sessão válida para redefinir a senha. O link pode ter expirado ou já ter sido usado.",
+    requestNewResetLink: "Enviar novo link por e-mail",
     resetCompleteSignIn: "Senha atualizada. Entre com a nova senha abaixo.",
     reasonFieldHint:
       "Usamos isso na tela inicial—uma frase honesta vale mais que um lema perfeito.",
+    callbackTitle: "Quase lá",
+    callbackSubtitle:
+      "Estamos confirmando seu link para que você possa escolher uma nova senha.",
+    callbackWorking: "Verificando link…",
+    recoveryExpiredTitle: "Este link de redefinição expirou",
+    recoveryExpiredSubtitle:
+      "Os links são limitados no tempo e em geral funcionam uma vez. Solicite um novo link e enviaremos outro e-mail.",
+    recoveryExpiredCtaForgot: "Solicitar novo link de redefinição",
   },
   authErrors: {
     invalidCredentials: "E-mail ou senha inválidos.",

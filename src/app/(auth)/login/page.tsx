@@ -1,11 +1,20 @@
+import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
 import { getServerAppLocale } from "@/lib/get-server-app-locale";
-import { AuthShell, LoginForm } from "@/presentation/components/auth";
-import { AuthShellSkeleton } from "@/presentation/components/auth";
+import { AuthShell, AuthShellSkeleton, LoginForm } from "@/presentation/components/auth";
 import { createTranslator, getMessages } from "@/presentation/lib/i18n/messages";
 
-export default async function LoginPage() {
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
+  const params = await searchParams;
+  if (params.error === "recovery") {
+    redirect("/auth/recovery-expired");
+  }
+
   const locale = await getServerAppLocale();
   const t = createTranslator(getMessages(locale));
 

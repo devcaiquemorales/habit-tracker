@@ -32,7 +32,7 @@ export function ForgotPasswordForm() {
     triggerInteractionFeedback({ haptic: false });
 
     const origin = window.location.origin;
-    const redirectTo = `${origin}/auth/callback?next=${encodeURIComponent("/auth/update-password")}`;
+    const redirectTo = `${origin}/auth/callback?next=${encodeURIComponent("/update-password")}`;
 
     const supabase = createBrowserSupabaseClient();
     const { error: resetError } = await supabase.auth.resetPasswordForEmail(
