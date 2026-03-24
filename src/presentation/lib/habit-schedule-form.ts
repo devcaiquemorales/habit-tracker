@@ -2,6 +2,9 @@ import type { Schedule } from "@/domain/types/schedule";
 import type { CreateScheduleValue } from "@/presentation/components/create-habit-dialog/schedule-selector";
 
 export function buildScheduleFromForm(form: CreateScheduleValue): Schedule {
+  if (form.category === "flexible") {
+    return { type: "flexible" };
+  }
   if (form.category === "weeklyTarget") {
     const n = Math.min(7, Math.max(1, form.timesPerWeek));
     return { type: "weeklyTarget", timesPerWeek: n };
@@ -23,13 +26,14 @@ export function buildScheduleFromForm(form: CreateScheduleValue): Schedule {
 
 export function scheduleToFormValue(schedule: Schedule): CreateScheduleValue {
   switch (schedule.type) {
+    case "flexible":
+      return { category: "flexible" };
     case "weeklyTarget":
       return {
         category: "weeklyTarget",
         timesPerWeek: Math.min(7, Math.max(1, schedule.timesPerWeek)),
       };
     case "daily":
-    case "flexible":
       return { category: "fixed", mode: "daily", days: [] };
     case "everyOtherDay":
       return { category: "fixed", mode: "everyOtherDay", days: [] };

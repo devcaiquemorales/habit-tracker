@@ -1,11 +1,14 @@
 "use client";
 
-import { useLayoutEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useLayoutEffect, useState } from "react";
 
+import { updateHabitAction } from "@/app/actions/habit-actions";
 import type { Habit } from "@/domain/types/habit";
+import type { HeatmapData } from "@/domain/types/heatmap";
 import { HabitFormDialog } from "@/presentation/components/habit-form-dialog";
-import { MOCK_HEATMAP_DATA } from "@/presentation/data/mock-heatmap";
 import { useHabitLogState } from "@/presentation/hooks/use-habit-log-state";
+import { patchDashboardHabit } from "@/presentation/lib/dashboard-swr";
 
 import { HabitDetailHeader } from "./habit-detail-header";
 import { HabitDetailHeatmap } from "./habit-detail-heatmap";
@@ -24,11 +27,14 @@ function resetViewportScrollTop(): void {
 
 interface HabitDetailScreenProps {
   habit: Habit;
+  heatmapData: HeatmapData;
 }
 
 export function HabitDetailScreen({
   habit: initialHabit,
+  heatmapData,
 }: HabitDetailScreenProps) {
+  const router = useRouter();
   const [editOpen, setEditOpen] = useState(false);
   const [editFormResetKey, setEditFormResetKey] = useState(0);
 
@@ -48,7 +54,9 @@ export function HabitDetailScreen({
     handleRemovePastDay,
     handleSaveEdit,
     handleHeatmapDateSelect,
-  } = useHabitLogState(initialHabit, MOCK_HEATMAP_DATA);
+    persistenceError,
+    logActionPending,
+  } = useHabitLogState(initialHabit, heatmapData, initialHabit.id);
 
   /**
    * Always open detail at the top (including when opening from a deep-scrolled home list).
@@ -57,6 +65,10 @@ export function HabitDetailScreen({
   useLayoutEffect(() => {
     resetViewportScrollTop();
   }, [habit.id]);
+
+  useEffect(() => {
+    router.prefetch("/");
+  }, [router]);
 
   return (
     <>
@@ -85,12 +97,22 @@ export function HabitDetailScreen({
           <HabitDetailHeatmap
             schedule={habit.schedule}
             colorVariant={habit.colorVariant}
-            data={MOCK_HEATMAP_DATA}
+            data={heatmapData}
             completionOverrides={completionOverrides}
             removalOverrides={removalOverrides}
             selectedDateKey={activitySelectedKey}
             onDateSelect={handleHeatmapDateSelect}
           />
+
+          {persistenceError ? (
+            <p
+              className="text-sm text-red-400/90"
+              role="alert"
+              aria-live="polite"
+            >
+              {persistenceError}
+            </p>
+          ) : null}
 
           <HabitUpdateActivity
             schedule={habit.schedule}
@@ -100,6 +122,7 @@ export function HabitDetailScreen({
             onSelectedKeyChange={setActivitySelectedKey}
             onMarkCompleted={handleMarkPastDay}
             onRemoveEntry={handleRemovePastDay}
+            logActionPending={logActionPending}
           />
         </div>
       </main>
@@ -110,7 +133,23 @@ export function HabitDetailScreen({
         onOpenChange={setEditOpen}
         formResetKey={editFormResetKey}
         initialHabit={editInitialHabit}
-        onSave={handleSaveEdit}
+        onSave={async (payload) => {
+          const result = await updateHabitAction(habit.id, {
+            name: payload.name,
+            colorVariant: payload.colorVariant,
+            schedule: payload.schedule,
+          });
+          if (result.error) {
+            return result;
+          }
+          patchDashboardHabit(habit.id, {
+            name: payload.name,
+            colorVariant: payload.colorVariant,
+            schedule: payload.schedule,
+          });
+          handleSaveEdit(payload);
+          return { error: null };
+        }}
       />
     </>
   );

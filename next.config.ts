@@ -1,5 +1,5 @@
-import type { NextConfig } from "next";
 import withPWAInit from "@ducanh2912/next-pwa";
+import type { NextConfig } from "next";
 
 /**
  * PWA: Workbox precaches the app shell + static assets; disables SW in dev to avoid stale caches.

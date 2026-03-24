@@ -27,12 +27,12 @@ export interface EditMotivationDialogProps {
   formResetKey: number;
   /** Current phrase; used to seed the field when the dialog opens. */
   motivationPhrase: string;
-  onSave: (nextPhrase: string) => void;
+  onSave: (nextPhrase: string) => void | Promise<void>;
 }
 
 interface EditMotivationDialogFieldsProps {
   initialDraft: string;
-  onSave: (nextPhrase: string) => void;
+  onSave: (nextPhrase: string) => void | Promise<void>;
   onRequestClose: () => void;
 }
 
@@ -42,15 +42,27 @@ function EditMotivationDialogFields({
   onRequestClose,
 }: EditMotivationDialogFieldsProps) {
   const [draft, setDraft] = useState(initialDraft);
+  const [remoteError, setRemoteError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
 
   const trimmed = draft.trim();
-  const canSave = trimmed.length > 0;
+  const canSave = trimmed.length > 0 && !saving;
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!canSave) return;
+    setRemoteError(null);
     triggerInteractionFeedback({ haptic: false });
-    onSave(trimmed);
-    onRequestClose();
+    setSaving(true);
+    try {
+      await Promise.resolve(onSave(trimmed));
+      onRequestClose();
+    } catch (err) {
+      setRemoteError(
+        err instanceof Error ? err.message : "Something went wrong. Try again.",
+      );
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -65,6 +77,14 @@ function EditMotivationDialogFields({
       </DialogHeader>
 
       <div className="space-y-2 px-5 py-4 sm:px-6">
+        {remoteError ? (
+          <p
+            className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+            role="alert"
+          >
+            {remoteError}
+          </p>
+        ) : null}
         <Label htmlFor="motivation-phrase" className="text-muted-foreground">
           What keeps you going?
         </Label>
@@ -74,6 +94,7 @@ function EditMotivationDialogFields({
           onChange={(e) =>
             setDraft(e.target.value.slice(0, MOTIVATION_MAX_LENGTH))
           }
+          disabled={saving}
           placeholder="For my future"
           maxLength={MOTIVATION_MAX_LENGTH}
           autoComplete="off"
@@ -81,7 +102,7 @@ function EditMotivationDialogFields({
           onKeyDown={(e) => {
             if (e.key === "Enter") {
               e.preventDefault();
-              handleSave();
+              void handleSave();
             }
           }}
         />
@@ -95,6 +116,7 @@ function EditMotivationDialogFields({
           <Button
             type="button"
             variant="outline"
+            disabled={saving}
             className="min-h-11 w-full sm:min-h-9 sm:w-auto"
             onClick={() => triggerInteractionFeedback({ haptic: false })}
           >
@@ -103,9 +125,11 @@ function EditMotivationDialogFields({
         </DialogClose>
         <Button
           type="button"
+          loading={saving}
+          loadingText="Saving..."
           disabled={!canSave}
-          className="min-h-11 w-full sm:min-h-9 sm:w-auto"
-          onClick={handleSave}
+          className="min-h-11 min-w-[7.5rem] w-full sm:min-h-9 sm:w-auto"
+          onClick={() => void handleSave()}
         >
           Save
         </Button>

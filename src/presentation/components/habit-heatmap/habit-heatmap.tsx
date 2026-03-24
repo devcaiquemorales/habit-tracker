@@ -4,14 +4,13 @@ import { toUtcDateKey } from "@/domain/types/date-key";
 import type { CellColorClasses } from "@/domain/types/heatmap";
 import type { HeatmapData } from "@/domain/types/heatmap";
 import type { Schedule } from "@/domain/types/schedule";
-import { MOCK_HEATMAP_DATA } from "@/presentation/data/mock-heatmap";
 import { useScrollToFarRight } from "@/presentation/hooks/use-scroll-to-far-right";
 
 import { COLOR_VARIANTS, type ColorVariant } from "./color-variants";
 import { HeatmapMonthBlock } from "./heatmap-month-block";
 
 interface HabitHeatmapProps {
-  data?: HeatmapData;
+  data: HeatmapData;
   schedule: Schedule;
   colorVariant?: ColorVariant;
   density?: "default" | "comfortable" | "large";
@@ -22,7 +21,7 @@ interface HabitHeatmapProps {
 }
 
 export function HabitHeatmap({
-  data = MOCK_HEATMAP_DATA,
+  data,
   schedule,
   colorVariant = "green",
   density = "default",

@@ -37,6 +37,7 @@ export interface HabitFormPayload {
 function canSubmit(name: string, schedule: CreateScheduleValue): boolean {
   const trimmed = name.trim();
   if (!trimmed) return false;
+  if (schedule.category === "flexible") return true;
   if (schedule.category === "weeklyTarget") {
     return schedule.timesPerWeek >= 1 && schedule.timesPerWeek <= 7;
   }
@@ -83,14 +84,16 @@ export interface HabitFormDialogProps {
     colorVariant: ColorVariant;
     schedule: Schedule;
   };
-  /** Called after validation on successful submit, before close */
-  onSave?: (payload: HabitFormPayload) => void;
+  /** Persist habit; return `{ error: null }` on success or an error message. */
+  onSave?: (
+    payload: HabitFormPayload,
+  ) => Promise<{ error: string | null }> | { error: string | null };
 }
 
 interface HabitFormDialogFieldsProps {
   mode: "create" | "edit";
   initialHabit?: HabitFormDialogProps["initialHabit"];
-  onSave?: (payload: HabitFormPayload) => void;
+  onSave?: HabitFormDialogProps["onSave"];
   onRequestClose: () => void;
 }
 
@@ -100,6 +103,8 @@ function HabitFormDialogFields({
   onSave,
   onRequestClose,
 }: HabitFormDialogFieldsProps) {
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [name, setName] = useState(() =>
     mode === "edit" && initialHabit ? initialHabit.name : "",
   );
@@ -112,30 +117,41 @@ function HabitFormDialogFields({
       : defaultScheduleFormValue(),
   );
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!canSubmit(name, schedule)) return;
+    if (!canSubmit(name, schedule) || saving) return;
     const payload: HabitFormPayload = {
       name: name.trim(),
       colorVariant: color,
       schedule: buildScheduleFromForm(schedule),
     };
-    onSave?.(payload);
+    if (onSave) {
+      setSaving(true);
+      setSaveError(null);
+      try {
+        const result = await Promise.resolve(onSave(payload));
+        if (result.error) {
+          setSaveError(result.error);
+          return;
+        }
+      } finally {
+        setSaving(false);
+      }
+    }
     triggerInteractionFeedback({ haptic: false });
     onRequestClose();
   };
 
-  const submitEnabled = canSubmit(name, schedule);
+  const submitEnabled = canSubmit(name, schedule) && !saving;
 
   const title = mode === "create" ? "New habit" : "Edit habit";
   const description =
     mode === "create"
       ? "Start building consistency"
       : "Update name, color, and schedule";
-  const primaryLabel = mode === "create" ? "Create habit" : "Save changes";
 
   return (
-    <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
+    <form onSubmit={(e) => void handleSubmit(e)} className="flex min-h-0 flex-1 flex-col">
       <DialogHeader className="shrink-0 space-y-1 px-5 pt-6 pr-14 pb-4 sm:px-6 sm:pr-16">
         <DialogTitle className="text-xl font-semibold tracking-tight">
           {title}
@@ -169,6 +185,16 @@ function HabitFormDialogFields({
           <Label className="text-muted-foreground">Schedule</Label>
           <ScheduleSelector value={schedule} onChange={setSchedule} />
         </div>
+
+        {saveError ? (
+          <p
+            className="text-sm text-destructive"
+            role="alert"
+            aria-live="polite"
+          >
+            {saveError}
+          </p>
+        ) : null}
       </div>
 
       <div
@@ -181,6 +207,7 @@ function HabitFormDialogFields({
           <Button
             type="button"
             variant="outline"
+            disabled={saving}
             className="min-h-11 w-full transition-transform duration-150 ease-out active:scale-[0.98] sm:min-h-9 sm:w-auto"
             onClick={() => triggerInteractionFeedback({ haptic: false })}
           >
@@ -189,10 +216,12 @@ function HabitFormDialogFields({
         </DialogClose>
         <Button
           type="submit"
+          loading={saving}
+          loadingText={mode === "create" ? "Creating..." : "Saving..."}
           disabled={!submitEnabled}
-          className="min-h-11 w-full transition-transform duration-150 ease-out enabled:active:scale-[0.98] sm:min-h-9 sm:w-auto"
+          className="min-h-11 min-w-[10.5rem] w-full transition-transform duration-150 ease-out enabled:active:scale-[0.98] sm:min-h-9 sm:w-auto"
         >
-          {primaryLabel}
+          {mode === "create" ? "Create habit" : "Save changes"}
         </Button>
       </div>
     </form>

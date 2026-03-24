@@ -7,4 +7,3 @@ export type {
   HeatmapDayCell,
   HeatmapMonthData,
 } from "@/domain/types/heatmap";
-export { MOCK_HEATMAP_DATA } from "@/presentation/data/mock-heatmap";

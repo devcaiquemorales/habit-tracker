@@ -1,19 +1,9 @@
+import { toUtcDateKey } from "@/domain/types/date-key";
 import type {
   HeatmapData,
   HeatmapDayCell,
   HeatmapMonthData,
 } from "@/domain/types/heatmap";
-
-function mockDoneBitFromUtcDate(d: Date): number {
-  const y = d.getUTCFullYear();
-  const m = d.getUTCMonth();
-  const day = d.getUTCDate();
-  let n = y * 1664525 + (m + 1) * 1013904223 + day * 97;
-  n ^= n << 13;
-  n ^= n >>> 17;
-  n ^= n << 5;
-  return (n >>> 0) & 1;
-}
 
 function utcMidnight(year: number, month: number, day: number): Date {
   return new Date(Date.UTC(year, month, day));
@@ -69,6 +59,7 @@ function buildWeekGridForUtcMonth(
   year: number,
   month: number,
   today: Date,
+  completedKeys: ReadonlySet<string>,
 ): HeatmapDayCell[][] {
   const first = utcMidnight(year, month, 1);
   const lastDay = lastUtcDayOfMonth(year, month).getUTCDate();
@@ -83,9 +74,11 @@ function buildWeekGridForUtcMonth(
   for (let day = 1; day <= lastDay; day += 1) {
     const cellDate = utcMidnight(year, month, day);
     const t = cellDate.getTime();
+    const key = toUtcDateKey(cellDate);
+    const done = t > tt ? 0 : completedKeys.has(key) ? 1 : 0;
     cells.push({
       date: new Date(cellDate.getTime()),
-      done: t > tt ? 0 : mockDoneBitFromUtcDate(cellDate),
+      done,
     });
   }
 
@@ -102,8 +95,10 @@ function buildWeekGridForUtcMonth(
 }
 
 /** Exactly 12 calendar months ending in the current month (UTC), oldest → newest */
-function generateHeatmapData(): HeatmapData {
-  const now = new Date();
+export function buildHeatmapDataFromCompletedKeys(
+  completedKeys: ReadonlySet<string>,
+  now: Date = new Date(),
+): HeatmapData {
   const today = utcMidnight(
     now.getUTCFullYear(),
     now.getUTCMonth(),
@@ -130,7 +125,7 @@ function generateHeatmapData(): HeatmapData {
     months.push({
       id: `${y}-${pad2(m + 1)}`,
       label,
-      weeks: buildWeekGridForUtcMonth(y, m, today),
+      weeks: buildWeekGridForUtcMonth(y, m, today, completedKeys),
     });
 
     cursor = addUtcMonths(cursor, 1);
@@ -143,5 +138,3 @@ function generateHeatmapData(): HeatmapData {
     today: new Date(today.getTime()),
   };
 }
-
-export const MOCK_HEATMAP_DATA: HeatmapData = generateHeatmapData();

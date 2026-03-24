@@ -26,7 +26,8 @@ export type CreateScheduleValue =
   | {
       category: "weeklyTarget";
       timesPerWeek: number;
-    };
+    }
+  | { category: "flexible" };
 
 interface ScheduleSelectorProps {
   value: CreateScheduleValue;
@@ -36,18 +37,20 @@ interface ScheduleSelectorProps {
 const TIMES_PER_WEEK = [1, 2, 3, 4, 5, 6, 7] as const;
 
 export function ScheduleSelector({ value, onChange }: ScheduleSelectorProps) {
-  const setCategory = (category: "fixed" | "weeklyTarget") => {
+  const setCategory = (category: "fixed" | "weeklyTarget" | "flexible") => {
     if (category === "fixed") {
       onChange({
         category: "fixed",
         mode: "daily",
         days: [],
       });
-    } else {
+    } else if (category === "weeklyTarget") {
       onChange({
         category: "weeklyTarget",
         timesPerWeek: 4,
       });
+    } else {
+      onChange({ category: "flexible" });
     }
   };
 
@@ -69,7 +72,12 @@ export function ScheduleSelector({ value, onChange }: ScheduleSelectorProps) {
     onChange({ category: "fixed", mode: "specificDays", days });
   };
 
-  const displayCategory = value.category === "fixed" ? "fixed" : "weeklyTarget";
+  const displayCategory =
+    value.category === "fixed"
+      ? "fixed"
+      : value.category === "weeklyTarget"
+        ? "weeklyTarget"
+        : "flexible";
 
   return (
     <div className="flex flex-col gap-5">
@@ -111,6 +119,23 @@ export function ScheduleSelector({ value, onChange }: ScheduleSelectorProps) {
           }}
         >
           Weekly target
+        </Button>
+        <Button
+          type="button"
+          role="tab"
+          aria-selected={displayCategory === "flexible"}
+          variant={displayCategory === "flexible" ? "default" : "outline"}
+          size="sm"
+          className={cn(
+            "min-h-10 justify-center sm:min-h-8",
+            displayCategory === "flexible" && "shadow-none",
+          )}
+          onClick={() => {
+            triggerInteractionFeedback({ haptic: false });
+            setCategory("flexible");
+          }}
+        >
+          Flexible
         </Button>
       </div>
 
@@ -183,6 +208,12 @@ export function ScheduleSelector({ value, onChange }: ScheduleSelectorProps) {
             </div>
           )}
         </>
+      )}
+
+      {value.category === "flexible" && (
+        <p className="text-xs leading-relaxed text-muted-foreground">
+          Log any day you complete this habit. No fixed weekdays.
+        </p>
       )}
 
       {value.category === "weeklyTarget" && (

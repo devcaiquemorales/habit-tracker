@@ -24,7 +24,7 @@ interface HabitCardProps {
   schedule: Schedule;
   streak?: number;
   colorVariant?: ColorVariant;
-  data?: HeatmapData;
+  data: HeatmapData;
 }
 
 export function HabitCard({

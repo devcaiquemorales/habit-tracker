@@ -7,7 +7,7 @@ import { HabitHeatmap } from "@/presentation/components/habit-heatmap";
 interface HabitDetailHeatmapProps {
   schedule: Schedule;
   colorVariant: ColorVariant;
-  data?: HeatmapData;
+  data: HeatmapData;
   completionOverrides?: Set<string>;
   removalOverrides?: Set<string>;
   onDateSelect?: (dateKey: string) => void;

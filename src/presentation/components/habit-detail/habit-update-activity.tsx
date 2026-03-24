@@ -24,8 +24,10 @@ interface HabitUpdateActivityProps {
   days: Date[];
   selectedKey: string | null;
   onSelectedKeyChange: (key: string | null) => void;
-  onMarkCompleted: (dateKey: string) => void;
-  onRemoveEntry: (dateKey: string) => void;
+  onMarkCompleted: (dateKey: string) => void | Promise<void>;
+  onRemoveEntry: (dateKey: string) => void | Promise<void>;
+  /** Which log mutation is in flight, if any. */
+  logActionPending?: "mark" | "remove" | null;
 }
 
 export function HabitUpdateActivity({
@@ -36,6 +38,7 @@ export function HabitUpdateActivity({
   onSelectedKeyChange,
   onMarkCompleted,
   onRemoveEntry,
+  logActionPending = null,
 }: HabitUpdateActivityProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const selectedChipRef = useRef<HTMLButtonElement>(null);
@@ -108,8 +111,16 @@ export function HabitUpdateActivity({
     scroller.scrollLeft = scroller.scrollWidth - scroller.clientWidth;
   }, [selectedKey, days]);
 
+  const logBusy = logActionPending !== null;
+
   return (
-    <section className="flex flex-col gap-4">
+    <section
+      className={cn(
+        "flex flex-col gap-4 transition-opacity duration-150",
+        logBusy && "opacity-90",
+      )}
+      aria-busy={logBusy || undefined}
+    >
       <div className="flex flex-col gap-2">
         <p className="text-sm font-medium text-white/50">Update activity</p>
         <p className="text-sm leading-relaxed text-white/45">
@@ -182,7 +193,15 @@ export function HabitUpdateActivity({
         type="button"
         size="lg"
         variant={updateActivitySelection.buttonVariant}
-        className="min-h-11 w-full sm:w-auto"
+        className="min-h-11 min-w-[11rem] w-full sm:w-auto"
+        loading={logBusy}
+        loadingText={
+          logActionPending === "remove"
+            ? "Removing..."
+            : logActionPending === "mark"
+              ? "Saving..."
+              : undefined
+        }
         disabled={
           updateActivitySelection.dateKey === null ||
           !updateActivitySelection.isSelectable
@@ -190,12 +209,12 @@ export function HabitUpdateActivity({
         onClick={() => {
           const { dateKey, isSelectable, isCompleted } =
             updateActivitySelection;
-          if (!dateKey || !isSelectable) return;
+          if (!dateKey || !isSelectable || logBusy) return;
           triggerInteractionFeedback({ haptic: false });
           if (isCompleted) {
-            onRemoveEntry(dateKey);
+            void onRemoveEntry(dateKey);
           } else {
-            onMarkCompleted(dateKey);
+            void onMarkCompleted(dateKey);
           }
         }}
       >
