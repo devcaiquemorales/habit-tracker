@@ -1,15 +1,15 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useLayoutEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useState } from "react";
 
 import { updateHabitAction } from "@/app/actions/habit-actions";
 import type { Habit } from "@/domain/types/habit";
-import type { HeatmapData } from "@/domain/types/heatmap";
 import { HabitDeleteConfirmDialog } from "@/presentation/components/habit-delete-confirm-dialog";
 import { HabitFormDialog } from "@/presentation/components/habit-form-dialog";
 import { Button } from "@/presentation/components/ui/button";
 import { useHabitLogState } from "@/presentation/hooks/use-habit-log-state";
+import { buildHeatmapDataFromCompletedKeys } from "@/presentation/lib/build-heatmap-data";
 import {
   patchDashboardHabit,
   removeHabitFromDashboard,
@@ -25,6 +25,11 @@ import { HabitUpdateActivity } from "./habit-update-activity";
 /** 24px between major blocks */
 const SECTION_GAP = "gap-6";
 
+function sortedKeysSignature(keys: readonly string[]): string {
+  if (keys.length === 0) return "";
+  return [...keys].sort().join(",");
+}
+
 function resetViewportScrollTop(): void {
   if (typeof window === "undefined") return;
   window.scrollTo(0, 0);
@@ -34,18 +39,29 @@ function resetViewportScrollTop(): void {
 
 interface HabitDetailScreenProps {
   habit: Habit;
-  heatmapData: HeatmapData;
+  /** Log date keys from the server; heatmap is built on the client in local time. */
+  initialCompletedKeys: string[];
 }
 
 export function HabitDetailScreen({
   habit: initialHabit,
-  heatmapData,
+  initialCompletedKeys,
 }: HabitDetailScreenProps) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const router = useRouter();
   const [editOpen, setEditOpen] = useState(false);
   const [editFormResetKey, setEditFormResetKey] = useState(0);
   const [deleteOpen, setDeleteOpen] = useState(false);
+
+  const keysSig = useMemo(
+    () => sortedKeysSignature(initialCompletedKeys),
+    [initialCompletedKeys],
+  );
+
+  const heatmapData = useMemo(() => {
+    const keys = keysSig === "" ? [] : keysSig.split(",");
+    return buildHeatmapDataFromCompletedKeys(new Set(keys), new Date(), locale);
+  }, [keysSig, locale]);
 
   const {
     habit,

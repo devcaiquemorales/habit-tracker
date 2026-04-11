@@ -4,11 +4,11 @@ import {
   closestCenter,
   DndContext,
   DragOverlay,
+  type DragStartEvent,
   KeyboardSensor,
   PointerSensor,
   useSensor,
   useSensors,
-  type DragStartEvent,
 } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -16,24 +16,23 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { Check, GripVertical } from "lucide-react";
-import { useState } from "react";
-import useSWR from "swr";
-
-import { triggerInteractionFeedback } from "@/presentation/lib/interaction-feedback";
+import { useEffect, useState } from "react";
+import useSWR, { mutate } from "swr";
 
 import { CreateHabitDialog } from "@/presentation/components/create-habit-dialog";
 import { HomeHeader } from "@/presentation/components/home-header";
-import {
-  DASHBOARD_SWR_KEY,
-  fetchDashboardJson,
-} from "@/presentation/lib/dashboard-swr";
+import { useHabitOrder } from "@/presentation/hooks/use-habit-order";
 import {
   readDashboardCache,
   writeDashboardCache,
 } from "@/presentation/lib/dashboard-cache";
+import {
+  DASHBOARD_SWR_KEY,
+  fetchDashboardJson,
+} from "@/presentation/lib/dashboard-swr";
 import { useI18n } from "@/presentation/lib/i18n/i18n-provider";
+import { triggerInteractionFeedback } from "@/presentation/lib/interaction-feedback";
 import { cn } from "@/presentation/lib/utils";
-import { useHabitOrder } from "@/presentation/hooks/use-habit-order";
 
 import { HabitCardWithHeatmap } from "./habit-card-with-heatmap";
 import { SortableHabitCard } from "./sortable-habit-card";
@@ -41,18 +40,21 @@ import { SortableHabitCard } from "./sortable-habit-card";
 export function HomeDashboardClient() {
   const { t } = useI18n();
 
-  // Read the last persisted snapshot once on mount so cold starts (PWA reopen)
-  // render data immediately rather than showing a skeleton.
-  const [localCache] = useState(
-    () => (typeof window !== "undefined" ? readDashboardCache() : null),
-  );
+  /**
+   * Do not read localStorage during the first render: SSR and the client must
+   * agree on markup. After hydration, seed SWR from cache for instant data.
+   */
+  useEffect(() => {
+    const cached = readDashboardCache();
+    if (cached) {
+      void mutate(DASHBOARD_SWR_KEY, cached, { revalidate: true });
+    }
+  }, []);
 
   const { data, error, isLoading } = useSWR(
     DASHBOARD_SWR_KEY,
     fetchDashboardJson,
     {
-      // Show the localStorage snapshot instantly while the network catches up.
-      fallbackData: localCache ?? undefined,
       // Let SWR decide when to revalidate on mount; dedupingInterval (60 s)
       // prevents a redundant fetch when navigating back quickly from a detail page.
       revalidateOnMount: true,

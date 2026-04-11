@@ -33,11 +33,11 @@ export interface HeatmapMonthData {
 
 export interface HeatmapData {
   months: HeatmapMonthData[];
-  /** First day of the 12-month window (UTC), 1st of month */
+  /** First day of the 12-month window (local calendar), 1st of month at local midnight */
   rangeStart: Date;
-  /** Last day of the **current** calendar month (UTC), inclusive */
+  /** Last day of the **current** calendar month (local), inclusive at local midnight */
   rangeEnd: Date;
-  /** UTC midnight “today” when generated */
+  /** Local midnight for “today” when the grid was generated */
   today: Date;
 }
 

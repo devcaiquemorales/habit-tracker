@@ -19,11 +19,11 @@ interface HeatmapColumnProps {
   todayHighlightKey: string;
   completionOverrides?: Set<string>;
   removalOverrides?: Set<string>;
-  /** When set, past/today cells (not padding, not future) call this with their UTC date key. */
+  /** When set, past/today cells (not padding, not future) call this with their local `YYYY-MM-DD` key. */
   onDateSelect?: (dateKey: string) => void;
   /** Highlights the cell that matches the Update activity selection. */
   selectedDateKey?: string | null;
-  /** Month start/end tiny labels keyed by UTC `YYYY-MM-DD` */
+  /** Month start/end tiny labels keyed by local `YYYY-MM-DD` */
   boundaryLabelByDateKey?: ReadonlyMap<string, string>;
   translate: TranslateFn;
   locale: AppLocale;
