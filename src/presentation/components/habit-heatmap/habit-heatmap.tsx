@@ -1,6 +1,6 @@
 "use client";
 
-import { toUtcDateKey } from "@/domain/types/date-key";
+import { toLocalDateKey } from "@/domain/types/date-key";
 import type { CellColorClasses } from "@/domain/types/heatmap";
 import type { HeatmapData } from "@/domain/types/heatmap";
 import type { Schedule } from "@/domain/types/schedule";
@@ -41,7 +41,7 @@ export function HabitHeatmap({
         ? "comfortable"
         : "default";
   const { months, today } = data;
-  const todayHighlightKey = toUtcDateKey(today);
+  const todayHighlightKey = toLocalDateKey(today);
   const {
     doneClass,
     missedClass,

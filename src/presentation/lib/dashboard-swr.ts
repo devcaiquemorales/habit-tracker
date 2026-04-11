@@ -4,7 +4,7 @@ import { mutate } from "swr";
 
 import type { DashboardJson } from "@/app/(app)/lib/dashboard-json";
 import { computeHabitStreak } from "@/domain/lib/compute-habit-streak";
-import { getUtcToday, toUtcDateKey } from "@/domain/types/date-key";
+import { getLocalToday, toLocalDateKey } from "@/domain/types/date-key";
 import type { Habit } from "@/domain/types/habit";
 import { isTodayScheduled } from "@/domain/types/schedule";
 
@@ -109,8 +109,8 @@ export function patchDashboardAfterLogMutation(
   dateKey: string,
   mode: "add" | "remove",
 ): void {
-  const today = getUtcToday();
-  const todayKey = toUtcDateKey(today);
+  const today = getLocalToday();
+  const todayKey = toLocalDateKey(today);
 
   void mutate(
     DASHBOARD_SWR_KEY,

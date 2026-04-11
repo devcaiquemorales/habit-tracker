@@ -1,4 +1,4 @@
-import { toUtcDateKey } from "@/domain/types/date-key";
+import { toLocalDateKey } from "@/domain/types/date-key";
 import type {
   HeatmapData,
   HeatmapDayCell,
@@ -7,24 +7,24 @@ import type {
 import type { AppLocale } from "@/lib/app-locale";
 import { formatHeatmapMonthLabel } from "@/presentation/lib/i18n/format";
 
-function utcMidnight(year: number, month: number, day: number): Date {
-  return new Date(Date.UTC(year, month, day));
+function localMidnight(year: number, month: number, day: number): Date {
+  return new Date(year, month, day);
 }
 
-function startOfUtcMonth(d: Date): Date {
-  return utcMidnight(d.getUTCFullYear(), d.getUTCMonth(), 1);
+function startOfLocalMonth(d: Date): Date {
+  return localMidnight(d.getFullYear(), d.getMonth(), 1);
 }
 
-function addUtcMonths(monthStart: Date, delta: number): Date {
-  const y = monthStart.getUTCFullYear();
-  const m = monthStart.getUTCMonth() + delta;
+function addLocalMonths(monthStart: Date, delta: number): Date {
+  const y = monthStart.getFullYear();
+  const m = monthStart.getMonth() + delta;
   const ny = y + Math.floor(m / 12);
   const nm = ((m % 12) + 12) % 12;
-  return utcMidnight(ny, nm, 1);
+  return localMidnight(ny, nm, 1);
 }
 
-function lastUtcDayOfMonth(year: number, month: number): Date {
-  return utcMidnight(year, month + 1, 0);
+function lastLocalDayOfMonth(year: number, month: number): Date {
+  return localMidnight(year, month + 1, 0);
 }
 
 function pad2(n: number): string {
@@ -42,16 +42,16 @@ function formatMonthLabel(
   return { label, prevYearForNext: year };
 }
 
-function buildWeekGridForUtcMonth(
+function buildWeekGridForLocalMonth(
   year: number,
   month: number,
   today: Date,
   completedKeys: ReadonlySet<string>,
 ): HeatmapDayCell[][] {
-  const first = utcMidnight(year, month, 1);
-  const lastDay = lastUtcDayOfMonth(year, month).getUTCDate();
+  const first = localMidnight(year, month, 1);
+  const lastDay = lastLocalDayOfMonth(year, month).getDate();
   const tt = today.getTime();
-  const leadingPad = first.getUTCDay();
+  const leadingPad = first.getDay(); // local weekday (Sun=0 … Sat=6)
   const cells: HeatmapDayCell[] = [];
 
   for (let i = 0; i < leadingPad; i += 1) {
@@ -59,9 +59,9 @@ function buildWeekGridForUtcMonth(
   }
 
   for (let day = 1; day <= lastDay; day += 1) {
-    const cellDate = utcMidnight(year, month, day);
+    const cellDate = localMidnight(year, month, day);
     const t = cellDate.getTime();
-    const key = toUtcDateKey(cellDate);
+    const key = toLocalDateKey(cellDate);
     const done = t > tt ? 0 : completedKeys.has(key) ? 1 : 0;
     cells.push({
       date: new Date(cellDate.getTime()),
@@ -81,23 +81,23 @@ function buildWeekGridForUtcMonth(
   return weeks;
 }
 
-/** Exactly 12 calendar months ending in the current month (UTC), oldest → newest */
+/** Exactly 12 calendar months ending in the current month (local timezone), oldest → newest */
 export function buildHeatmapDataFromCompletedKeys(
   completedKeys: ReadonlySet<string>,
   now: Date = new Date(),
   locale: AppLocale = "en",
 ): HeatmapData {
-  const today = utcMidnight(
-    now.getUTCFullYear(),
-    now.getUTCMonth(),
-    now.getUTCDate(),
+  const today = localMidnight(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
   );
 
-  const currentMonthStart = startOfUtcMonth(today);
-  const rangeStart = addUtcMonths(currentMonthStart, -11);
-  const rangeEnd = lastUtcDayOfMonth(
-    today.getUTCFullYear(),
-    today.getUTCMonth(),
+  const currentMonthStart = startOfLocalMonth(today);
+  const rangeStart = addLocalMonths(currentMonthStart, -11);
+  const rangeEnd = lastLocalDayOfMonth(
+    today.getFullYear(),
+    today.getMonth(),
   );
 
   const months: HeatmapMonthData[] = [];
@@ -105,18 +105,18 @@ export function buildHeatmapDataFromCompletedKeys(
   let prevYear: number | undefined;
 
   for (let i = 0; i < 12; i += 1) {
-    const y = cursor.getUTCFullYear();
-    const m = cursor.getUTCMonth();
+    const y = cursor.getFullYear();
+    const m = cursor.getMonth();
     const { label, prevYearForNext } = formatMonthLabel(y, m, prevYear, locale);
     prevYear = prevYearForNext;
 
     months.push({
       id: `${y}-${pad2(m + 1)}`,
       label,
-      weeks: buildWeekGridForUtcMonth(y, m, today, completedKeys),
+      weeks: buildWeekGridForLocalMonth(y, m, today, completedKeys),
     });
 
-    cursor = addUtcMonths(cursor, 1);
+    cursor = addLocalMonths(cursor, 1);
   }
 
   return {

@@ -6,7 +6,7 @@ import {
   logHabitDayAction,
   unlogHabitDayAction,
 } from "@/app/actions/habit-log-actions";
-import { getUtcToday, toUtcDateKey } from "@/domain/types/date-key";
+import { getLocalToday, toLocalDateKey } from "@/domain/types/date-key";
 import type { Habit } from "@/domain/types/habit";
 import type { HeatmapData } from "@/domain/types/heatmap";
 import { isTodayScheduled } from "@/domain/types/schedule";
@@ -53,8 +53,8 @@ export function useHabitLogState(
     }));
   }, [initialHabit.id, initialHabit.streak, initialHabit.completedToday]);
 
-  const [today] = useState(() => getUtcToday());
-  const todayKey = useMemo(() => toUtcDateKey(today), [today]);
+  const [today] = useState(() => getLocalToday());
+  const todayKey = useMemo(() => toLocalDateKey(today), [today]);
 
   const [activitySelectedKey, setActivitySelectedKey] = useState<string | null>(
     () => {
@@ -64,7 +64,7 @@ export function useHabitLogState(
         ACTIVITY_STRIP_DAY_COUNT,
       );
       const merged = new Set(getCompletedKeysFromHeatmapData(heatmapData));
-      const tk = toUtcDateKey(today);
+      const tk = toLocalDateKey(today);
       if (
         initialHabit.completedToday &&
         isTodayScheduled(initialHabit.schedule, today)
@@ -94,7 +94,7 @@ export function useHabitLogState(
     activitySelectedKey === null
       ? defaultActivityWindow
       : defaultActivityWindow.some(
-            (d) => toUtcDateKey(d) === activitySelectedKey,
+            (d) => toLocalDateKey(d) === activitySelectedKey,
           )
         ? defaultActivityWindow
         : computeUpdateActivityDayWindow(

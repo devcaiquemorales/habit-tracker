@@ -1,4 +1,4 @@
-import { toUtcDateKey } from "@/domain/types/date-key";
+import { toLocalDateKey } from "@/domain/types/date-key";
 import type { HeatmapData } from "@/domain/types/heatmap";
 
 export function getCompletedKeysFromHeatmapData(
@@ -9,7 +9,7 @@ export function getCompletedKeysFromHeatmapData(
     for (const week of month.weeks) {
       for (const cell of week) {
         if (cell.date !== null && cell.done > 0) {
-          keys.add(toUtcDateKey(cell.date));
+          keys.add(toLocalDateKey(cell.date));
         }
       }
     }

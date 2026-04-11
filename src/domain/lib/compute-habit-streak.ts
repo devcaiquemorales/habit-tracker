@@ -1,30 +1,33 @@
-import { toUtcDateKey } from "@/domain/types/date-key";
+import { toLocalDateKey } from "@/domain/types/date-key";
 
 /**
- * Consecutive UTC days with a log, allowing "today" to be skipped if not yet logged
- * (matches dashboard mock behavior where streak can be > 0 without completing today).
+ * Consecutive calendar days (local timezone) with a log, allowing "today" to
+ * be skipped if not yet logged — streak stays alive until yesterday's key is gone.
  */
 export function computeHabitStreak(
   completedDateKeys: ReadonlySet<string>,
   today: Date,
 ): number {
-  const todayKey = toUtcDateKey(today);
+  const todayKey = toLocalDateKey(today);
+  // Work with local midnight so setDate / getDate give local calendar days.
   const cursor = new Date(
-    Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()),
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate(),
   );
 
   if (!completedDateKeys.has(todayKey)) {
-    cursor.setUTCDate(cursor.getUTCDate() - 1);
+    cursor.setDate(cursor.getDate() - 1);
   }
 
   let streak = 0;
   const minTime = today.getTime() - 400 * 86400000;
 
   while (cursor.getTime() >= minTime) {
-    const key = toUtcDateKey(cursor);
+    const key = toLocalDateKey(cursor);
     if (completedDateKeys.has(key)) {
       streak += 1;
-      cursor.setUTCDate(cursor.getUTCDate() - 1);
+      cursor.setDate(cursor.getDate() - 1);
     } else {
       break;
     }

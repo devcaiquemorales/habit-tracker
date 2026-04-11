@@ -1,4 +1,4 @@
-import { toUtcDateKey } from "./date-key";
+import { toLocalDateKey } from "./date-key";
 
 export type ScheduleType =
   | "daily"
@@ -25,10 +25,13 @@ export function isDayExpected(schedule: Schedule, date: Date): boolean {
     case "daily":
       return true;
     case "specificDays":
-      return schedule.days.includes(date.getUTCDay());
+      return schedule.days.includes(date.getDay());
     case "everyOtherDay": {
-      const msPerDay = 86400000;
-      const dayIndex = Math.floor(date.getTime() / msPerDay);
+      // Use local date components to build a stable UTC-based day index.
+      // Two users on the same LOCAL calendar day always get the same result.
+      const dayIndex = Math.floor(
+        Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) / 86400000,
+      );
       return dayIndex % 2 === 0;
     }
     case "weeklyTarget":
@@ -53,7 +56,7 @@ export function isPastDayLoggable(
   date: Date,
   completedKeys: Set<string>,
 ): boolean {
-  const key = toUtcDateKey(date);
+  const key = toLocalDateKey(date);
   if (completedKeys.has(key)) return true;
   if (schedule.type === "weeklyTarget" || schedule.type === "flexible") {
     return true;

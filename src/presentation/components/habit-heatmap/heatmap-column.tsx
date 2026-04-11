@@ -1,4 +1,4 @@
-import { toUtcDateKey } from "@/domain/types/date-key";
+import { toLocalDateKey } from "@/domain/types/date-key";
 import type { CellColorClasses, HeatmapDayCell } from "@/domain/types/heatmap";
 import type { Schedule } from "@/domain/types/schedule";
 import { isDayExpected, isWeeklyTargetSchedule } from "@/domain/types/schedule";
@@ -81,7 +81,7 @@ export function HeatmapColumn({
           );
         }
 
-        const dateKey = toUtcDateKey(cell.date);
+        const dateKey = toLocalDateKey(cell.date);
         const cellTimeMs = cell.date.getTime();
         const monthBoundaryLabel = boundaryLabelByDateKey.get(dateKey);
 

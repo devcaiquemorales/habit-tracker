@@ -2,7 +2,7 @@
 
 import { useLayoutEffect, useMemo, useRef } from "react";
 
-import { getUtcToday, toUtcDateKey } from "@/domain/types/date-key";
+import { getLocalToday, toLocalDateKey } from "@/domain/types/date-key";
 import type { Schedule } from "@/domain/types/schedule";
 import { Button } from "@/presentation/components/ui/button";
 import { formatActivityChipDate } from "@/presentation/lib/i18n/format";
@@ -38,7 +38,7 @@ export function HabitUpdateActivity({
   const scrollRef = useRef<HTMLDivElement>(null);
   const selectedChipRef = useRef<HTMLButtonElement>(null);
 
-  const todayDate = getUtcToday();
+  const todayDate = getLocalToday();
 
   /** Single source for the action button — always tied to `selectedKey`. */
   const updateActivitySelection = useMemo(() => {
@@ -53,7 +53,7 @@ export function HabitUpdateActivity({
     }
 
     const selectedDate =
-      days.find((d) => toUtcDateKey(d) === selectedKey) ?? null;
+      days.find((d) => toLocalDateKey(d) === selectedKey) ?? null;
 
     if (!selectedDate) {
       return {
@@ -131,7 +131,7 @@ export function HabitUpdateActivity({
       >
         <div className="flex w-max gap-2 px-1">
           {days.map((d) => {
-            const key = toUtcDateKey(d);
+            const key = toLocalDateKey(d);
             const selectable = isUpdateActivitySelectable(
               schedule,
               d,
