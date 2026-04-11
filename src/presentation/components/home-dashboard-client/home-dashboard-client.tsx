@@ -1,7 +1,23 @@
 "use client";
 
-import { useEffect } from "react";
-import useSWR, { mutate } from "swr";
+import {
+  closestCenter,
+  DndContext,
+  DragOverlay,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragStartEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { Check, GripVertical } from "lucide-react";
+import { useState } from "react";
+import useSWR from "swr";
 
 import { CreateHabitDialog } from "@/presentation/components/create-habit-dialog";
 import { HomeHeader } from "@/presentation/components/home-header";
@@ -9,45 +25,41 @@ import {
   DASHBOARD_SWR_KEY,
   fetchDashboardJson,
 } from "@/presentation/lib/dashboard-swr";
+import {
+  readDashboardCache,
+  writeDashboardCache,
+} from "@/presentation/lib/dashboard-cache";
 import { useI18n } from "@/presentation/lib/i18n/i18n-provider";
+import { cn } from "@/presentation/lib/utils";
+import { useHabitOrder } from "@/presentation/hooks/use-habit-order";
 
 import { HabitCardWithHeatmap } from "./habit-card-with-heatmap";
+import { SortableHabitCard } from "./sortable-habit-card";
 
 export function HomeDashboardClient() {
   const { t } = useI18n();
+
+  // Read the last persisted snapshot once on mount so cold starts (PWA reopen)
+  // render data immediately rather than showing a skeleton.
+  const [localCache] = useState(
+    () => (typeof window !== "undefined" ? readDashboardCache() : null),
+  );
+
   const { data, error, isLoading } = useSWR(
     DASHBOARD_SWR_KEY,
     fetchDashboardJson,
     {
-      revalidateOnMount: false,
+      // Show the localStorage snapshot instantly while the network catches up.
+      fallbackData: localCache ?? undefined,
+      // Let SWR decide when to revalidate on mount; dedupingInterval (60 s)
+      // prevents a redundant fetch when navigating back quickly from a detail page.
+      revalidateOnMount: true,
       revalidateOnFocus: false,
       dedupingInterval: 60_000,
+      // Persist every fresh response so the next cold start is also instant.
+      onSuccess: writeDashboardCache,
     },
   );
-
-  useEffect(() => {
-    let idleId: number | undefined;
-    let timeoutId: ReturnType<typeof setTimeout> | undefined;
-
-    const schedule = () => {
-      void mutate(DASHBOARD_SWR_KEY, undefined, { revalidate: true });
-    };
-
-    if (typeof window !== "undefined" && "requestIdleCallback" in window) {
-      idleId = window.requestIdleCallback(schedule, { timeout: 2500 });
-    } else {
-      timeoutId = setTimeout(schedule, 0);
-    }
-
-    return () => {
-      if (idleId !== undefined && typeof window !== "undefined") {
-        window.cancelIdleCallback(idleId);
-      }
-      if (timeoutId !== undefined) {
-        clearTimeout(timeoutId);
-      }
-    };
-  }, []);
 
   const profile = data?.profile;
   const habits = data?.habits ?? [];
@@ -55,6 +67,34 @@ export function HomeDashboardClient() {
 
   const showEmptyState = !isLoading && habits.length === 0 && !error;
   const showSkeleton = isLoading && !data;
+
+  const { orderedHabits, handleDragEnd } = useHabitOrder(habits);
+  const [isReordering, setIsReordering] = useState(false);
+  const [activeId, setActiveId] = useState<string | null>(null);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 8 },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
+
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(String(event.active.id));
+  };
+
+  const handleDragEndWithReset = (
+    event: Parameters<typeof handleDragEnd>[0],
+  ) => {
+    handleDragEnd(event);
+    setActiveId(null);
+  };
+
+  const activeHabit = activeId
+    ? orderedHabits.find((h) => h.id === activeId)
+    : null;
 
   return (
     <>
@@ -94,13 +134,67 @@ export function HomeDashboardClient() {
                 </p>
               </div>
             ) : (
-              habits.map((habit) => (
-                <HabitCardWithHeatmap
-                  key={habit.id}
-                  habit={habit}
-                  completedKeys={logKeysRecord[habit.id] ?? []}
-                />
-              ))
+              <>
+                {orderedHabits.length > 1 && (
+                  <div className="flex items-center justify-end -mb-1">
+                    <button
+                      onClick={() => setIsReordering((v) => !v)}
+                      className={cn(
+                        "flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all duration-200",
+                        isReordering
+                          ? "bg-white/10 text-white/90 ring-1 ring-white/10"
+                          : "text-white/35 hover:text-white/60",
+                      )}
+                    >
+                      {isReordering ? (
+                        <>
+                          <Check size={12} />
+                          Done
+                        </>
+                      ) : (
+                        <>
+                          <GripVertical size={12} />
+                          Reorder
+                        </>
+                      )}
+                    </button>
+                  </div>
+                )}
+
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragStart={handleDragStart}
+                  onDragEnd={handleDragEndWithReset}
+                >
+                  <SortableContext
+                    items={orderedHabits.map((h) => h.id)}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    <div className="flex flex-col gap-4">
+                      {orderedHabits.map((habit) => (
+                        <SortableHabitCard
+                          key={habit.id}
+                          habit={habit}
+                          completedKeys={logKeysRecord[habit.id] ?? []}
+                          isReordering={isReordering}
+                        />
+                      ))}
+                    </div>
+                  </SortableContext>
+
+                  <DragOverlay dropAnimation={null}>
+                    {activeHabit ? (
+                      <div className="rotate-[0.8deg] scale-[1.02] cursor-grabbing shadow-2xl shadow-black/50 ring-1 ring-white/10 rounded-xl">
+                        <HabitCardWithHeatmap
+                          habit={activeHabit}
+                          completedKeys={logKeysRecord[activeHabit.id] ?? []}
+                        />
+                      </div>
+                    ) : null}
+                  </DragOverlay>
+                </DndContext>
+              </>
             )}
           </div>
         </div>

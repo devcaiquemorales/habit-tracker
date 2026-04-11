@@ -20,9 +20,9 @@ export async function fetchDashboardJson(): Promise<DashboardJson> {
   return res.json() as Promise<DashboardJson>;
 }
 
-/** Background refresh; does not block UI. */
+/** Background refresh; does not block UI or clear the existing cached data. */
 export function revalidateDashboardCache(): void {
-  void mutate(DASHBOARD_SWR_KEY, undefined, { revalidate: true });
+  void mutate(DASHBOARD_SWR_KEY);
 }
 
 export function patchDashboardProfile(updates: {
