@@ -34,6 +34,13 @@ interface HeatmapCellProps {
   monthBoundaryLabel?: string;
 }
 
+/** Dot sizes that sit centered inside a padding cell — one step below the cell size. */
+const PADDING_DOT_CLASS: Record<HeatmapCellSize, string> = {
+  default: "h-[3px] w-[3px]",
+  comfortable: "h-1 w-1",
+  large: "h-[5px] w-[5px]",
+};
+
 export function HeatmapCell({
   status,
   cellColors,
@@ -45,10 +52,29 @@ export function HeatmapCell({
   selectDayLabel,
   monthBoundaryLabel,
 }: HeatmapCellProps) {
+  // Padding cells: tiny centered dot — same outer footprint as a real cell so
+  // the grid aligns correctly, but clearly not an actionable day.
+  if (status === "monthPadding") {
+    return (
+      <div
+        aria-hidden
+        className={cn(
+          "relative shrink-0 flex items-center justify-center",
+          SIZE_CLASS[size],
+        )}
+      >
+        <div
+          className={cn(
+            "rounded-full bg-white/[0.10]",
+            PADDING_DOT_CLASS[size],
+          )}
+        />
+      </div>
+    );
+  }
+
   const statusClass =
-    status === "monthPadding"
-      ? cellColors.monthPadding
-      : status === "completed"
+    status === "completed"
         ? cellColors.done
         : status === "expectedMissed"
           ? cellColors.missed
@@ -105,7 +131,7 @@ export function HeatmapCell({
     <div
       className={sharedClass}
       title={tooltip}
-      aria-hidden={status === "monthPadding" ? true : undefined}
+      aria-hidden={undefined}
     >
       {boundaryMarker}
     </div>

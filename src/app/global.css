@@ -244,6 +244,19 @@
   animation: app-page-enter 165ms cubic-bezier(0.33, 1, 0.68, 1) both;
 }
 
+/**
+ * iOS-style card wiggle for habit reorder mode.
+ * Applied via Tailwind arbitrary: motion-safe:[animation:ios-wiggle_...]
+ */
+@keyframes ios-wiggle {
+  0% {
+    transform: rotate(-0.75deg) translateX(-0.5px);
+  }
+  100% {
+    transform: rotate(0.75deg) translateX(0.5px);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .page-route-tap-response {
     opacity: 1;

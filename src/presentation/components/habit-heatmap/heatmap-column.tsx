@@ -69,6 +69,7 @@ export function HeatmapColumn({
     <div className="flex flex-col gap-[2px]">
       {week.map((cell, dayIndex) => {
         if (cell.date === null) {
+          // Renders as a tiny dot — see HeatmapCell's monthPadding branch.
           return (
             <HeatmapCell
               key={dayIndex}

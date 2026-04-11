@@ -14,6 +14,12 @@ export interface HeatmapDayCell {
    * otherwise `0` (ignored for padding/future).
    */
   done: number;
+  /**
+   * `true` only for null cells that come *after* the month's last real day.
+   * Leading null cells (before day 1) are `false`/absent.
+   * Trailing cells are rendered invisible so they don't look like missed days.
+   */
+  trailing?: boolean;
 }
 
 export interface HeatmapMonthData {

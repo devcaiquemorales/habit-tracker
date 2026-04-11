@@ -70,7 +70,7 @@ function buildWeekGridForUtcMonth(
   }
 
   while (cells.length % 7 !== 0) {
-    cells.push({ date: null, done: 0 });
+    cells.push({ date: null, done: 0, trailing: true });
   }
 
   const weeks: HeatmapDayCell[][] = [];

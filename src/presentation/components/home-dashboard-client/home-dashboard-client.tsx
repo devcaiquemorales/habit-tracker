@@ -19,6 +19,8 @@ import { Check, GripVertical } from "lucide-react";
 import { useState } from "react";
 import useSWR from "swr";
 
+import { triggerInteractionFeedback } from "@/presentation/lib/interaction-feedback";
+
 import { CreateHabitDialog } from "@/presentation/components/create-habit-dialog";
 import { HomeHeader } from "@/presentation/components/home-header";
 import {
@@ -83,6 +85,7 @@ export function HomeDashboardClient() {
 
   const handleDragStart = (event: DragStartEvent) => {
     setActiveId(String(event.active.id));
+    triggerInteractionFeedback();
   };
 
   const handleDragEndWithReset = (
@@ -100,19 +103,27 @@ export function HomeDashboardClient() {
     <>
       <main className="flex flex-col pb-[calc(6rem+env(safe-area-inset-bottom,0px))]">
         <div className="mx-auto flex w-full flex-col gap-6 pt-[calc(1.5rem+env(safe-area-inset-top,0px))] pr-[calc(1rem+env(safe-area-inset-right,0px))] pb-6 pl-[calc(1rem+env(safe-area-inset-left,0px))] md:pr-[calc(1.5rem+env(safe-area-inset-right,0px))] md:pl-[calc(1.5rem+env(safe-area-inset-left,0px))] lg:max-w-4xl lg:pr-[calc(2rem+env(safe-area-inset-right,0px))] lg:pl-[calc(2rem+env(safe-area-inset-left,0px))] xl:pr-[calc(2.5rem+env(safe-area-inset-right,0px))] xl:pl-[calc(2.5rem+env(safe-area-inset-left,0px))]">
-          {profile ? (
-            <HomeHeader
-              userName={profile.displayName}
-              initialMotivationPhrase={profile.motivationPhrase}
-            />
-          ) : showSkeleton ? (
-            <div className="flex flex-col gap-2" aria-hidden>
-              <div className="h-8 w-48 max-w-full animate-pulse rounded-md bg-white/10" />
-              <div className="h-4 w-full max-w-md animate-pulse rounded-md bg-white/5" />
-            </div>
-          ) : (
-            <HomeHeader />
-          )}
+          {/* Header dims in reorder mode to pull visual focus onto the cards */}
+          <div
+            className={cn(
+              "transition-opacity duration-300",
+              isReordering && "pointer-events-none opacity-30",
+            )}
+          >
+            {profile ? (
+              <HomeHeader
+                userName={profile.displayName}
+                initialMotivationPhrase={profile.motivationPhrase}
+              />
+            ) : showSkeleton ? (
+              <div className="flex flex-col gap-2" aria-hidden>
+                <div className="h-8 w-48 max-w-full animate-pulse rounded-md bg-white/10" />
+                <div className="h-4 w-full max-w-md animate-pulse rounded-md bg-white/5" />
+              </div>
+            ) : (
+              <HomeHeader />
+            )}
+          </div>
 
           <div className="flex flex-col gap-4">
             {error ? (
@@ -136,28 +147,41 @@ export function HomeDashboardClient() {
             ) : (
               <>
                 {orderedHabits.length > 1 && (
-                  <div className="flex items-center justify-end -mb-1">
-                    <button
-                      onClick={() => setIsReordering((v) => !v)}
+                  <div className="flex flex-col gap-1.5 -mb-1">
+                    <div className="flex items-center justify-end">
+                      <button
+                        onClick={() => setIsReordering((v) => !v)}
+                        className={cn(
+                          "flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all duration-200",
+                          isReordering
+                            ? "bg-white/10 text-white/90 ring-1 ring-white/10"
+                            : "text-white/35 hover:text-white/60",
+                        )}
+                      >
+                        {isReordering ? (
+                          <>
+                            <Check size={12} />
+                            Done
+                          </>
+                        ) : (
+                          <>
+                            <GripVertical size={12} />
+                            Reorder
+                          </>
+                        )}
+                      </button>
+                    </div>
+
+                    {/* Hint fades in when reorder mode is active */}
+                    <p
                       className={cn(
-                        "flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all duration-200",
-                        isReordering
-                          ? "bg-white/10 text-white/90 ring-1 ring-white/10"
-                          : "text-white/35 hover:text-white/60",
+                        "text-right text-[11px] leading-none transition-[opacity] duration-300",
+                        isReordering ? "text-white/30 opacity-100" : "opacity-0",
                       )}
+                      aria-hidden={!isReordering}
                     >
-                      {isReordering ? (
-                        <>
-                          <Check size={12} />
-                          Done
-                        </>
-                      ) : (
-                        <>
-                          <GripVertical size={12} />
-                          Reorder
-                        </>
-                      )}
-                    </button>
+                      Hold &amp; drag any card to reorder
+                    </p>
                   </div>
                 )}
 
@@ -172,12 +196,13 @@ export function HomeDashboardClient() {
                     strategy={verticalListSortingStrategy}
                   >
                     <div className="flex flex-col gap-4">
-                      {orderedHabits.map((habit) => (
+                      {orderedHabits.map((habit, index) => (
                         <SortableHabitCard
                           key={habit.id}
                           habit={habit}
                           completedKeys={logKeysRecord[habit.id] ?? []}
                           isReordering={isReordering}
+                          index={index}
                         />
                       ))}
                     </div>
@@ -199,7 +224,7 @@ export function HomeDashboardClient() {
           </div>
         </div>
       </main>
-      <CreateHabitDialog />
+      <CreateHabitDialog isReordering={isReordering} />
     </>
   );
 }

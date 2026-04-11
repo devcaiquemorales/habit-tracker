@@ -2,7 +2,6 @@
 
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical } from "lucide-react";
 
 import type { Habit } from "@/domain/types/habit";
 import { cn } from "@/presentation/lib/utils";
@@ -13,12 +12,15 @@ type SortableHabitCardProps = {
   habit: Habit;
   completedKeys: string[];
   isReordering: boolean;
+  /** Used to stagger the wiggle phase so cards don't oscillate in lock-step. */
+  index: number;
 };
 
 export function SortableHabitCard({
   habit,
   completedKeys,
   isReordering,
+  index,
 }: SortableHabitCardProps) {
   const {
     attributes,
@@ -29,35 +31,40 @@ export function SortableHabitCard({
     isDragging,
   } = useSortable({ id: habit.id, disabled: !isReordering });
 
+  // Stagger wiggle phase across cards — mirrors how iOS staggers icon shake
+  const wiggleDelay = `${(index % 4) * 55}ms`;
+
   return (
+    // Outer div: owns the dnd-kit positional transform + drag event listeners.
+    // Must be a separate layer from the wiggle so the two transforms don't fight.
     <div
       ref={setNodeRef}
       style={{
         transform: CSS.Transform.toString(transform),
         transition: transition ?? undefined,
       }}
+      {...(isReordering ? { ...attributes, ...listeners } : {})}
       className={cn(
-        "flex items-stretch gap-2 transition-opacity",
         isDragging && "opacity-0",
+        isReordering &&
+          "cursor-grab touch-none select-none active:cursor-grabbing",
       )}
     >
-      <button
-        {...attributes}
-        {...listeners}
-        tabIndex={isReordering ? 0 : -1}
-        aria-label="Drag to reorder"
+      {/* Inner div: visual wiggle animation only. Pointer events are disabled
+          while reordering so links inside the card don't fire accidentally. */}
+      <div
+        style={
+          isReordering && !isDragging
+            ? { animationDelay: wiggleDelay }
+            : undefined
+        }
         className={cn(
-          "flex shrink-0 touch-none select-none items-center justify-center rounded-xl px-1 transition-all duration-200",
-          "focus:outline-none",
-          isReordering
-            ? "w-8 cursor-grab text-white/30 hover:text-white/70 active:cursor-grabbing"
-            : "w-0 overflow-hidden text-transparent",
+          isReordering &&
+            !isDragging &&
+            "motion-safe:[animation:ios-wiggle_0.17s_ease-in-out_infinite_alternate]",
+          isReordering && "pointer-events-none",
         )}
       >
-        <GripVertical size={18} />
-      </button>
-
-      <div className="min-w-0 flex-1">
         <HabitCardWithHeatmap habit={habit} completedKeys={completedKeys} />
       </div>
     </div>
