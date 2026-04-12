@@ -82,17 +82,13 @@ export function CustomizationScreen({
       className={cn(
         "mx-auto flex min-h-dvh max-w-lg flex-col",
         "pb-[calc(2rem+env(safe-area-inset-bottom,0px))]",
-        "pt-[env(safe-area-inset-top,0px)]",
         "pl-[calc(1rem+env(safe-area-inset-left,0px))]",
         "pr-[calc(1rem+env(safe-area-inset-right,0px))]",
         "md:pl-[calc(1.5rem+env(safe-area-inset-left,0px))]",
         "md:pr-[calc(1.5rem+env(safe-area-inset-right,0px))]",
       )}
     >
-      <header
-        className="sticky z-10 -mx-4 border-b border-white/10 bg-background/90 py-3 backdrop-blur-md supports-backdrop-filter:bg-background/75 md:-mx-6"
-        style={{ top: "env(safe-area-inset-top, 0px)" }}
-      >
+      <header className="sticky top-0 z-10 -mx-4 border-b border-white/10 bg-background/90 pt-[calc(0.75rem+env(safe-area-inset-top,0px))] pb-3 backdrop-blur-md supports-backdrop-filter:bg-background/75 md:-mx-6">
         <div className="mx-auto flex max-w-lg items-center gap-3 px-4 md:px-6">
           <Link
             href="/"

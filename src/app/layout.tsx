@@ -63,6 +63,11 @@ export default async function RootLayout({
       <body
         className={`${fontSans.variable} ${fontSerif.variable} ${fontMono.variable} dark page-scrollbar-hidden antialiased`}
       >
+        <div
+          className="pointer-events-none fixed inset-x-0 top-0 z-[45] bg-background"
+          style={{ height: "env(safe-area-inset-top, 0px)" }}
+          aria-hidden
+        />
         <I18nProvider initialLocale={locale}>
           <RouteTransitionShell>{children}</RouteTransitionShell>
         </I18nProvider>
