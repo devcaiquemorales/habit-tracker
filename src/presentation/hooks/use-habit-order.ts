@@ -2,54 +2,57 @@
 
 import { type DragEndEvent } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  useTransition,
+} from "react";
 
+import type { DashboardJson } from "@/app/(app)/lib/dashboard-json";
+import { reorderHabitsAction } from "@/app/actions/habit-actions";
 import type { Habit } from "@/domain/types/habit";
+import type { LocalizedActionResult } from "@/presentation/lib/action-error";
+import {
+  readDashboardCache,
+  writeDashboardCache,
+} from "@/presentation/lib/dashboard-cache";
 
-const STORAGE_KEY = "habit-order-v1";
-
-function readStoredIds(): string[] | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
-    const parsed: unknown = JSON.parse(raw);
-    return Array.isArray(parsed) ? (parsed as string[]) : null;
-  } catch {
-    return null;
-  }
+function reorderFailed(result: LocalizedActionResult): boolean {
+  return Boolean(result.errorKey) || Boolean(result.error);
 }
 
-function writeStoredIds(ids: string[]) {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(ids));
-  } catch {
-    // storage full or unavailable — silently ignore
-  }
+function dashboardJsonWithHabitOrder(
+  cached: DashboardJson,
+  orderedIds: string[],
+): DashboardJson | null {
+  const byId = new Map(cached.habits.map((h) => [h.id, h]));
+  const habits = orderedIds
+    .map((id) => byId.get(id))
+    .filter((h): h is Habit => h !== undefined);
+  if (habits.length !== cached.habits.length) return null;
+  return { ...cached, habits };
+}
+
+function writeCachedHabitOrder(orderedIds: string[]): void {
+  const cached = readDashboardCache();
+  if (!cached) return;
+  const next = dashboardJsonWithHabitOrder(cached, orderedIds);
+  if (next) writeDashboardCache(next);
 }
 
 export function useHabitOrder(habits: Habit[]) {
-  const [orderedIds, setOrderedIds] = useState<string[]>(() => {
-    const stored = readStoredIds();
-    return stored ?? habits.map((h) => h.id);
-  });
+  const [, startTransition] = useTransition();
+  const [orderedIds, setOrderedIds] = useState<string[]>(() =>
+    habits.map((h) => h.id),
+  );
 
-  // Stable signature — only changes when the actual set of IDs changes,
-  // not on every render when SWR returns a new array reference.
   const habitIdSignature = habits.map((h) => h.id).join(",");
 
-  // Keep order in sync when habits are added or removed from server
   useEffect(() => {
-    const serverIdList = habitIdSignature ? habitIdSignature.split(",") : [];
-    const serverIds = new Set(serverIdList);
-    setOrderedIds((prev) => {
-      const kept = prev.filter((id) => serverIds.has(id));
-      const newIds = serverIdList.filter((id) => !kept.includes(id));
-      const merged = [...kept, ...newIds];
-      writeStoredIds(merged);
-      return merged;
-    });
+    setOrderedIds(habits.map((h) => h.id));
+    // Only when the id sequence changes (add/remove/server reorder), not when SWR replaces the array reference.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [habitIdSignature]);
 
@@ -58,19 +61,47 @@ export function useHabitOrder(habits: Habit[]) {
     return orderedIds.map((id) => map.get(id)).filter(Boolean) as Habit[];
   }, [habits, orderedIds]);
 
-  const handleDragEnd = useCallback((event: DragEndEvent) => {
-    const { active, over } = event;
-    if (!over || active.id === over.id) return;
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const { active, over } = event;
+      if (!over || active.id === over.id) return;
 
-    setOrderedIds((prev) => {
-      const oldIndex = prev.indexOf(String(active.id));
-      const newIndex = prev.indexOf(String(over.id));
-      if (oldIndex === -1 || newIndex === -1) return prev;
-      const next = arrayMove(prev, oldIndex, newIndex);
-      writeStoredIds(next);
-      return next;
-    });
-  }, []);
+      let previousOrder: string[] | null = null;
+      let newOrderedIds: string[] | null = null;
+
+      setOrderedIds((prev) => {
+        const oldIndex = prev.indexOf(String(active.id));
+        const newIndex = prev.indexOf(String(over.id));
+        if (oldIndex === -1 || newIndex === -1) return prev;
+
+        previousOrder = prev;
+        newOrderedIds = arrayMove(prev, oldIndex, newIndex);
+        return newOrderedIds;
+      });
+
+      if (previousOrder === null || newOrderedIds === null) return;
+
+      const revertTo = previousOrder;
+      const nextIds = newOrderedIds;
+
+      writeCachedHabitOrder(nextIds);
+
+      startTransition(() => {
+        void reorderHabitsAction(nextIds)
+          .then((result) => {
+            if (reorderFailed(result)) {
+              setOrderedIds(revertTo);
+              writeCachedHabitOrder(revertTo);
+            }
+          })
+          .catch(() => {
+            setOrderedIds(revertTo);
+            writeCachedHabitOrder(revertTo);
+          });
+      });
+    },
+    [startTransition],
+  );
 
   return { orderedHabits, handleDragEnd };
 }

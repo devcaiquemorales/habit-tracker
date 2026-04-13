@@ -103,6 +103,7 @@ export const enMessages = {
     deleteHabitFailed: "Could not delete habit.",
     habitNotFound: "Habit not found.",
     loadDashboardFailed: "Failed to load dashboard",
+    reorderHabitsFailed: "Could not save habit order.",
   },
   home: {
     loadError:
@@ -168,6 +169,7 @@ export const enMessages = {
     blue: "Blue",
     amber: "Amber",
     purple: "Purple",
+    red: "Red",
     habitColorAria: "Habit color",
   },
   scheduleLabels: {

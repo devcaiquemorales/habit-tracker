@@ -10,6 +10,7 @@ const OPTIONS: { id: ColorVariant; swatch: string; labelKey: string }[] = [
   { id: "blue", swatch: "bg-blue-500", labelKey: "colors.blue" },
   { id: "amber", swatch: "bg-amber-500", labelKey: "colors.amber" },
   { id: "purple", swatch: "bg-purple-500", labelKey: "colors.purple" },
+  { id: "red", swatch: "bg-[#D64B3B]", labelKey: "colors.red" },
 ];
 
 interface ColorSelectorProps {

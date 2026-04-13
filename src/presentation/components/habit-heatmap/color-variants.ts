@@ -29,6 +29,7 @@ export const STATUS_ACCENT_TEXT: Record<ColorVariant, string> = {
   blue: "text-blue-400",
   amber: "text-amber-400",
   purple: "text-purple-400",
+  red: "text-[#E8786A]",
 };
 
 export const COLOR_VARIANTS: Record<ColorVariant, VariantConfig> = {
@@ -82,6 +83,19 @@ export const COLOR_VARIANTS: Record<ColorVariant, VariantConfig> = {
       low: "text-white/40",
       medium: "text-purple-500/55",
       high: "text-purple-500/85",
+    },
+  },
+  red: {
+    doneClass: "bg-[#D64B3B]",
+    missedClass: "bg-white/15",
+    notExpectedClass: "bg-white/[0.02]",
+    emptyDayClass: "bg-white/[0.08]",
+    monthPaddingClass: "bg-white/[0.045]",
+    indicatorClass: "bg-[#D64B3B]",
+    streakClasses: {
+      low: "text-white/40",
+      medium: "text-[#D64B3B]/55",
+      high: "text-[#D64B3B]/85",
     },
   },
 };

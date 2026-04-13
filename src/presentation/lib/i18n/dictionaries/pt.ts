@@ -106,6 +106,7 @@ export const ptMessages: EnMessages = {
     deleteHabitFailed: "Não foi possível excluir o hábito.",
     habitNotFound: "Hábito não encontrado.",
     loadDashboardFailed: "Falha ao carregar o painel",
+    reorderHabitsFailed: "Não foi possível salvar a ordem dos hábitos.",
   },
   home: {
     loadError:
@@ -171,6 +172,7 @@ export const ptMessages: EnMessages = {
     blue: "Azul",
     amber: "Âmbar",
     purple: "Roxo",
+    red: "Vermelho",
     habitColorAria: "Cor do hábito",
   },
   scheduleLabels: {

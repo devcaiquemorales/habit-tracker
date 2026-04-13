@@ -37,6 +37,7 @@ function mapRowToHabit(
     schedule,
     streak: computeHabitStreak(completedDateKeys, getUtcToday()),
     completedToday: completedDateKeys.has(todayKey),
+    position: row.position,
   };
 }
 
@@ -51,7 +52,7 @@ export async function listHabitsWithLogsForUser(
     .from("habits")
     .select("*, habit_fixed_days(weekday)")
     .eq("user_id", userId)
-    .order("created_at", { ascending: true });
+    .order("position", { ascending: true });
 
   if (error) throw new Error(error.message);
   const rows = (data ?? []) as HabitWithScheduleRows[];
@@ -100,6 +101,20 @@ export async function insertHabit(
     input.schedule,
   );
 
+  const { data: maxRow, error: maxError } = await supabase
+    .from("habits")
+    .select("position")
+    .eq("user_id", userId)
+    .order("position", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (maxError) throw new Error(maxError.message);
+  const nextPosition =
+    maxRow?.position !== undefined && maxRow.position !== null
+      ? maxRow.position + 1
+      : 0;
+
   const { data: row, error } = await supabase
     .from("habits")
     .insert({
@@ -108,6 +123,7 @@ export async function insertHabit(
       color_variant: input.color_variant,
       schedule_type,
       weekly_target,
+      position: nextPosition,
     })
     .select("id")
     .single();
@@ -126,6 +142,43 @@ export async function insertHabit(
   }
 
   return { id: habitId };
+}
+
+export async function reorderHabitsForUser(
+  supabase: SupabaseClient<Database>,
+  userId: string,
+  orderedIds: string[],
+): Promise<void> {
+  for (let i = 0; i < orderedIds.length; i++) {
+    const { error } = await supabase
+      .from("habits")
+      .update({ position: i })
+      .eq("id", orderedIds[i])
+      .eq("user_id", userId);
+    if (error) throw new Error(error.message);
+  }
+}
+
+async function normalizeHabitPositionsForUser(
+  supabase: SupabaseClient<Database>,
+  userId: string,
+): Promise<void> {
+  const { data: rows, error } = await supabase
+    .from("habits")
+    .select("id")
+    .eq("user_id", userId)
+    .order("position", { ascending: true });
+
+  if (error) throw new Error(error.message);
+  const list = rows ?? [];
+  for (let i = 0; i < list.length; i++) {
+    const { error: upError } = await supabase
+      .from("habits")
+      .update({ position: i })
+      .eq("id", list[i].id)
+      .eq("user_id", userId);
+    if (upError) throw new Error(upError.message);
+  }
 }
 
 export async function updateHabitForUser(
@@ -212,4 +265,6 @@ export async function deleteHabitForUser(
     .eq("user_id", userId);
 
   if (delError) throw new Error(delError.message);
+
+  await normalizeHabitPositionsForUser(supabase, userId);
 }

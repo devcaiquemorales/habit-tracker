@@ -1,8 +1,13 @@
 import type { ColorVariant } from "@/domain/types/habit";
 import type { Schedule } from "@/domain/types/schedule";
-import type { HabitScheduleTypeDb } from "@/infrastructure/supabase/database.types";
 
-const COLOR_VARIANTS: ColorVariant[] = ["green", "blue", "amber", "purple"];
+const COLOR_VARIANTS: ColorVariant[] = [
+  "green",
+  "blue",
+  "amber",
+  "purple",
+  "red",
+];
 
 export function parseColorVariant(value: string): ColorVariant {
   return COLOR_VARIANTS.includes(value as ColorVariant)
@@ -11,7 +16,7 @@ export function parseColorVariant(value: string): ColorVariant {
 }
 
 export function scheduleFromDb(
-  scheduleType: HabitScheduleTypeDb,
+  scheduleType: string,
   weeklyTarget: number | null,
   fixedDayValues: number[],
 ): Schedule {
@@ -38,7 +43,7 @@ export function scheduleFromDb(
 }
 
 export type DbSchedulePayload = {
-  schedule_type: HabitScheduleTypeDb;
+  schedule_type: string;
   weekly_target: number | null;
   fixed_days: number[] | null;
 };

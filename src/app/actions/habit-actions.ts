@@ -7,6 +7,7 @@ import type { Schedule } from "@/domain/types/schedule";
 import {
   deleteHabitForUser,
   insertHabit,
+  reorderHabitsForUser,
   updateHabitForUser,
 } from "@/infrastructure/repositories";
 import { createServerSupabaseClient } from "@/infrastructure/supabase/server";
@@ -70,6 +71,28 @@ export async function updateHabitAction(
     return {
       error: e instanceof Error ? e.message : "",
       errorKey: "errors.updateHabitFailed",
+    };
+  }
+}
+
+export async function reorderHabitsAction(
+  orderedIds: string[],
+): Promise<LocalizedActionResult> {
+  const supabase = await createServerSupabaseClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    return { error: null, errorKey: "errors.notSignedIn" };
+  }
+
+  try {
+    await reorderHabitsForUser(supabase, user.id, orderedIds);
+    return { error: null };
+  } catch (e) {
+    return {
+      error: e instanceof Error ? e.message : "",
+      errorKey: "errors.reorderHabitsFailed",
     };
   }
 }

@@ -9,6 +9,7 @@ export {
   getHabitByIdForUser,
   insertHabit,
   listHabitsWithLogsForUser,
+  reorderHabitsForUser,
   updateHabitForUser,
 } from "./habit-repository";
 export {
