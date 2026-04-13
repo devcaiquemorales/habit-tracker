@@ -121,16 +121,20 @@ Password Reset:
 
 ## Habit Order (Drag & Drop)
 
+**Source of truth:** `habits.position` in PostgreSQL (integer, 0-based per user). The repository lists habits with `ORDER BY position ASC`; new habits get `max(position) + 1`; delete re-normalizes positions to close gaps.
+
 ```
 1. HomeDashboardClient renders habits ordered by use-habit-order
-2. useHabitOrder reads order from localStorage (key: "habit-order-v1")
-3. On drag end: reorders locally + saves to localStorage
-4. On SWR refresh: syncs order array (adds new, removes deleted habits)
+2. useHabitOrder seeds order from the SWR `habits` array (already sorted by position)
+3. On drag end: optimistic reorder in React state, then `reorderHabitsAction(orderedIds)` (server action → repository updates each row’s position)
+4. After optimistic reorder: `writeDashboardCache` updates the dashboard `localStorage` snapshot so back navigation does not flicker with stale order
+5. On action failure: local order and dashboard cache revert to the pre-drag order
+6. On SWR refresh: when the habit id sequence from the server changes, local order syncs from props (add/remove / cross-device reorder)
 ```
 
-Order is never persisted to the server — it's localStorage-only.
+The legacy `habit-order-v1` localStorage key is unused.
 
-Key file: `presentation/hooks/use-habit-order.ts`
+Key files: `presentation/hooks/use-habit-order.ts`, `app/actions/habit-actions.ts` (`reorderHabitsAction`), `infrastructure/repositories/habit-repository.ts`
 
 ---
 
@@ -142,7 +146,7 @@ Key file: `presentation/hooks/use-habit-order.ts`
 | Server truth     | Supabase (PostgreSQL)                        |
 | Fetched + cached | SWR (`/api/dashboard` + `revalidatePath`)    |
 | Offline cache    | `localStorage` via `dashboard-cache.ts`      |
-| Habit order      | `localStorage` via `use-habit-order.ts`      |
+| Habit order      | Supabase `habits.position`; dashboard cache updated on reorder via `use-habit-order.ts` |
 | UI state         | React `useState` (modals, form values, etc.) |
 | Auth session     | Supabase cookie (managed by middleware)      |
 

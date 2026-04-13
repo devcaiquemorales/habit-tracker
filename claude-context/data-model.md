@@ -29,6 +29,7 @@ Profile is upserted (not inserted) — created on first profile update. If no ro
 | `color_variant` | string    | `"green"`            |
 | `schedule_type` | enum      | `"fixed_days"`       |
 | `weekly_target` | number    | null                 |
+| `position`      | integer   | NOT NULL, 0-based dashboard sort order per user |
 | `created_at`    | timestamp | Auto                 |
 
 
