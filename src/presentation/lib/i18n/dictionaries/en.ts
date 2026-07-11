@@ -295,6 +295,8 @@ export const enMessages = {
       "Open this app in Safari, tap Share, and choose Add to Home Screen.",
     unsupported:
       "Reminders are not supported on this device or browser.",
+    swUnavailable:
+      "Notifications need the installed app. In development the service worker is disabled — use the production build or the installed PWA.",
     enabled: "On",
     disabled: "Off",
   },

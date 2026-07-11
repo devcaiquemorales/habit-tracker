@@ -298,6 +298,8 @@ export const ptMessages: EnMessages = {
       "Abra este app no Safari, toque em Compartilhar e escolha Adicionar à Tela de Início.",
     unsupported:
       "Lembretes não são suportados neste dispositivo ou navegador.",
+    swUnavailable:
+      "Notificações exigem o app instalado. Em desenvolvimento o service worker fica desativado — use o build de produção ou o PWA instalado.",
     enabled: "Ativado",
     disabled: "Desativado",
   },

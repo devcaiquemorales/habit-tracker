@@ -27,6 +27,29 @@ type NotificationSettingsProps = {
   initialPreferences: ReminderPreference[];
 };
 
+/**
+ * Resolves the active service worker registration WITHOUT hanging.
+ * `navigator.serviceWorker.ready` never resolves when no SW is registered
+ * (e.g. dev mode, where next-pwa disables the worker) — awaiting it directly
+ * froze the enable button in an infinite loading state.
+ */
+async function getPushRegistration(): Promise<ServiceWorkerRegistration | null> {
+  if (!("serviceWorker" in navigator)) return null;
+  try {
+    const existing = await navigator.serviceWorker.getRegistration();
+    if (!existing) return null;
+    // Prefer the fully-active registration, but never wait more than 3s.
+    return await Promise.race([
+      navigator.serviceWorker.ready,
+      new Promise<ServiceWorkerRegistration>((resolve) => {
+        setTimeout(() => resolve(existing), 3000);
+      }),
+    ]);
+  } catch {
+    return null;
+  }
+}
+
 function urlBase64ToUint8Array(base64String: string): Uint8Array {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
   const base64 = (base64String + padding).replace(/\-/g, "+").replace(/_/g, "/");
@@ -77,7 +100,8 @@ export function NotificationSettings({
 
   async function checkSubscription() {
     try {
-      const registration = await navigator.serviceWorker.ready;
+      const registration = await getPushRegistration();
+      if (!registration) return;
       const subscription = await registration.pushManager.getSubscription();
       setIsSubscribed(!!subscription);
     } catch (err) {
@@ -97,7 +121,11 @@ export function NotificationSettings({
         return;
       }
 
-      const registration = await navigator.serviceWorker.ready;
+      const registration = await getPushRegistration();
+      if (!registration) {
+        setError(t("notifications.swUnavailable"));
+        return;
+      }
       const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
 
       if (!vapidPublicKey) {
@@ -147,7 +175,11 @@ export function NotificationSettings({
     setIsLoading(true);
 
     try {
-      const registration = await navigator.serviceWorker.ready;
+      const registration = await getPushRegistration();
+      if (!registration) {
+        setIsSubscribed(false);
+        return;
+      }
       const subscription = await registration.pushManager.getSubscription();
 
       if (subscription) {

@@ -46,10 +46,17 @@ import { cn } from "@/presentation/lib/utils";
 import { HabitCardWithHeatmap } from "./habit-card-with-heatmap";
 import { SortableHabitCard } from "./sortable-habit-card";
 
+/**
+ * Session-level flag: the card entrance stagger runs once per app session.
+ * Re-mounts from route navigation render instantly (no re-animation), which
+ * keeps back-navigation snappy.
+ */
+let hasStaggeredThisSession = false;
+
 export function HomeDashboardClient() {
   const { t } = useI18n();
   const prefersReducedMotion = useReducedMotion();
-  const [firstDataShown, setFirstDataShown] = useState(false);
+  const [staggerOnMount] = useState(() => !hasStaggeredThisSession);
 
   /**
    * Do not read localStorage during the first render: SSR and the client must
@@ -85,15 +92,14 @@ export function HomeDashboardClient() {
   const showEmptyState = !isLoading && habits.length === 0 && !error;
   const showSkeleton = isLoading && !data;
 
-  // Track if data has been shown once for stagger animation
+  // Once real data has rendered, later dashboard mounts skip the entrance.
   useEffect(() => {
-    if (data && !firstDataShown) {
-      setFirstDataShown(true);
+    if (data) {
+      hasStaggeredThisSession = true;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [!!data]);
+  }, [data]);
 
-  const shouldAnimateStagger = firstDataShown;
+  const shouldAnimateStagger = staggerOnMount && !prefersReducedMotion;
 
   const { orderedHabits, handleDragEnd } = useHabitOrder(habits);
   const { toast: streakToast, dismissToast } = useStreakMomentumToast(data);
@@ -225,29 +231,19 @@ export function HomeDashboardClient() {
                       <m.div
                         className="flex flex-col gap-4"
                         variants={sharedVariants.staggerContainer}
-                        initial={
-                          shouldAnimateStagger && !prefersReducedMotion
-                            ? "initial"
-                            : false
-                        }
-                        animate={
-                          shouldAnimateStagger && !prefersReducedMotion
-                            ? "animate"
-                            : false
-                        }
+                        initial={shouldAnimateStagger ? "initial" : false}
+                        animate={shouldAnimateStagger ? "animate" : false}
                       >
                         {orderedHabits.map((habit, index) => (
                           <m.div
                             key={habit.id}
                             variants={
-                              shouldAnimateStagger &&
-                              !prefersReducedMotion
+                              shouldAnimateStagger
                                 ? sharedVariants.listItem
                                 : {}
                             }
                             transition={
-                              shouldAnimateStagger &&
-                              !prefersReducedMotion
+                              shouldAnimateStagger
                                 ? {
                                     type: "spring",
                                     stiffness: 260,
