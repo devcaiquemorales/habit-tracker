@@ -1,14 +1,17 @@
 "use client";
 
+import { useSWRConfig } from "swr";
 import { mutate } from "swr";
 
 import type { DashboardJson } from "@/app/(app)/lib/dashboard-json";
-import { computeHabitStreak } from "@/domain/lib/compute-habit-streak";
+import { computeStreak } from "@/domain/lib/compute-streak";
 import { getLocalToday, toLocalDateKey } from "@/domain/types/date-key";
 import type { Habit } from "@/domain/types/habit";
 import { isTodayScheduled } from "@/domain/types/schedule";
 
 export const DASHBOARD_SWR_KEY = "/api/dashboard";
+
+let revalidateTimer: NodeJS.Timeout | null = null;
 
 export async function fetchDashboardJson(): Promise<DashboardJson> {
   const res = await fetch(DASHBOARD_SWR_KEY, {
@@ -20,9 +23,20 @@ export async function fetchDashboardJson(): Promise<DashboardJson> {
   return res.json() as Promise<DashboardJson>;
 }
 
-/** Background refresh; does not block UI or clear the existing cached data. */
-export function revalidateDashboardCache(): void {
-  void mutate(DASHBOARD_SWR_KEY);
+/** Background refresh; debounces 2500ms from last call unless immediate=true. */
+export function revalidateDashboardCache(options?: { immediate?: boolean }): void {
+  if (options?.immediate) {
+    if (revalidateTimer) clearTimeout(revalidateTimer);
+    revalidateTimer = null;
+    void mutate(DASHBOARD_SWR_KEY);
+    return;
+  }
+
+  if (revalidateTimer) clearTimeout(revalidateTimer);
+  revalidateTimer = setTimeout(() => {
+    revalidateTimer = null;
+    void mutate(DASHBOARD_SWR_KEY);
+  }, 2500);
 }
 
 export function patchDashboardProfile(updates: {
@@ -129,7 +143,7 @@ export function patchDashboardAfterLogMutation(
         if (h.id !== habitId) return h;
         return {
           ...h,
-          streak: computeHabitStreak(keys, today),
+          streak: computeStreak(keys, h.schedule, todayKey).count,
           completedToday:
             keys.has(todayKey) && isTodayScheduled(h.schedule, today),
         };
@@ -141,4 +155,18 @@ export function patchDashboardAfterLogMutation(
   );
 
   revalidateDashboardCache();
+}
+
+/** Hook: read cached dashboard data from SWR store. Used to seed detail screens with instant data from dashboard cache. */
+export function useCachedDashboard(): DashboardJson | undefined {
+  const { cache } = useSWRConfig();
+  try {
+    // SWR v2 stores an internal state object per key; the payload lives in `.data`.
+    const state = cache.get(DASHBOARD_SWR_KEY) as
+      | { data?: DashboardJson }
+      | undefined;
+    return state?.data;
+  } catch {
+    return undefined;
+  }
 }

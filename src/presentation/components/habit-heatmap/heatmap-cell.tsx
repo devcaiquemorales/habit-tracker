@@ -24,6 +24,8 @@ interface HeatmapCellProps {
   size?: HeatmapCellSize;
   /** Subtle emphasis for the current (latest) day in the timeline */
   isToday?: boolean;
+  /** Logged day after a 1–2 day gap — softer fill + thin ring */
+  isRecovery?: boolean;
   /** Selected in the detail “Update activity” strip */
   isStripSelected?: boolean;
   /** When set, cell is a button (real calendar day, not padding/future). */
@@ -47,6 +49,7 @@ export function HeatmapCell({
   tooltip,
   size = "default",
   isToday = false,
+  isRecovery = false,
   isStripSelected = false,
   onActivate,
   selectDayLabel,
@@ -82,12 +85,22 @@ export function HeatmapCell({
             ? cellColors.emptyDay
             : cellColors.notExpected;
 
+  const ringClass = isStripSelected
+    ? "ring-2 ring-white/70 ring-inset"
+    : isToday && isRecovery && status === "completed"
+      ? "ring-1 ring-inset ring-white/30"
+      : isToday
+        ? "ring-1 ring-inset ring-white/25"
+        : isRecovery && status === "completed"
+          ? "ring-1 ring-inset ring-white/20"
+          : "";
+
   const sharedClass = cn(
     "relative shrink-0 rounded-[2px]",
     SIZE_CLASS[size],
     statusClass,
-    isToday && "ring-1 ring-white/25 ring-inset",
-    isStripSelected && "ring-2 ring-white/70 ring-inset",
+    status === "completed" && isRecovery && "opacity-70",
+    ringClass,
     onActivate && "cursor-pointer touch-manipulation",
   );
 

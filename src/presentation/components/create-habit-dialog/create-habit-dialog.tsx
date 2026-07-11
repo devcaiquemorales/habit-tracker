@@ -5,6 +5,10 @@ import { useState } from "react";
 import { createHabitAction } from "@/app/actions/habit-actions";
 import { AddHabitFAB } from "@/presentation/components/add-habit-fab";
 import { HabitFormDialog } from "@/presentation/components/habit-form-dialog";
+import {
+  addTempHabitToDashboard,
+  removeTempHabitFromDashboard,
+} from "@/presentation/lib/dashboard-optimistic";
 import { revalidateDashboardCache } from "@/presentation/lib/dashboard-swr";
 import { cn } from "@/presentation/lib/utils";
 
@@ -37,15 +41,39 @@ export function CreateHabitDialog({ isReordering }: CreateHabitDialogProps) {
         />
       }
       onSave={async (payload) => {
-        const result = await createHabitAction({
-          name: payload.name,
-          colorVariant: payload.colorVariant,
-          schedule: payload.schedule,
-        });
-        if (!result.error) {
-          revalidateDashboardCache();
+        // Close dialog immediately for optimistic UX
+        handleOpenChange(false);
+
+        // Add temp habit optimistically
+        const tempId = addTempHabitToDashboard(
+          payload.name,
+          payload.colorVariant,
+          payload.schedule,
+        );
+
+        try {
+          const result = await createHabitAction({
+            name: payload.name,
+            colorVariant: payload.colorVariant,
+            schedule: payload.schedule,
+          });
+
+          if (result.error || result.errorKey) {
+            // Remove temp habit on error
+            removeTempHabitFromDashboard(tempId);
+            revalidateDashboardCache({ immediate: true });
+            return result;
+          }
+
+          // Refetch dashboard to replace temp habit with real one
+          revalidateDashboardCache({ immediate: true });
+          return { error: null };
+        } catch {
+          // Rollback on exception
+          removeTempHabitFromDashboard(tempId);
+          revalidateDashboardCache({ immediate: true });
+          return { error: "Failed to create habit", errorKey: "errors.createHabitFailed" };
         }
-        return result;
       }}
     />
   );

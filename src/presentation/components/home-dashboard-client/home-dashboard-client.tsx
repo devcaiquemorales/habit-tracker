@@ -15,13 +15,22 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
+import {
+  domAnimation,
+  LazyMotion,
+  m,
+  useReducedMotion,
+} from "framer-motion";
 import { Check, GripVertical } from "lucide-react";
 import { useEffect, useState } from "react";
 import useSWR, { mutate } from "swr";
 
 import { CreateHabitDialog } from "@/presentation/components/create-habit-dialog";
 import { HomeHeader } from "@/presentation/components/home-header";
+import { sharedVariants } from "@/presentation/components/motion";
+import { StreakMilestoneToast } from "@/presentation/components/streak-milestone-toast";
 import { useHabitOrder } from "@/presentation/hooks/use-habit-order";
+import { useStreakMomentumToast } from "@/presentation/hooks/use-streak-momentum-toast";
 import {
   readDashboardCache,
   writeDashboardCache,
@@ -39,6 +48,8 @@ import { SortableHabitCard } from "./sortable-habit-card";
 
 export function HomeDashboardClient() {
   const { t } = useI18n();
+  const prefersReducedMotion = useReducedMotion();
+  const [firstDataShown, setFirstDataShown] = useState(false);
 
   /**
    * Do not read localStorage during the first render: SSR and the client must
@@ -58,7 +69,9 @@ export function HomeDashboardClient() {
       // Let SWR decide when to revalidate on mount; dedupingInterval (60 s)
       // prevents a redundant fetch when navigating back quickly from a detail page.
       revalidateOnMount: true,
-      revalidateOnFocus: false,
+      revalidateOnFocus: true,
+      focusThrottleInterval: 30_000,
+      keepPreviousData: true,
       dedupingInterval: 60_000,
       // Persist every fresh response so the next cold start is also instant.
       onSuccess: writeDashboardCache,
@@ -72,7 +85,18 @@ export function HomeDashboardClient() {
   const showEmptyState = !isLoading && habits.length === 0 && !error;
   const showSkeleton = isLoading && !data;
 
+  // Track if data has been shown once for stagger animation
+  useEffect(() => {
+    if (data && !firstDataShown) {
+      setFirstDataShown(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [!!data]);
+
+  const shouldAnimateStagger = firstDataShown;
+
   const { orderedHabits, handleDragEnd } = useHabitOrder(habits);
+  const { toast: streakToast, dismissToast } = useStreakMomentumToast(data);
   const [isReordering, setIsReordering] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
 
@@ -119,8 +143,8 @@ export function HomeDashboardClient() {
               />
             ) : showSkeleton ? (
               <div className="flex flex-col gap-2" aria-hidden>
-                <div className="h-8 w-48 max-w-full animate-pulse rounded-md bg-white/10" />
-                <div className="h-4 w-full max-w-md animate-pulse rounded-md bg-white/5" />
+                <div className="h-8 w-48 max-w-full rounded-md bg-white/10 skeleton-shimmer" />
+                <div className="h-4 w-full max-w-md rounded-md bg-white/5 skeleton-shimmer" />
               </div>
             ) : (
               <HomeHeader />
@@ -134,8 +158,8 @@ export function HomeDashboardClient() {
               </p>
             ) : showSkeleton ? (
               <div className="flex flex-col gap-4" aria-hidden>
-                <div className="h-40 w-full animate-pulse rounded-xl bg-white/5" />
-                <div className="h-40 w-full animate-pulse rounded-xl bg-white/5" />
+                <div className="h-40 w-full rounded-xl bg-white/5 skeleton-shimmer" />
+                <div className="h-40 w-full rounded-xl bg-white/5 skeleton-shimmer" />
               </div>
             ) : showEmptyState ? (
               <div className="flex max-w-md flex-col gap-2 pt-1">
@@ -163,12 +187,12 @@ export function HomeDashboardClient() {
                         {isReordering ? (
                           <>
                             <Check size={12} />
-                            Done
+                            {t("home.reorderDone")}
                           </>
                         ) : (
                           <>
                             <GripVertical size={12} />
-                            Reorder
+                            {t("home.reorder")}
                           </>
                         )}
                       </button>
@@ -182,51 +206,91 @@ export function HomeDashboardClient() {
                       )}
                       aria-hidden={!isReordering}
                     >
-                      Hold &amp; drag any card to reorder
+                      {t("home.reorderHint")}
                     </p>
                   </div>
                 )}
 
-                <DndContext
-                  sensors={sensors}
-                  collisionDetection={closestCenter}
-                  onDragStart={handleDragStart}
-                  onDragEnd={handleDragEndWithReset}
-                >
-                  <SortableContext
-                    items={orderedHabits.map((h) => h.id)}
-                    strategy={verticalListSortingStrategy}
+                <LazyMotion features={domAnimation}>
+                  <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragStart={handleDragStart}
+                    onDragEnd={handleDragEndWithReset}
                   >
-                    <div className="flex flex-col gap-4">
-                      {orderedHabits.map((habit, index) => (
-                        <SortableHabitCard
-                          key={habit.id}
-                          habit={habit}
-                          completedKeys={logKeysRecord[habit.id] ?? []}
-                          isReordering={isReordering}
-                          index={index}
-                        />
-                      ))}
-                    </div>
-                  </SortableContext>
+                    <SortableContext
+                      items={orderedHabits.map((h) => h.id)}
+                      strategy={verticalListSortingStrategy}
+                    >
+                      <m.div
+                        className="flex flex-col gap-4"
+                        variants={sharedVariants.staggerContainer}
+                        initial={
+                          shouldAnimateStagger && !prefersReducedMotion
+                            ? "initial"
+                            : false
+                        }
+                        animate={
+                          shouldAnimateStagger && !prefersReducedMotion
+                            ? "animate"
+                            : false
+                        }
+                      >
+                        {orderedHabits.map((habit, index) => (
+                          <m.div
+                            key={habit.id}
+                            variants={
+                              shouldAnimateStagger &&
+                              !prefersReducedMotion
+                                ? sharedVariants.listItem
+                                : {}
+                            }
+                            transition={
+                              shouldAnimateStagger &&
+                              !prefersReducedMotion
+                                ? {
+                                    type: "spring",
+                                    stiffness: 260,
+                                    damping: 24,
+                                  }
+                                : {}
+                            }
+                          >
+                            <SortableHabitCard
+                              habit={habit}
+                              completedKeys={logKeysRecord[habit.id] ?? []}
+                              isReordering={isReordering}
+                              index={index}
+                            />
+                          </m.div>
+                        ))}
+                      </m.div>
+                    </SortableContext>
 
-                  <DragOverlay dropAnimation={null}>
-                    {activeHabit ? (
-                      <div className="rotate-[0.8deg] scale-[1.02] cursor-grabbing shadow-2xl shadow-black/50 ring-1 ring-white/10 rounded-xl">
-                        <HabitCardWithHeatmap
-                          habit={activeHabit}
-                          completedKeys={logKeysRecord[activeHabit.id] ?? []}
-                        />
-                      </div>
-                    ) : null}
-                  </DragOverlay>
-                </DndContext>
+                    <DragOverlay dropAnimation={null}>
+                      {activeHabit ? (
+                        <div className="rotate-[0.8deg] scale-[1.02] cursor-grabbing shadow-2xl shadow-black/50 ring-1 ring-white/10 rounded-xl">
+                          <HabitCardWithHeatmap
+                            habit={activeHabit}
+                            completedKeys={logKeysRecord[activeHabit.id] ?? []}
+                          />
+                        </div>
+                      ) : null}
+                    </DragOverlay>
+                  </DndContext>
+                </LazyMotion>
               </>
             )}
           </div>
         </div>
       </main>
       <CreateHabitDialog isReordering={isReordering} />
+      {streakToast ? (
+        <StreakMilestoneToast
+          payload={streakToast}
+          onDismiss={dismissToast}
+        />
+      ) : null}
     </>
   );
 }

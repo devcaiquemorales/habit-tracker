@@ -18,6 +18,17 @@ const withPWA = withPWAInit({
   workboxOptions: {
     disableDevLogs: true,
     navigateFallbackDenylist: [/^\/api\//],
+    runtimeCaching: [
+      {
+        urlPattern: /\/api\/dashboard$/,
+        handler: "NetworkFirst",
+        options: {
+          cacheName: "api-dashboard",
+          networkTimeoutSeconds: 3,
+          expiration: { maxEntries: 1, maxAgeSeconds: 86400 },
+        },
+      },
+    ],
   },
 });
 

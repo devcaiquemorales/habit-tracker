@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { createServerSupabaseClient } from "@/infrastructure/supabase/server";
+import { TimezoneSyncProvider } from "@/presentation/components/timezone-sync";
 
 export default async function AppGroupLayout({
   children,
@@ -16,5 +17,10 @@ export default async function AppGroupLayout({
     redirect("/login");
   }
 
-  return children;
+  return (
+    <>
+      <TimezoneSyncProvider />
+      {children}
+    </>
+  );
 }

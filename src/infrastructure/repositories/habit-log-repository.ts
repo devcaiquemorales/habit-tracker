@@ -6,6 +6,8 @@ export async function listLogDateKeysForUserHabits(
   supabase: SupabaseClient<Database>,
   userId: string,
   habitIds: string[],
+  /** Lower bound (inclusive) — required so the query never hits PostgREST's 1000-row cap. */
+  sinceKey: string,
 ): Promise<Map<string, Set<string>>> {
   const map = new Map<string, Set<string>>();
   if (habitIds.length === 0) return map;
@@ -14,7 +16,8 @@ export async function listLogDateKeysForUserHabits(
     .from("habit_logs")
     .select("habit_id, log_date")
     .eq("user_id", userId)
-    .in("habit_id", habitIds);
+    .in("habit_id", habitIds)
+    .gte("log_date", sinceKey);
 
   if (error) throw new Error(error.message);
 
@@ -31,12 +34,15 @@ export async function listLogDateKeysForHabit(
   supabase: SupabaseClient<Database>,
   userId: string,
   habitId: string,
+  /** Lower bound (inclusive) — required so the query never hits PostgREST's 1000-row cap. */
+  sinceKey: string,
 ): Promise<Set<string>> {
   const { data, error } = await supabase
     .from("habit_logs")
     .select("log_date")
     .eq("user_id", userId)
-    .eq("habit_id", habitId);
+    .eq("habit_id", habitId)
+    .gte("log_date", sinceKey);
 
   if (error) throw new Error(error.message);
   return new Set((data ?? []).map((r) => r.log_date));

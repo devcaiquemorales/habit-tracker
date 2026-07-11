@@ -107,6 +107,14 @@ export const ptMessages: EnMessages = {
     habitNotFound: "Hábito não encontrado.",
     loadDashboardFailed: "Falha ao carregar o painel",
     reorderHabitsFailed: "Não foi possível salvar a ordem dos hábitos.",
+    invalidDate: "Data inválida.",
+    invalidInput: "Dados do hábito inválidos.",
+    savePushSubscriptionFailed: "Não foi possível ativar notificações.",
+    deletePushSubscriptionFailed: "Não foi possível desativar notificações.",
+    upsertReminderFailed: "Não foi possível adicionar lembrete.",
+    deleteReminderFailed: "Não foi possível remover lembrete.",
+    setReminderEnabledFailed: "Não foi possível atualizar lembrete.",
+    invalidReminderTime: "Horário inválido.",
   },
   home: {
     loadError:
@@ -115,17 +123,24 @@ export const ptMessages: EnMessages = {
     emptyBody: "Crie seu primeiro hábito para começar o mapa de atividade.",
     motivationPrefix: "Motivação:",
     settingsAria: "Personalização e conta",
+    reorderDone: "Concluir",
+    reorder: "Reordenar",
+    reorderHint: "Segure e arraste um card para reordenar",
+    markDone: "Marcar como feito",
+    unmarkDone: "Desmarcar",
   },
   settings: {
-    title: "Personalização",
-    intro:
-      "Atualize como você aparece na tela inicial e a frase que te mantém no caminho.",
+    title: "Configurações",
+    profileSection: "Perfil",
+    remindersSection: "Lembretes",
+    accountSection: "Conta",
     displayName: "Nome de exibição",
     yourReason: "Seu motivo",
     reasonPlaceholder: "Por que esses hábitos importam para você",
     saveChanges: "Salvar alterações",
     saving: "Salvando...",
-    account: "Conta",
+    saved: "Salvo",
+    email: "E-mail",
     backHomeAria: "Voltar ao início",
   },
   habitForm: {
@@ -224,7 +239,26 @@ export const ptMessages: EnMessages = {
   },
   detailInfo: {
     daysStreak: "{n} dias",
+    weeksStreak: "sequência de {n} semanas",
     noStreakYet: "Sem sequência ainda",
+  },
+  streak: {
+    monthCount: "{n}× este mês",
+    weeksShort: "{n}sem",
+    weeks: "sequência de {n} semanas",
+  },
+  streakToast: {
+    milestone7: "{habit} — 7 dias seguidos. Uma semana.",
+    milestone14: "{habit} — 14 dias. Não pare agora.",
+    milestone21: "{habit} — 21 dias. Agora é hábito.",
+    milestone30: "{habit} — 30 dias. Um mês sólido.",
+    milestone60: "{habit} — 60 dias. A maioria desiste antes.",
+    milestone90: "{habit} — 90 dias. É quem você é.",
+    milestone180: "{habit} — 6 meses. Raro.",
+    milestone365: "{habit} — 1 ano. Respeito.",
+    milestoneFallback: "{habit} — sequência de {n} dias.",
+    recovery1: "{habit} — De volta ao ritmo.",
+    recovery2: "{habit} — Dois dias parado. Voltou. Continue.",
   },
   loadingScreens: {
     habit: "Carregando hábito",
@@ -245,5 +279,26 @@ export const ptMessages: EnMessages = {
     afternoon: "Boa tarde, {name}",
     evening: "Boa noite, {name}",
     nameFallback: "—",
+  },
+  notifications: {
+    title: "Lembretes",
+    description: "Receba um lembrete nos horários que escolher com seu progresso do dia.",
+    enableButton: "Ativar lembretes",
+    disableButton: "Desativar lembretes",
+    permissionPrompt:
+      "Enviaremos um lembrete nos horários que você escolher para verificar seu progresso. Você pode gerenciar isso nas configurações do seu navegador.",
+    permissionDenied:
+      "Notificações estão desativadas. Ative-as nas configurações do seu navegador para receber lembretes.",
+    addReminder: "Adicionar horário de lembrete",
+    removeReminder: "Remover",
+    noReminders: "Nenhum lembrete ainda",
+    addReminderButton: "Adicionar",
+    iosStandalone: "Adicione à Tela de Início para ativar lembretes",
+    iosStandaloneDescription:
+      "Abra este app no Safari, toque em Compartilhar e escolha Adicionar à Tela de Início.",
+    unsupported:
+      "Lembretes não são suportados neste dispositivo ou navegador.",
+    enabled: "Ativado",
+    disabled: "Desativado",
   },
 };

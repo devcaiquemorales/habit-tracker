@@ -6,7 +6,6 @@ import { type KeyboardEvent, useEffect } from "react";
 
 import { useRouteTransitionFeedback } from "@/app/route-transition-shell";
 import type { ColorVariant } from "@/domain/types/habit";
-import { getStreakLevel } from "@/domain/types/habit";
 import type { HeatmapData } from "@/domain/types/heatmap";
 import type { Schedule } from "@/domain/types/schedule";
 import { HabitHeatmap } from "@/presentation/components/habit-heatmap";
@@ -26,6 +25,7 @@ interface HabitCardProps {
   streak?: number;
   colorVariant?: ColorVariant;
   data: HeatmapData;
+  completedKeys?: string[];
 }
 
 export function HabitCard({
@@ -35,6 +35,7 @@ export function HabitCard({
   streak,
   colorVariant = "green",
   data,
+  completedKeys = [],
 }: HabitCardProps) {
   const { t, locale } = useI18n();
   const router = useRouter();
@@ -48,11 +49,7 @@ export function HabitCard({
     router.prefetch(href);
   }, [router, href]);
 
-  const { indicatorClass, streakClasses } = COLOR_VARIANTS[colorVariant];
-  const streakClass =
-    streak !== undefined && streak > 0
-      ? streakClasses[getStreakLevel(streak)]
-      : undefined;
+  const { indicatorClass } = COLOR_VARIANTS[colorVariant];
 
   const openDetail = () => {
     beginRouteTransitionFeedback();
@@ -97,7 +94,8 @@ export function HabitCard({
           name={name}
           indicatorClass={indicatorClass}
           streak={streak}
-          streakClass={streakClass}
+          schedule={schedule}
+          completedKeys={completedKeys}
         />
         <p className="text-xs text-white/30">
           {t("common.schedulePrefix")} {formatScheduleLabel(schedule, locale)}

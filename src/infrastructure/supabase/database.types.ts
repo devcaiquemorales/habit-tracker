@@ -14,59 +14,77 @@ export type Database = {
   }
   public: {
     Tables: {
-      habit_fixed_days: {
+      habits: {
         Row: {
-          created_at: string
-          habit_id: string
           id: string
-          weekday: number
+          user_id: string
+          name: string
+          color_variant: "green" | "blue" | "amber" | "purple" | "red"
+          schedule_type: "daily" | "specific_days" | "every_other_day" | "weekly_target" | "flexible"
+          weekly_target: number | null
+          fixed_days: number[] | null
+          anchor_date: string
+          position: number
+          archived_at: string | null
+          created_at: string
+          updated_at: string
         }
         Insert: {
-          created_at?: string
-          habit_id: string
           id?: string
-          weekday: number
+          user_id: string
+          name: string
+          color_variant?: "green" | "blue" | "amber" | "purple" | "red"
+          schedule_type: "daily" | "specific_days" | "every_other_day" | "weekly_target" | "flexible"
+          weekly_target?: number | null
+          fixed_days?: number[] | null
+          anchor_date?: string
+          position?: number
+          archived_at?: string | null
+          created_at?: string
+          updated_at?: string
         }
         Update: {
-          created_at?: string
-          habit_id?: string
           id?: string
-          weekday?: number
+          user_id?: string
+          name?: string
+          color_variant?: "green" | "blue" | "amber" | "purple" | "red"
+          schedule_type?: "daily" | "specific_days" | "every_other_day" | "weekly_target" | "flexible"
+          weekly_target?: number | null
+          fixed_days?: number[] | null
+          anchor_date?: string
+          position?: number
+          archived_at?: string | null
+          created_at?: string
+          updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "habit_fixed_days_habit_id_fkey"
-            columns: ["habit_id"]
+            foreignKeyName: "habits_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "habits"
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
       }
       habit_logs: {
         Row: {
-          created_at: string
           habit_id: string
-          id: string
-          log_date: string
-          updated_at: string
           user_id: string
+          log_date: string
+          created_at: string
         }
         Insert: {
-          created_at?: string
           habit_id: string
-          id?: string
-          log_date: string
-          updated_at?: string
           user_id: string
+          log_date: string
+          created_at?: string
         }
         Update: {
-          created_at?: string
           habit_id?: string
-          id?: string
-          log_date?: string
-          updated_at?: string
           user_id?: string
+          log_date?: string
+          created_at?: string
         }
         Relationships: [
           {
@@ -76,77 +94,182 @@ export type Database = {
             referencedRelation: "habits"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "habit_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
         ]
-      }
-      habits: {
-        Row: {
-          color_variant: string
-          created_at: string
-          id: string
-          name: string
-          position: number
-          schedule_type: string
-          updated_at: string
-          user_id: string
-          weekly_target: number | null
-        }
-        Insert: {
-          color_variant: string
-          created_at?: string
-          id?: string
-          name: string
-          position?: number
-          schedule_type: string
-          updated_at?: string
-          user_id: string
-          weekly_target?: number | null
-        }
-        Update: {
-          color_variant?: string
-          created_at?: string
-          id?: string
-          name?: string
-          position?: number
-          schedule_type?: string
-          updated_at?: string
-          user_id?: string
-          weekly_target?: number | null
-        }
-        Relationships: []
       }
       profiles: {
         Row: {
-          created_at: string
-          display_name: string
           id: string
+          display_name: string
           motivation_phrase: string | null
+          timezone: string
+          locale: "en" | "pt"
+          created_at: string
           updated_at: string
         }
         Insert: {
-          created_at?: string
-          display_name: string
           id: string
+          display_name?: string
           motivation_phrase?: string | null
+          timezone?: string
+          locale?: "en" | "pt"
+          created_at?: string
           updated_at?: string
         }
         Update: {
-          created_at?: string
-          display_name?: string
           id?: string
+          display_name?: string
           motivation_phrase?: string | null
+          timezone?: string
+          locale?: "en" | "pt"
+          created_at?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      push_subscriptions: {
+        Row: {
+          id: string
+          user_id: string
+          endpoint: string
+          p256dh: string
+          auth: string
+          user_agent: string | null
+          created_at: string
+          last_used_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          endpoint: string
+          p256dh: string
+          auth: string
+          user_agent?: string | null
+          created_at?: string
+          last_used_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          endpoint?: string
+          p256dh?: string
+          auth?: string
+          user_agent?: string | null
+          created_at?: string
+          last_used_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_subscriptions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notification_preferences: {
+        Row: {
+          id: string
+          user_id: string
+          reminder_time: string
+          enabled: boolean
+          days_of_week: number[] | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          reminder_time: string
+          enabled?: boolean
+          days_of_week?: number[] | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          reminder_time?: string
+          enabled?: boolean
+          days_of_week?: number[] | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_preferences_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notification_deliveries: {
+        Row: {
+          id: string
+          user_id: string
+          local_date: string
+          reminder_time: string
+          sent_at: string
+          done_count: number
+          pending_count: number
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          local_date: string
+          reminder_time: string
+          sent_at?: string
+          done_count: number
+          pending_count: number
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          local_date?: string
+          reminder_time?: string
+          sent_at?: string
+          done_count?: number
+          pending_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_deliveries_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      reorder_habits: {
+        Args: {
+          p_ids: string[]
+        }
+        Returns: undefined
+      }
     }
     Enums: {
-      [_ in never]: never
+      color_variant: "green" | "blue" | "amber" | "purple" | "red"
+      schedule_type: "daily" | "specific_days" | "every_other_day" | "weekly_target" | "flexible"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -273,6 +396,21 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      color_variant: {
+        green: "green",
+        blue: "blue",
+        amber: "amber",
+        purple: "purple",
+        red: "red",
+      },
+      schedule_type: {
+        daily: "daily",
+        specific_days: "specific_days",
+        every_other_day: "every_other_day",
+        weekly_target: "weekly_target",
+        flexible: "flexible",
+      },
+    },
   },
 } as const

@@ -20,6 +20,8 @@ export interface HeatmapDayCell {
    * Trailing cells are rendered invisible so they don't look like missed days.
    */
   trailing?: boolean;
+  /** Logged day that follows a 1–2 day gap (subtle heatmap styling). */
+  recovery?: boolean;
 }
 
 export interface HeatmapMonthData {

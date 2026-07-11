@@ -1,3 +1,4 @@
+import { todayKeyInTimeZone } from "@/domain/types/date-key";
 import type { Habit } from "@/domain/types/habit";
 import {
   getHomeProfile,
@@ -13,7 +14,7 @@ export type DashboardPayload = {
 };
 
 const emptyDashboard = (): DashboardPayload => ({
-  profile: { displayName: "there", motivationPhrase: "" },
+  profile: { displayName: "there", motivationPhrase: "", timezone: "UTC", locale: "en" },
   habits: [],
   logKeysByHabitId: new Map(),
 });
@@ -33,9 +34,11 @@ export async function getDashboardPayload(): Promise<DashboardPayload> {
   }
 
   const profile = await getHomeProfile(supabase, user);
+  const todayKey = todayKeyInTimeZone(profile.timezone);
   const { habits, logKeysByHabitId } = await listHabitsWithLogsForUser(
     supabase,
     user.id,
+    todayKey,
   );
 
   return { profile, habits, logKeysByHabitId };

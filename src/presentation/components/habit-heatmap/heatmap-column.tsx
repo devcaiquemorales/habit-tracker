@@ -136,6 +136,9 @@ export function HeatmapColumn({
               }
               size={cellSize}
               isToday={dateKey === todayHighlightKey}
+              isRecovery={Boolean(
+                cell.recovery && effectiveDone > 0 && status === "completed",
+              )}
               isStripSelected={isStripSelected}
               onActivate={onActivate}
               selectDayLabel={selectDayLabel}
@@ -165,6 +168,9 @@ export function HeatmapColumn({
             tooltip={tooltipForStatus(status, translate)}
             size={cellSize}
             isToday={dateKey === todayHighlightKey}
+            isRecovery={Boolean(
+              cell.recovery && effectiveDone > 0 && status === "completed",
+            )}
             isStripSelected={isStripSelected}
             onActivate={onActivate}
             selectDayLabel={selectDayLabel}

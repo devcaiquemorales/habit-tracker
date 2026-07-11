@@ -86,3 +86,34 @@ export async function updateMotivationPhraseAction(
   revalidatePath("/settings");
   return { error: null };
 }
+
+export async function syncTimezoneAction(
+  timezone: string,
+): Promise<LocalizedActionResult> {
+  try {
+    new Intl.DateTimeFormat("en-US", { timeZone: timezone });
+  } catch {
+    return { error: null, errorKey: "errors.invalidInput" };
+  }
+
+  const supabase = await createServerSupabaseClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    return { error: null, errorKey: "errors.notSignedIn" };
+  }
+
+  try {
+    const { updateProfileTimezone } = await import(
+      "@/infrastructure/repositories"
+    );
+    await updateProfileTimezone(supabase, user.id, timezone);
+    return { error: null };
+  } catch (e) {
+    return {
+      error: e instanceof Error ? e.message : "",
+      errorKey: "errors.saveProfileFailed",
+    };
+  }
+}

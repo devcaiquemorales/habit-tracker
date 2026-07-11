@@ -152,58 +152,100 @@ export function useHabitLogState(
     async (dateKey: string) => {
       setPersistenceError(null);
       setLogActionPending("mark");
+
+      // Store previous state for rollback
+      const previousRemovalOverrides = removalOverrides;
+      const previousExtraPastCompleted = extraPastCompleted;
+      const previousCompletedToday = completedToday;
+
+      // Apply optimistic state updates immediately
+      setRemovalOverrides((prev) => {
+        const next = new Set(prev);
+        next.delete(dateKey);
+        return next;
+      });
+      setExtraPastCompleted((prev) => new Set([...prev, dateKey]));
+      if (dateKey === todayKey) {
+        setCompletedToday(true);
+      }
+      patchDashboardAfterLogMutation(habitId, dateKey, "add");
+
       try {
         const result = await logHabitDayAction(habitId, dateKey);
         const msg = formatActionError(result, t);
         if (msg) {
+          // Rollback on error
+          setRemovalOverrides(previousRemovalOverrides);
+          setExtraPastCompleted(previousExtraPastCompleted);
+          setCompletedToday(previousCompletedToday);
           setPersistenceError(msg);
-          return;
         }
-        setRemovalOverrides((prev) => {
-          const next = new Set(prev);
-          next.delete(dateKey);
-          return next;
-        });
-        setExtraPastCompleted((prev) => new Set([...prev, dateKey]));
-        if (dateKey === todayKey) {
-          setCompletedToday(true);
-        }
-        patchDashboardAfterLogMutation(habitId, dateKey, "add");
+      } catch {
+        // Rollback on exception
+        setRemovalOverrides(previousRemovalOverrides);
+        setExtraPastCompleted(previousExtraPastCompleted);
+        setCompletedToday(previousCompletedToday);
+        setPersistenceError(t("common.error"));
       } finally {
         setLogActionPending(null);
       }
     },
-    [habitId, todayKey, t],
+    [habitId, todayKey, t, removalOverrides, extraPastCompleted, completedToday],
   );
 
   const handleRemovePastDay = useCallback(
     async (dateKey: string) => {
       setPersistenceError(null);
       setLogActionPending("remove");
+
+      // Store previous state for rollback
+      const previousExtraPastCompleted = extraPastCompleted;
+      const previousCompletedToday = completedToday;
+      const previousRemovalOverrides = removalOverrides;
+
+      // Apply optimistic state updates immediately
+      setExtraPastCompleted((prev) => {
+        const next = new Set(prev);
+        next.delete(dateKey);
+        return next;
+      });
+      if (dateKey === todayKey) {
+        setCompletedToday(false);
+      }
+      if (baseCompletedKeys.has(dateKey) || dateKey === todayKey) {
+        setRemovalOverrides((r) => new Set([...r, dateKey]));
+      }
+      patchDashboardAfterLogMutation(habitId, dateKey, "remove");
+
       try {
         const result = await unlogHabitDayAction(habitId, dateKey);
         const msg = formatActionError(result, t);
         if (msg) {
+          // Rollback on error
+          setExtraPastCompleted(previousExtraPastCompleted);
+          setCompletedToday(previousCompletedToday);
+          setRemovalOverrides(previousRemovalOverrides);
           setPersistenceError(msg);
-          return;
         }
-        setExtraPastCompleted((prev) => {
-          const next = new Set(prev);
-          next.delete(dateKey);
-          return next;
-        });
-        if (dateKey === todayKey) {
-          setCompletedToday(false);
-        }
-        if (baseCompletedKeys.has(dateKey) || dateKey === todayKey) {
-          setRemovalOverrides((r) => new Set([...r, dateKey]));
-        }
-        patchDashboardAfterLogMutation(habitId, dateKey, "remove");
+      } catch {
+        // Rollback on exception
+        setExtraPastCompleted(previousExtraPastCompleted);
+        setCompletedToday(previousCompletedToday);
+        setRemovalOverrides(previousRemovalOverrides);
+        setPersistenceError(t("common.error"));
       } finally {
         setLogActionPending(null);
       }
     },
-    [habitId, baseCompletedKeys, todayKey, t],
+    [
+      habitId,
+      baseCompletedKeys,
+      todayKey,
+      t,
+      extraPastCompleted,
+      completedToday,
+      removalOverrides,
+    ],
   );
 
   const handleSaveEdit = useCallback((payload: HabitFormPayload) => {

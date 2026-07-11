@@ -5,6 +5,8 @@ import type { Database } from "@/infrastructure/supabase/database.types";
 export type HomeProfileResolved = {
   displayName: string;
   motivationPhrase: string;
+  timezone: string;
+  locale: string;
 };
 
 /**
@@ -24,7 +26,7 @@ export async function getHomeProfile(
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("display_name, motivation_phrase")
+    .select("display_name, motivation_phrase, timezone, locale")
     .eq("id", user.id)
     .maybeSingle();
 
@@ -37,7 +39,10 @@ export async function getHomeProfile(
   const motivationPhrase =
     profile?.motivation_phrase?.trim() || metaMotivation || "";
 
-  return { displayName, motivationPhrase };
+  const timezone = profile?.timezone || "UTC";
+  const locale = (profile?.locale as "en" | "pt" | undefined) || "en";
+
+  return { displayName, motivationPhrase, timezone, locale };
 }
 
 export async function updateProfileCustomizationForUser(
@@ -50,6 +55,37 @@ export async function updateProfileCustomizationForUser(
       id: userId,
       display_name: input.displayName,
       motivation_phrase: input.motivationPhrase,
+    },
+    { onConflict: "id" },
+  );
+
+  if (error) {
+    throw new Error(error.message);
+  }
+}
+
+export async function getUserTimezone(
+  supabase: SupabaseClient<Database>,
+  userId: string,
+): Promise<string> {
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("timezone")
+    .eq("id", userId)
+    .maybeSingle();
+
+  return profile?.timezone || "UTC";
+}
+
+export async function updateProfileTimezone(
+  supabase: SupabaseClient<Database>,
+  userId: string,
+  timezone: string,
+): Promise<void> {
+  const { error } = await supabase.from("profiles").upsert(
+    {
+      id: userId,
+      timezone,
     },
     { onConflict: "id" },
   );

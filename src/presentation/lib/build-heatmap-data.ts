@@ -4,7 +4,9 @@ import type {
   HeatmapDayCell,
   HeatmapMonthData,
 } from "@/domain/types/heatmap";
+import type { Schedule } from "@/domain/types/schedule";
 import type { AppLocale } from "@/lib/app-locale";
+import { detectRecoveryDays } from "@/presentation/lib/detect-streak-recovery";
 import { formatHeatmapMonthLabel } from "@/presentation/lib/i18n/format";
 
 function localMidnight(year: number, month: number, day: number): Date {
@@ -47,6 +49,7 @@ function buildWeekGridForLocalMonth(
   month: number,
   today: Date,
   completedKeys: ReadonlySet<string>,
+  recoveryKeys: ReadonlySet<string>,
 ): HeatmapDayCell[][] {
   const first = localMidnight(year, month, 1);
   const lastDay = lastLocalDayOfMonth(year, month).getDate();
@@ -66,6 +69,7 @@ function buildWeekGridForLocalMonth(
     cells.push({
       date: new Date(cellDate.getTime()),
       done,
+      recovery: done === 1 && recoveryKeys.has(key),
     });
   }
 
@@ -84,6 +88,7 @@ function buildWeekGridForLocalMonth(
 /** Exactly 12 calendar months ending in the current month (local timezone), oldest → newest */
 export function buildHeatmapDataFromCompletedKeys(
   completedKeys: ReadonlySet<string>,
+  schedule: Schedule,
   now: Date = new Date(),
   locale: AppLocale = "en",
 ): HeatmapData {
@@ -100,6 +105,10 @@ export function buildHeatmapDataFromCompletedKeys(
     today.getMonth(),
   );
 
+  const recoveryKeys = new Set(
+    detectRecoveryDays([...completedKeys], schedule),
+  );
+
   const months: HeatmapMonthData[] = [];
   let cursor = new Date(rangeStart.getTime());
   let prevYear: number | undefined;
@@ -113,7 +122,13 @@ export function buildHeatmapDataFromCompletedKeys(
     months.push({
       id: `${y}-${pad2(m + 1)}`,
       label,
-      weeks: buildWeekGridForLocalMonth(y, m, today, completedKeys),
+      weeks: buildWeekGridForLocalMonth(
+        y,
+        m,
+        today,
+        completedKeys,
+        recoveryKeys,
+      ),
     });
 
     cursor = addLocalMonths(cursor, 1);

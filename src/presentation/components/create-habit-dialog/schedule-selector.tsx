@@ -15,6 +15,8 @@ export type CreateScheduleValue =
       category: "fixed";
       mode: FixedScheduleMode;
       days: number[];
+      /** Preserved everyOtherDay cycle anchor when editing an existing habit. */
+      anchorDateKey?: string;
     }
   | {
       category: "weeklyTarget";

@@ -93,3 +93,30 @@ export function getLocalWeekStartSunday(date: Date): Date {
   d.setDate(d.getDate() - dow);
   return d;
 }
+
+/** Today's calendar day key in an IANA timezone (falls back to UTC on bad tz). */
+export function todayKeyInTimeZone(timeZone: string): string {
+  try {
+    return new Intl.DateTimeFormat("en-CA", {
+      timeZone,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(new Date());
+  } catch {
+    return toUtcDateKey(getUtcToday());
+  }
+}
+
+/** Adds delta days to a YYYY-MM-DD key (epoch-day math, DST-proof). Invalid key -> returns the key unchanged. */
+export function addDaysToDateKey(key: string, delta: number): string {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(key);
+  if (!match) return key;
+  const y = Number(match[1]);
+  const m = Number(match[2]);
+  const d = Number(match[3]);
+  const epochDay = Math.floor(Date.UTC(y, m - 1, d) / 86400000);
+  const newEpochDay = epochDay + delta;
+  const newDate = new Date(newEpochDay * 86400000);
+  return toUtcDateKey(newDate);
+}

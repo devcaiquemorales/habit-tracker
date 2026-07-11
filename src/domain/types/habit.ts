@@ -13,9 +13,3 @@ export interface Habit {
   /** Display order within the dashboard (0-based, persisted). */
   position: number;
 }
-
-export function getStreakLevel(streak: number): "low" | "medium" | "high" {
-  if (streak <= 2) return "low";
-  if (streak <= 6) return "medium";
-  return "high";
-}

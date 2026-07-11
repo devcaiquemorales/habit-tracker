@@ -4,8 +4,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 
 import { createBrowserSupabaseClient } from "@/infrastructure/supabase/client";
-import { AuthShell } from "./auth-shell";
 import { useI18n } from "@/presentation/lib/i18n/i18n-provider";
+
+import { AuthShell } from "./auth-shell";
 
 function safeInternalNext(raw: string | null): string {
   if (!raw || !raw.startsWith("/") || raw.startsWith("//")) {

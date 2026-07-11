@@ -1,3 +1,4 @@
+import { getLocalToday, toLocalDateKey } from "@/domain/types/date-key";
 import type { Schedule } from "@/domain/types/schedule";
 import type { CreateScheduleValue } from "@/presentation/components/create-habit-dialog/schedule-selector";
 
@@ -13,7 +14,11 @@ export function buildScheduleFromForm(form: CreateScheduleValue): Schedule {
     case "daily":
       return { type: "daily" };
     case "everyOtherDay":
-      return { type: "everyOtherDay" };
+      // Keep the existing cycle anchor on edit; new habits anchor at today.
+      return {
+        type: "everyOtherDay",
+        anchorDateKey: form.anchorDateKey ?? toLocalDateKey(getLocalToday()),
+      };
     case "specificDays":
       return {
         type: "specificDays",
@@ -36,7 +41,12 @@ export function scheduleToFormValue(schedule: Schedule): CreateScheduleValue {
     case "daily":
       return { category: "fixed", mode: "daily", days: [] };
     case "everyOtherDay":
-      return { category: "fixed", mode: "everyOtherDay", days: [] };
+      return {
+        category: "fixed",
+        mode: "everyOtherDay",
+        days: [],
+        anchorDateKey: schedule.anchorDateKey,
+      };
     case "specificDays":
       return {
         category: "fixed",

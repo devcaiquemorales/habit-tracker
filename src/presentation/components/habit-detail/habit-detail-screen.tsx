@@ -13,6 +13,7 @@ import { buildHeatmapDataFromCompletedKeys } from "@/presentation/lib/build-heat
 import {
   patchDashboardHabit,
   removeHabitFromDashboard,
+  useCachedDashboard,
 } from "@/presentation/lib/dashboard-swr";
 import { useI18n } from "@/presentation/lib/i18n/i18n-provider";
 import { triggerInteractionFeedback } from "@/presentation/lib/interaction-feedback";
@@ -53,15 +54,24 @@ export function HabitDetailScreen({
   const [editFormResetKey, setEditFormResetKey] = useState(0);
   const [deleteOpen, setDeleteOpen] = useState(false);
 
+  // Seed from dashboard cache for instant render on navigation; SSR props remain authoritative
+  const cachedDashboard = useCachedDashboard();
+  const cachedCompletedKeys = cachedDashboard?.logKeysRecord[initialHabit.id] ?? initialCompletedKeys;
+
   const keysSig = useMemo(
-    () => sortedKeysSignature(initialCompletedKeys),
-    [initialCompletedKeys],
+    () => sortedKeysSignature(cachedCompletedKeys),
+    [cachedCompletedKeys],
   );
 
-  const heatmapData = useMemo(() => {
+  const heatmapDataForHook = useMemo(() => {
     const keys = keysSig === "" ? [] : keysSig.split(",");
-    return buildHeatmapDataFromCompletedKeys(new Set(keys), new Date(), locale);
-  }, [keysSig, locale]);
+    return buildHeatmapDataFromCompletedKeys(
+      new Set(keys),
+      initialHabit.schedule,
+      new Date(),
+      locale,
+    );
+  }, [keysSig, locale, initialHabit.schedule]);
 
   const {
     habit,
@@ -81,7 +91,17 @@ export function HabitDetailScreen({
     handleHeatmapDateSelect,
     persistenceError,
     logActionPending,
-  } = useHabitLogState(initialHabit, heatmapData, initialHabit.id);
+  } = useHabitLogState(initialHabit, heatmapDataForHook, initialHabit.id);
+
+  const heatmapData = useMemo(() => {
+    const keys = keysSig === "" ? [] : keysSig.split(",");
+    return buildHeatmapDataFromCompletedKeys(
+      new Set(keys),
+      habit.schedule,
+      new Date(),
+      locale,
+    );
+  }, [keysSig, locale, habit.schedule]);
 
   /**
    * Always open detail at the top (including when opening from a deep-scrolled home list).
@@ -112,6 +132,7 @@ export function HabitDetailScreen({
           <HabitDetailInfo
             colorVariant={habit.colorVariant}
             streak={habit.streak}
+            schedule={habit.schedule}
             scheduleLabel={scheduleLabel}
             todayStatusLabel={todayLabel}
             todayStatusKind={todayStatusKind}
@@ -171,20 +192,30 @@ export function HabitDetailScreen({
         formResetKey={editFormResetKey}
         initialHabit={editInitialHabit}
         onSave={async (payload) => {
-          const result = await updateHabitAction(habit.id, {
-            name: payload.name,
-            colorVariant: payload.colorVariant,
-            schedule: payload.schedule,
-          });
-          if (result.error) {
-            return result;
-          }
+          // Optimistic: apply locally and to the dashboard cache first,
+          // roll back to the previous values if the server rejects.
+          const previous = {
+            name: habit.name,
+            colorVariant: habit.colorVariant,
+            schedule: habit.schedule,
+          };
           patchDashboardHabit(habit.id, {
             name: payload.name,
             colorVariant: payload.colorVariant,
             schedule: payload.schedule,
           });
           handleSaveEdit(payload);
+
+          const result = await updateHabitAction(habit.id, {
+            name: payload.name,
+            colorVariant: payload.colorVariant,
+            schedule: payload.schedule,
+          });
+          if (result.error) {
+            patchDashboardHabit(habit.id, previous);
+            handleSaveEdit(previous);
+            return result;
+          }
           return { error: null };
         }}
       />

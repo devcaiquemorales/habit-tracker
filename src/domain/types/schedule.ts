@@ -10,7 +10,7 @@ export type ScheduleType =
 export type Schedule =
   | { type: "daily" }
   | { type: "specificDays"; days: number[] }
-  | { type: "everyOtherDay" }
+  | { type: "everyOtherDay"; anchorDateKey?: string }
   | { type: "flexible" }
   | { type: "weeklyTarget"; timesPerWeek: number };
 
@@ -32,6 +32,22 @@ export function isDayExpected(schedule: Schedule, date: Date): boolean {
       const dayIndex = Math.floor(
         Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) / 86400000,
       );
+
+      // If anchorDateKey is present and parsable, use anchored logic
+      if (schedule.anchorDateKey) {
+        const anchorMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(schedule.anchorDateKey);
+        if (anchorMatch) {
+          const anchorY = Number(anchorMatch[1]);
+          const anchorM = Number(anchorMatch[2]);
+          const anchorD = Number(anchorMatch[3]);
+          const anchorIndex = Math.floor(
+            Date.UTC(anchorY, anchorM - 1, anchorD) / 86400000,
+          );
+          return dayIndex >= anchorIndex && (dayIndex - anchorIndex) % 2 === 0;
+        }
+      }
+
+      // Fallback: legacy parity behavior if no anchor or unparsable
       return dayIndex % 2 === 0;
     }
     case "weeklyTarget":

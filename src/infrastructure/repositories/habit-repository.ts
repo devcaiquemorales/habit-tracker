@@ -1,7 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import { computeHabitStreak } from "@/domain/lib/compute-habit-streak";
-import { getUtcToday, toUtcDateKey } from "@/domain/types/date-key";
+import { computeStreak } from "@/domain/lib/compute-streak";
+import { addDaysToDateKey } from "@/domain/types/date-key";
 import type { Habit } from "@/domain/types/habit";
 import type { Schedule } from "@/domain/types/schedule";
 import {
@@ -14,28 +14,27 @@ import type { Database } from "@/infrastructure/supabase/database.types";
 import { listLogDateKeysForUserHabits } from "./habit-log-repository";
 
 type HabitRow = Database["public"]["Tables"]["habits"]["Row"];
-type FixedDayRow = { weekday: number };
 
-export type HabitWithScheduleRows = HabitRow & {
-  habit_fixed_days: FixedDayRow[] | null;
-};
+/** Fetch window for logs: covers the 12-month heatmap and the streak walk. */
+const LOG_WINDOW_DAYS = 400;
 
 function mapRowToHabit(
-  row: HabitWithScheduleRows,
+  row: HabitRow,
   completedDateKeys: ReadonlySet<string>,
+  todayKey: string,
 ): Habit {
-  const fixed =
-    row.habit_fixed_days
-      ?.map((r) => r.weekday)
-      .filter((d) => d >= 0 && d <= 6) ?? [];
-  const schedule = scheduleFromDb(row.schedule_type, row.weekly_target, fixed);
-  const todayKey = toUtcDateKey(getUtcToday());
+  const schedule = scheduleFromDb(
+    row.schedule_type,
+    row.weekly_target,
+    row.fixed_days,
+    row.anchor_date,
+  );
   return {
     id: row.id,
     name: row.name,
     colorVariant: parseColorVariant(row.color_variant),
     schedule,
-    streak: computeHabitStreak(completedDateKeys, getUtcToday()),
+    streak: computeStreak(completedDateKeys, schedule, todayKey).count,
     completedToday: completedDateKeys.has(todayKey),
     position: row.position,
   };
@@ -44,27 +43,30 @@ function mapRowToHabit(
 export async function listHabitsWithLogsForUser(
   supabase: SupabaseClient<Database>,
   userId: string,
+  todayKey: string,
 ): Promise<{
   habits: Habit[];
   logKeysByHabitId: Map<string, Set<string>>;
 }> {
   const { data, error } = await supabase
     .from("habits")
-    .select("*, habit_fixed_days(weekday)")
+    .select("*")
     .eq("user_id", userId)
+    .is("archived_at", null)
     .order("position", { ascending: true });
 
   if (error) throw new Error(error.message);
-  const rows = (data ?? []) as HabitWithScheduleRows[];
+  const rows = (data ?? []) as HabitRow[];
   const habitIds = rows.map((r) => r.id);
   const logKeysByHabitId = await listLogDateKeysForUserHabits(
     supabase,
     userId,
     habitIds,
+    addDaysToDateKey(todayKey, -LOG_WINDOW_DAYS),
   );
 
   const habits = rows.map((row) =>
-    mapRowToHabit(row, logKeysByHabitId.get(row.id) ?? new Set()),
+    mapRowToHabit(row, logKeysByHabitId.get(row.id) ?? new Set(), todayKey),
   );
 
   return { habits, logKeysByHabitId };
@@ -75,17 +77,18 @@ export async function getHabitByIdForUser(
   userId: string,
   habitId: string,
   completedDateKeys: ReadonlySet<string>,
+  todayKey: string,
 ): Promise<Habit | null> {
   const { data, error } = await supabase
     .from("habits")
-    .select("*, habit_fixed_days(weekday)")
+    .select("*")
     .eq("user_id", userId)
     .eq("id", habitId)
     .maybeSingle();
 
   if (error) throw new Error(error.message);
   if (!data) return null;
-  return mapRowToHabit(data as HabitWithScheduleRows, completedDateKeys);
+  return mapRowToHabit(data as HabitRow, completedDateKeys, todayKey);
 }
 
 export async function insertHabit(
@@ -97,9 +100,7 @@ export async function insertHabit(
     schedule: Schedule;
   },
 ): Promise<{ id: string }> {
-  const { schedule_type, weekly_target, fixed_days } = scheduleToDbPayload(
-    input.schedule,
-  );
+  const payload = scheduleToDbPayload(input.schedule);
 
   const { data: maxRow, error: maxError } = await supabase
     .from("habits")
@@ -115,33 +116,30 @@ export async function insertHabit(
       ? maxRow.position + 1
       : 0;
 
+  const insertPayload: Record<string, unknown> = {
+    user_id: userId,
+    name: input.name,
+    color_variant: input.color_variant,
+    schedule_type: payload.schedule_type,
+    weekly_target: payload.weekly_target,
+    fixed_days: payload.fixed_days,
+    position: nextPosition,
+  };
+
+  if (payload.anchor_date !== undefined) {
+    insertPayload.anchor_date = payload.anchor_date;
+  }
+
+  const typedInsertPayload = insertPayload as Database["public"]["Tables"]["habits"]["Insert"];
+
   const { data: row, error } = await supabase
     .from("habits")
-    .insert({
-      user_id: userId,
-      name: input.name,
-      color_variant: input.color_variant,
-      schedule_type,
-      weekly_target,
-      position: nextPosition,
-    })
+    .insert(typedInsertPayload)
     .select("id")
     .single();
 
   if (error) throw new Error(error.message);
-  const habitId = row.id;
-
-  if (fixed_days !== null && fixed_days.length > 0) {
-    const { error: fdError } = await supabase.from("habit_fixed_days").insert(
-      fixed_days.map((weekday) => ({
-        habit_id: habitId,
-        weekday,
-      })),
-    );
-    if (fdError) throw new Error(fdError.message);
-  }
-
-  return { id: habitId };
+  return { id: row.id };
 }
 
 export async function reorderHabitsForUser(
@@ -149,36 +147,11 @@ export async function reorderHabitsForUser(
   userId: string,
   orderedIds: string[],
 ): Promise<void> {
-  for (let i = 0; i < orderedIds.length; i++) {
-    const { error } = await supabase
-      .from("habits")
-      .update({ position: i })
-      .eq("id", orderedIds[i])
-      .eq("user_id", userId);
-    if (error) throw new Error(error.message);
-  }
-}
-
-async function normalizeHabitPositionsForUser(
-  supabase: SupabaseClient<Database>,
-  userId: string,
-): Promise<void> {
-  const { data: rows, error } = await supabase
-    .from("habits")
-    .select("id")
-    .eq("user_id", userId)
-    .order("position", { ascending: true });
+  const { error } = await supabase.rpc("reorder_habits", {
+    p_ids: orderedIds,
+  });
 
   if (error) throw new Error(error.message);
-  const list = rows ?? [];
-  for (let i = 0; i < list.length; i++) {
-    const { error: upError } = await supabase
-      .from("habits")
-      .update({ position: i })
-      .eq("id", list[i].id)
-      .eq("user_id", userId);
-    if (upError) throw new Error(upError.message);
-  }
 }
 
 export async function updateHabitForUser(
@@ -193,40 +166,29 @@ export async function updateHabitForUser(
 ): Promise<void> {
   const payload = scheduleToDbPayload(input.schedule);
 
-  const { error: upError } = await supabase
+  const updatePayload: Record<string, unknown> = {
+    name: input.name,
+    color_variant: input.color_variant,
+    schedule_type: payload.schedule_type,
+    weekly_target: payload.weekly_target,
+    fixed_days: payload.fixed_days,
+  };
+
+  if (payload.anchor_date !== undefined) {
+    updatePayload.anchor_date = payload.anchor_date;
+  }
+
+  const typedUpdatePayload = updatePayload as Database["public"]["Tables"]["habits"]["Update"];
+
+  const { error } = await supabase
     .from("habits")
-    .update({
-      name: input.name,
-      color_variant: input.color_variant,
-      schedule_type: payload.schedule_type,
-      weekly_target: payload.weekly_target,
-    })
+    .update(typedUpdatePayload)
     .eq("id", habitId)
     .eq("user_id", userId);
 
-  if (upError) throw new Error(upError.message);
-
-  const { error: delError } = await supabase
-    .from("habit_fixed_days")
-    .delete()
-    .eq("habit_id", habitId);
-
-  if (delError) throw new Error(delError.message);
-
-  if (payload.fixed_days !== null && payload.fixed_days.length > 0) {
-    const { error: insError } = await supabase.from("habit_fixed_days").insert(
-      payload.fixed_days.map((weekday) => ({
-        habit_id: habitId,
-        weekday,
-      })),
-    );
-    if (insError) throw new Error(insError.message);
-  }
+  if (error) throw new Error(error.message);
 }
 
-/**
- * Removes logs and schedule rows, then the habit. Safe when FKs have no cascade.
- */
 export async function deleteHabitForUser(
   supabase: SupabaseClient<Database>,
   userId: string,
@@ -244,20 +206,6 @@ export async function deleteHabitForUser(
     throw new Error("Habit not found.");
   }
 
-  const { error: logError } = await supabase
-    .from("habit_logs")
-    .delete()
-    .eq("habit_id", habitId);
-
-  if (logError) throw new Error(logError.message);
-
-  const { error: fdError } = await supabase
-    .from("habit_fixed_days")
-    .delete()
-    .eq("habit_id", habitId);
-
-  if (fdError) throw new Error(fdError.message);
-
   const { error: delError } = await supabase
     .from("habits")
     .delete()
@@ -265,6 +213,4 @@ export async function deleteHabitForUser(
     .eq("user_id", userId);
 
   if (delError) throw new Error(delError.message);
-
-  await normalizeHabitPositionsForUser(supabase, userId);
 }

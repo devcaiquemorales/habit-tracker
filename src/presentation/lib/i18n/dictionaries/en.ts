@@ -104,6 +104,14 @@ export const enMessages = {
     habitNotFound: "Habit not found.",
     loadDashboardFailed: "Failed to load dashboard",
     reorderHabitsFailed: "Could not save habit order.",
+    invalidDate: "Invalid date.",
+    invalidInput: "Invalid habit data.",
+    savePushSubscriptionFailed: "Could not enable notifications.",
+    deletePushSubscriptionFailed: "Could not disable notifications.",
+    upsertReminderFailed: "Could not add reminder.",
+    deleteReminderFailed: "Could not remove reminder.",
+    setReminderEnabledFailed: "Could not update reminder.",
+    invalidReminderTime: "Invalid reminder time.",
   },
   home: {
     loadError:
@@ -112,17 +120,24 @@ export const enMessages = {
     emptyBody: "Create your first habit to start your heatmap.",
     motivationPrefix: "Motivation:",
     settingsAria: "Customization and account",
+    reorderDone: "Done",
+    reorder: "Reorder",
+    reorderHint: "Hold & drag any card to reorder",
+    markDone: "Mark done",
+    unmarkDone: "Unmark",
   },
   settings: {
-    title: "Customization",
-    intro:
-      "Update how you appear on the home screen and the line that keeps you grounded.",
+    title: "Settings",
+    profileSection: "Profile",
+    remindersSection: "Reminders",
+    accountSection: "Account",
     displayName: "Display name",
     yourReason: "Your reason",
     reasonPlaceholder: "Why these habits matter to you",
     saveChanges: "Save changes",
     saving: "Saving...",
-    account: "Account",
+    saved: "Saved",
+    email: "Email",
     backHomeAria: "Back to home",
   },
   habitForm: {
@@ -221,7 +236,26 @@ export const enMessages = {
   },
   detailInfo: {
     daysStreak: "{n} days",
+    weeksStreak: "{n}-week streak",
     noStreakYet: "No streak yet",
+  },
+  streak: {
+    monthCount: "{n}× this month",
+    weeksShort: "{n}w",
+    weeks: "{n}-week streak",
+  },
+  streakToast: {
+    milestone7: "{habit} — 7 days straight. That's a week.",
+    milestone14: "{habit} — 14 days. Don't stop now.",
+    milestone21: "{habit} — 21 days. This is a habit now.",
+    milestone30: "{habit} — 30 days. One month solid.",
+    milestone60: "{habit} — 60 days. Most people quit by now.",
+    milestone90: "{habit} — 90 days. This is who you are.",
+    milestone180: "{habit} — 6 months. Rare.",
+    milestone365: "{habit} — 1 year. Respect.",
+    milestoneFallback: "{habit} — {n} day streak.",
+    recovery1: "{habit} — Back on track.",
+    recovery2: "{habit} — Two days off. Back now. Keep it.",
   },
   loadingScreens: {
     habit: "Loading habit",
@@ -242,6 +276,27 @@ export const enMessages = {
     afternoon: "Good afternoon, {name}",
     evening: "Good evening, {name}",
     nameFallback: "—",
+  },
+  notifications: {
+    title: "Reminders",
+    description: "Get a reminder at times you choose with your daily progress.",
+    enableButton: "Enable reminders",
+    disableButton: "Disable reminders",
+    permissionPrompt:
+      "We'll send you a reminder at your chosen times to check your progress. You can manage this in your browser settings.",
+    permissionDenied:
+      "Notifications are disabled. Enable them in your browser settings to receive reminders.",
+    addReminder: "Add reminder time",
+    removeReminder: "Remove",
+    noReminders: "No reminders yet",
+    addReminderButton: "Add",
+    iosStandalone: "Add to Home Screen to enable reminders",
+    iosStandaloneDescription:
+      "Open this app in Safari, tap Share, and choose Add to Home Screen.",
+    unsupported:
+      "Reminders are not supported on this device or browser.",
+    enabled: "On",
+    disabled: "Off",
   },
 };
 

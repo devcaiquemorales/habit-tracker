@@ -32,8 +32,13 @@ export const HabitCardWithHeatmap = memo(function HabitCardWithHeatmap({
 
   const heatmapData = useMemo(() => {
     const keys = keysSig === "" ? [] : keysSig.split(",");
-    return buildHeatmapDataFromCompletedKeys(new Set(keys), new Date(), locale);
-  }, [keysSig, locale]);
+    return buildHeatmapDataFromCompletedKeys(
+      new Set(keys),
+      habit.schedule,
+      new Date(),
+      locale,
+    );
+  }, [keysSig, locale, habit.schedule]);
 
   return (
     <HabitCard
@@ -43,6 +48,7 @@ export const HabitCardWithHeatmap = memo(function HabitCardWithHeatmap({
       streak={habit.streak}
       colorVariant={habit.colorVariant}
       data={heatmapData}
+      completedKeys={completedKeys}
     />
   );
 });

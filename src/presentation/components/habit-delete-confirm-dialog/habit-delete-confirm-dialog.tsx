@@ -14,6 +14,10 @@ import {
 } from "@/presentation/components/ui/alert-dialog";
 import { Button } from "@/presentation/components/ui/button";
 import { formatActionError } from "@/presentation/lib/action-error";
+import {
+  removeHabitFromDashboard,
+  revalidateDashboardCache,
+} from "@/presentation/lib/dashboard-swr";
 import { useI18n } from "@/presentation/lib/i18n/i18n-provider";
 
 type HabitDeleteConfirmDialogProps = {
@@ -42,15 +46,28 @@ export function HabitDeleteConfirmDialog({
   const handleConfirm = async () => {
     setError(null);
     setDeleting(true);
+
+    // Close dialog and remove from cache optimistically
+    onOpenChange(false);
+    removeHabitFromDashboard(habitId);
+
     try {
       const result = await deleteHabitAction(habitId);
       const msg = formatActionError(result, t);
       if (msg) {
+        // Restore on error
+        revalidateDashboardCache({ immediate: true });
         setError(msg);
+        setDeleting(false);
         return;
       }
       onDeleted();
-      onOpenChange(false);
+    } catch (err) {
+      // Restore on exception
+      revalidateDashboardCache({ immediate: true });
+      setError(
+        err instanceof Error ? err.message : t("deleteHabit.genericError"),
+      );
     } finally {
       setDeleting(false);
     }
