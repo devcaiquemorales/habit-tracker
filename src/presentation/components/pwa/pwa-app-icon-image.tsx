@@ -4,7 +4,7 @@
  * the mask safe zone.
  */
 const TILE = "#0EA5BD";
-const MARK = "#191919";
+const MARK = "#FFFFFF";
 
 export function PwaAppIconImage({ pixelSize }: { pixelSize: number }) {
   return (

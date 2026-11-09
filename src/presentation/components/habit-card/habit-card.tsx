@@ -11,7 +11,6 @@ import type { Schedule } from "@/domain/types/schedule";
 import { HabitHeatmap } from "@/presentation/components/habit-heatmap";
 import { COLOR_VARIANTS } from "@/presentation/components/habit-heatmap/color-variants";
 import { useDashboardMutations } from "@/presentation/hooks/use-dashboard-mutations";
-import { dismissHoldHint } from "@/presentation/hooks/use-hold-hint";
 import { useHorizontalPanNavigationSuppression } from "@/presentation/hooks/use-horizontal-pan-navigation-suppression";
 import { useLongPress } from "@/presentation/hooks/use-long-press";
 import { formatActionError } from "@/presentation/lib/action-error";
@@ -58,7 +57,6 @@ export function HabitCard({
   const longPressProps = useLongPress(() => {
     if (habitId.startsWith("temp-") || !todayKey) return;
     triggerInteractionFeedback();
-    dismissHoldHint();
     setConfirmOpen(true);
   });
 

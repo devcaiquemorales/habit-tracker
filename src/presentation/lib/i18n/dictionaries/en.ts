@@ -112,7 +112,6 @@ export const enMessages = {
     invalidReminderTime: "Invalid reminder time.",
   },
   home: {
-    holdHint: "Hold a card to mark today",
     loadError:
       "Could not load your habits. Pull to refresh or try again.",
     emptyTitle: "No habits yet",

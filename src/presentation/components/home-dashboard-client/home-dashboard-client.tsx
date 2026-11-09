@@ -31,7 +31,6 @@ import { sharedVariants } from "@/presentation/components/motion";
 import { StreakMilestoneToast } from "@/presentation/components/streak-milestone-toast";
 import { Button } from "@/presentation/components/ui/button";
 import { useHabitOrder } from "@/presentation/hooks/use-habit-order";
-import { useHoldHintVisible } from "@/presentation/hooks/use-hold-hint";
 import { useStreakMomentumToast } from "@/presentation/hooks/use-streak-momentum-toast";
 import { useDashboard } from "@/presentation/lib/dashboard-context";
 import { useI18n } from "@/presentation/lib/i18n/i18n-provider";
@@ -77,7 +76,6 @@ export function HomeDashboardClient() {
   );
   const [isReordering, setIsReordering] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
-  const holdHintVisible = useHoldHintVisible();
   const [activeId, setActiveId] = useState<string | null>(null);
 
   const sensors = useSensors(
@@ -175,9 +173,9 @@ export function HomeDashboardClient() {
               </div>
             ) : (
               <>
-                {isReordering || holdHintVisible ? (
+                {isReordering ? (
                   <p className="text-center text-sm text-muted-foreground">
-                    {t(isReordering ? "home.reorderHint" : "home.holdHint")}
+                    {t("home.reorderHint")}
                   </p>
                 ) : null}
 

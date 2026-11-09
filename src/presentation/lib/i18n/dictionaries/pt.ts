@@ -115,7 +115,6 @@ export const ptMessages: EnMessages = {
     invalidReminderTime: "Horário inválido.",
   },
   home: {
-    holdHint: "Segure um card para marcar hoje",
     loadError:
       "Não foi possível carregar seus hábitos. Atualize a página ou tente de novo.",
     emptyTitle: "Nenhum hábito ainda",

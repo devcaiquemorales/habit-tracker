@@ -143,6 +143,17 @@
   html {
     @apply font-sans;
     height: -webkit-fill-available;
+    /* A held finger must never start iOS text selection, wherever it lands. */
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+  }
+  input,
+  textarea,
+  [contenteditable="true"] {
+    -webkit-user-select: text;
+    user-select: text;
+    -webkit-touch-callout: default;
   }
 }
 
