@@ -53,7 +53,7 @@ export function HomeHeader({
         </div>
         <Link
           href="/settings"
-          scroll={false}
+          prefetch
           onClick={() => triggerInteractionFeedback({ haptic: false })}
           className="mt-0.5 flex size-11 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none active:translate-y-px md:size-8"
           aria-label={t("home.settingsAria")}

@@ -10,10 +10,15 @@ import {
   useRef,
 } from "react";
 
-const ENTER_CLASS = "page-route-entering";
+const FORWARD_CLASS = "page-route-forward";
+const BACK_CLASS = "page-route-back";
 const TAP_RESPONSE_CLASS = "page-route-tap-response";
-/** Match `app-page-enter` duration in global.css + buffer before removing class */
-const ENTER_CLEAR_MS = 165 + 20;
+/** Match the `page-route-*` duration in global.css + buffer before removing class */
+const ENTER_CLEAR_MS = 280 + 20;
+
+function routeDepth(pathname: string): number {
+  return pathname.split("/").filter(Boolean).length > 0 ? 1 : 0;
+}
 
 type RouteTransitionFeedbackContextValue = {
   beginRouteTransitionFeedback: () => void;
@@ -63,27 +68,34 @@ export function RouteTransitionShell({
     if (prevPathRef.current === pathname) {
       return;
     }
+    const enterClass =
+      routeDepth(pathname) < routeDepth(prevPathRef.current)
+        ? BACK_CLASS
+        : FORWARD_CLASS;
     prevPathRef.current = pathname;
 
     const el = wrapperRef.current;
     if (!el) return;
 
-    el.classList.remove(TAP_RESPONSE_CLASS);
-    el.classList.remove(ENTER_CLASS);
-    el.classList.add(ENTER_CLASS);
+    el.classList.remove(TAP_RESPONSE_CLASS, FORWARD_CLASS, BACK_CLASS);
+    el.classList.add(enterClass);
     const timeoutId = window.setTimeout(() => {
-      el.classList.remove(ENTER_CLASS);
+      el.classList.remove(enterClass);
     }, ENTER_CLEAR_MS);
 
     return () => {
       window.clearTimeout(timeoutId);
-      el.classList.remove(ENTER_CLASS);
+      el.classList.remove(enterClass);
     };
   }, [pathname]);
 
   return (
     <RouteTransitionFeedbackContext.Provider value={contextValue}>
-      <div ref={wrapperRef} className="min-h-dvh w-full" data-route={pathname}>
+      <div
+        ref={wrapperRef}
+        className="min-h-dvh w-full overflow-x-clip"
+        data-route={pathname}
+      >
         {children}
       </div>
     </RouteTransitionFeedbackContext.Provider>

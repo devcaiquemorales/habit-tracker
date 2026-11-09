@@ -98,6 +98,7 @@ export function CustomizationScreen({
         <div className="mx-auto flex max-w-lg items-center gap-3 px-4 md:px-6 tablet:px-6">
           <Link
             href="/"
+            prefetch
             scroll={false}
             onClick={() => triggerInteractionFeedback()}
             className="flex size-11 shrink-0 items-center justify-center rounded-full text-foreground/80 transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none active:translate-y-px md:size-8"

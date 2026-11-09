@@ -58,7 +58,7 @@ This is a **Next.js 16 PWA** (App Router) using **TypeScript**, **TailwindCSS 4*
 - **Core UX**: GitHub-style contribution heatmaps for daily habit tracking
 - **Constraint**: One log per habit per day (idempotent inserts)
 - **Performance**: Logging must be <1 second; instant UI feedback is critical
-- **Mobile-first PWA**: Touch targets 44×44px (iOS) / 48×48dp (Android); offline fallback at `/_offline`
+- **Mobile-first PWA**: Touch targets 44×44px (iOS) / 48×48dp (Android); offline fallback at `/offline`
 
 ## Coding standards
 

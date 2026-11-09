@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { type KeyboardEvent, useEffect } from "react";
+import { type KeyboardEvent } from "react";
 
 import { useRouteTransitionFeedback } from "@/app/route-transition-shell";
 import type { ColorVariant } from "@/domain/types/habit";
@@ -45,10 +45,6 @@ export function HabitCard({
 
   const href = `/habits/${habitId}`;
 
-  useEffect(() => {
-    router.prefetch(href);
-  }, [router, href]);
-
   const { indicatorClass } = COLOR_VARIANTS[colorVariant];
 
   const openDetail = () => {
@@ -78,6 +74,7 @@ export function HabitCard({
     >
       <Link
         href={href}
+        prefetch
         scroll
         onClick={(e) => {
           if (shouldSuppressNavigation()) {

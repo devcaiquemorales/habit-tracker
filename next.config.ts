@@ -13,7 +13,7 @@ const withPWA = withPWAInit({
   cacheOnFrontEndNav: true,
   aggressiveFrontEndNavCaching: false,
   fallbacks: {
-    document: "/_offline",
+    document: "/offline",
   },
   workboxOptions: {
     disableDevLogs: true,

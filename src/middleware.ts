@@ -15,7 +15,7 @@ function isPublicPath(pathname: string): boolean {
     pathname.startsWith("/signup") ||
     pathname.startsWith("/forgot-password") ||
     pathname === "/update-password" ||
-    pathname === "/_offline" ||
+    pathname === "/offline" ||
     pathname.startsWith("/auth/") ||
     pathname.startsWith("/api/auth/") ||
     pathname === "/manifest.webmanifest" ||
@@ -59,6 +59,6 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|js)$).*)",
   ],
 };

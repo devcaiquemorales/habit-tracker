@@ -9,6 +9,7 @@ import {
   type CreateScheduleValue,
   ScheduleSelector,
 } from "@/presentation/components/create-habit-dialog/schedule-selector";
+import { BottomSheetContent } from "@/presentation/components/ui/bottom-sheet";
 import { Button } from "@/presentation/components/ui/button";
 import {
   Dialog,
@@ -161,7 +162,12 @@ function HabitFormDialogFields({
       onSubmit={(e) => void handleSubmit(e)}
       className="flex min-h-0 flex-1 flex-col"
     >
-      <DialogHeader className="shrink-0 px-5 pt-5 pr-14 pb-4 sm:px-6 sm:pr-16">
+      <DialogHeader
+        className={cn(
+          "mx-auto w-full shrink-0 px-5 pb-4 sm:px-6",
+          mode === "create" ? "max-w-xl pr-5" : "pt-5 pr-14 sm:pr-16",
+        )}
+      >
         <DialogTitle>
           {title}
         </DialogTitle>
@@ -170,7 +176,11 @@ function HabitFormDialogFields({
         </DialogDescription>
       </DialogHeader>
 
-      <div className="app-scroll min-h-0 flex-1 space-y-6 overflow-y-auto overscroll-contain px-5 pb-6 sm:px-6">
+      <div
+        data-sheet-scroll
+        className="app-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain"
+      >
+        <div className="mx-auto w-full max-w-xl space-y-6 px-5 pb-6 sm:px-6">
         <div className="space-y-2">
           <Label htmlFor="habit-name">{t("habitForm.name")}</Label>
           <Input
@@ -180,7 +190,6 @@ function HabitFormDialogFields({
             value={name}
             onChange={(e) => setName(e.target.value)}
             autoComplete="off"
-            autoFocus={mode === "create"}
           />
         </div>
 
@@ -205,6 +214,7 @@ function HabitFormDialogFields({
             {saveError}
           </p>
         ) : null}
+        </div>
       </div>
 
       <div
@@ -257,30 +267,40 @@ export function HabitFormDialog({
 
   const formKey = `${formResetKey}-${mode}-${habitFormFingerprint(mode, initialHabit)}`;
 
+  const fields = (
+    <HabitFormDialogFields
+      key={formKey}
+      mode={mode}
+      initialHabit={initialHabit}
+      onSave={onSave}
+      onRequestClose={() => handleOpenChange(false)}
+    />
+  );
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       {trigger ? <DialogTrigger asChild>{trigger}</DialogTrigger> : null}
-      <DialogContent
-        showCloseButton
-        closeButtonClassName="top-[calc(env(safe-area-inset-top,0px)+0.75rem)] right-[calc(env(safe-area-inset-right,0px)+0.75rem)]"
-        className={cn(
-          "flex max-h-dvh flex-col gap-0 overflow-hidden p-0",
-          "inset-0! h-dvh! w-full! max-w-none! translate-x-0! translate-y-0! rounded-none sm:inset-auto! sm:top-1/2! sm:left-1/2! sm:h-auto! sm:max-h-[min(90dvh,640px)]! sm:w-full! sm:max-w-md! sm:-translate-x-1/2! sm:-translate-y-1/2! sm:rounded-[1.5rem]!",
-        )}
-        style={{
-          paddingTop: "env(safe-area-inset-top, 0px)",
-          paddingLeft: "env(safe-area-inset-left, 0px)",
-          paddingRight: "env(safe-area-inset-right, 0px)",
-        }}
-      >
-        <HabitFormDialogFields
-          key={formKey}
-          mode={mode}
-          initialHabit={initialHabit}
-          onSave={onSave}
-          onRequestClose={() => handleOpenChange(false)}
-        />
-      </DialogContent>
+      {mode === "create" ? (
+        <BottomSheetContent onDismiss={() => handleOpenChange(false)}>
+          {fields}
+        </BottomSheetContent>
+      ) : (
+        <DialogContent
+          showCloseButton
+          closeButtonClassName="top-[calc(env(safe-area-inset-top,0px)+0.75rem)] right-[calc(env(safe-area-inset-right,0px)+0.75rem)]"
+          className={cn(
+            "flex max-h-dvh flex-col gap-0 overflow-hidden p-0",
+            "inset-0! h-dvh! w-full! max-w-none! translate-x-0! translate-y-0! rounded-none sm:inset-auto! sm:top-1/2! sm:left-1/2! sm:h-auto! sm:max-h-[min(90dvh,640px)]! sm:w-full! sm:max-w-md! sm:-translate-x-1/2! sm:-translate-y-1/2! sm:rounded-[1.5rem]!",
+          )}
+          style={{
+            paddingTop: "env(safe-area-inset-top, 0px)",
+            paddingLeft: "env(safe-area-inset-left, 0px)",
+            paddingRight: "env(safe-area-inset-right, 0px)",
+          }}
+        >
+          {fields}
+        </DialogContent>
+      )}
     </Dialog>
   );
 }

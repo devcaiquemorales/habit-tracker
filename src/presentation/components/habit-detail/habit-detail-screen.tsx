@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useLayoutEffect, useMemo, useState } from "react";
+import { useLayoutEffect, useMemo, useState } from "react";
 
 import type { Habit } from "@/domain/types/habit";
 import { HabitDeleteConfirmDialog } from "@/presentation/components/habit-delete-confirm-dialog";
@@ -88,10 +88,6 @@ export function HabitDetailScreen({
   useLayoutEffect(() => {
     resetViewportScrollTop();
   }, [habit.id]);
-
-  useEffect(() => {
-    router.prefetch("/");
-  }, [router]);
 
   return (
     <>
