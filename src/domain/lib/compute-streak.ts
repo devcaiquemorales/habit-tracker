@@ -1,5 +1,8 @@
 import type { Schedule } from "@/domain/types/schedule";
 
+/** Consecutive expected days a streak survives without a log. */
+export const MAX_GUARDED_DAYS = 2;
+
 export type StreakUnit = "days" | "weeks" | "none";
 
 export interface StreakResult {
@@ -108,6 +111,7 @@ function computeStreakDays(
   }
 
   let count = 0;
+  let missedInARow = 0;
   let cursor = todayEpochDay;
 
   // Grace period: if today is expected but not logged, don't break the streak
@@ -128,7 +132,8 @@ function computeStreakDays(
     if (isDayExpectedForStreak(schedule, cursor)) {
       if (completedDateKeys.has(keyOf(cursor))) {
         count++;
-      } else {
+        missedInARow = 0;
+      } else if (++missedInARow > MAX_GUARDED_DAYS) {
         break;
       }
     }
@@ -218,6 +223,45 @@ export function computeStreak(
 
   // daily, specificDays, or everyOtherDay
   return computeStreakDays(completedDateKeys, schedule, todayEpochDay);
+}
+
+/**
+ * The past days protected automatically: the first missed expected days after a
+ * log, up to MAX_GUARDED_DAYS in a row. Weekly and flexible habits have no daily
+ * expectation to protect. Today is never included: it is not over yet.
+ */
+export function computeGuardedDateKeys(
+  completedDateKeys: ReadonlySet<string>,
+  schedule: Schedule,
+  todayKey: string,
+): Set<string> {
+  const guarded = new Set<string>();
+  const todayEpochDay = parseKey(todayKey);
+  if (
+    todayEpochDay === null ||
+    schedule.type === "weeklyTarget" ||
+    schedule.type === "flexible"
+  ) {
+    return guarded;
+  }
+
+  let firstLog = Infinity;
+  for (const key of completedDateKeys) {
+    const epochDay = parseKey(key);
+    if (epochDay !== null) firstLog = Math.min(firstLog, epochDay);
+  }
+
+  let missedInARow = 0;
+  for (let day = firstLog; day < todayEpochDay; day++) {
+    if (!isDayExpectedForStreak(schedule, day)) continue;
+    const key = keyOf(day);
+    if (completedDateKeys.has(key)) {
+      missedInARow = 0;
+    } else if (++missedInARow <= MAX_GUARDED_DAYS) {
+      guarded.add(key);
+    }
+  }
+  return guarded;
 }
 
 /**

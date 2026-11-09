@@ -1,3 +1,5 @@
+import { Lock } from "lucide-react";
+
 import type { CellColorClasses, CellStatus } from "@/domain/types/heatmap";
 import { cn } from "@/presentation/lib/utils";
 
@@ -32,10 +34,14 @@ interface HeatmapCellProps {
   onActivate?: () => void;
   /** Accessible label when `onActivate` is set */
   selectDayLabel?: string;
-  /** First/last calendar day of month — tiny top-left label, non-interactive */
 }
 
-/** Dot sizes that sit centered inside a padding cell — one step below the cell size. */
+const LOCK_CLASS: Record<HeatmapCellSize, string> = {
+  default: "size-2",
+  comfortable: "size-2.5",
+  large: "size-2.5 sm:size-3",
+};
+
 export function HeatmapCell({
   status,
   cellColors,
@@ -70,7 +76,9 @@ export function HeatmapCell({
   const statusClass =
     status === "completed"
         ? cellColors.done
-        : status === "expectedMissed"
+        : status === "guarded"
+          ? "bg-foreground/[0.07]"
+          : status === "expectedMissed"
           ? cellColors.missed
           : status === "neutralEmpty"
             ? cellColors.emptyDay
@@ -91,6 +99,18 @@ export function HeatmapCell({
     onActivate && "cursor-pointer touch-manipulation",
   );
 
+  const guardIcon =
+    status === "guarded" ? (
+      <Lock
+        aria-hidden
+        strokeWidth={3}
+        className={cn(
+          "absolute inset-0 m-auto text-foreground/70",
+          LOCK_CLASS[size],
+        )}
+      />
+    ) : null;
+
   if (onActivate) {
     return (
       <button
@@ -106,7 +126,9 @@ export function HeatmapCell({
           e.stopPropagation();
           onActivate();
         }}
-      />
+      >
+        {guardIcon}
+      </button>
     );
   }
 
@@ -114,6 +136,8 @@ export function HeatmapCell({
     <div
       className={sharedClass}
       title={tooltip}
-    />
+    >
+      {guardIcon}
+    </div>
   );
 }

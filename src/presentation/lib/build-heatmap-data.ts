@@ -1,3 +1,4 @@
+import { computeGuardedDateKeys } from "@/domain/lib/compute-streak";
 import { toLocalDateKey } from "@/domain/types/date-key";
 import type {
   HeatmapData,
@@ -50,6 +51,7 @@ function buildWeekGridForLocalMonth(
   today: Date,
   completedKeys: ReadonlySet<string>,
   recoveryKeys: ReadonlySet<string>,
+  guardedKeys: ReadonlySet<string>,
 ): HeatmapDayCell[][] {
   const first = localMidnight(year, month, 1);
   const lastDay = lastLocalDayOfMonth(year, month).getDate();
@@ -70,6 +72,7 @@ function buildWeekGridForLocalMonth(
       date: new Date(cellDate.getTime()),
       done,
       recovery: done === 1 && recoveryKeys.has(key),
+      guarded: guardedKeys.has(key),
     });
   }
 
@@ -109,6 +112,12 @@ export function buildHeatmapDataFromCompletedKeys(
     detectRecoveryDays([...completedKeys], schedule),
   );
 
+  const guardedKeys = computeGuardedDateKeys(
+    completedKeys,
+    schedule,
+    toLocalDateKey(today),
+  );
+
   const months: HeatmapMonthData[] = [];
   let cursor = new Date(rangeStart.getTime());
   let prevYear: number | undefined;
@@ -128,6 +137,7 @@ export function buildHeatmapDataFromCompletedKeys(
         today,
         completedKeys,
         recoveryKeys,
+        guardedKeys,
       ),
     });
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { Lock } from "lucide-react";
 import { useLayoutEffect, useMemo, useRef } from "react";
 
 import { getLocalToday, toLocalDateKey } from "@/domain/types/date-key";
@@ -20,6 +21,7 @@ interface HabitUpdateActivityProps {
   colorVariant: ColorVariant;
   schedule: Schedule;
   completedKeys: Set<string>;
+  guardedKeys: ReadonlySet<string>;
   /** UTC calendar days shown in the strip (oldest → newest). */
   days: Date[];
   selectedKey: string | null;
@@ -34,6 +36,7 @@ export function HabitUpdateActivity({
   colorVariant,
   schedule,
   completedKeys,
+  guardedKeys,
   days,
   selectedKey,
   onSelectedKeyChange,
@@ -138,6 +141,7 @@ export function HabitUpdateActivity({
             );
             const selected = key === selectedKey;
             const done = completedKeys.has(key);
+            const guarded = guardedKeys.has(key);
             return (
               <button
                 key={key}
@@ -153,7 +157,9 @@ export function HabitUpdateActivity({
                 aria-label={
                   done
                     ? `${formatUtcDateKeyLong(key, locale)}, ${t("common.done")}`
-                    : formatUtcDateKeyLong(key, locale)
+                    : guarded
+                      ? `${formatUtcDateKeyLong(key, locale)}, ${t("heatmap.guarded")}`
+                      : formatUtcDateKeyLong(key, locale)
                 }
                 className={cn(
                   "flex min-w-11 flex-1 flex-col items-center gap-1.5 rounded-xl py-2 transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
@@ -168,13 +174,22 @@ export function HabitUpdateActivity({
                 </span>
                 <span
                   className={cn(
-                    "flex size-8 items-center justify-center rounded-full text-sm font-medium tabular-nums",
+                    "relative flex size-8 items-center justify-center rounded-full text-sm font-medium tabular-nums",
                     done
                       ? cn(COLOR_VARIANTS[colorVariant].doneClass, "text-white")
-                      : "text-foreground",
+                      : guarded
+                        ? "bg-foreground/12 text-foreground"
+                        : "text-foreground",
                   )}
                 >
                   {formatActivityChipParts(d, locale).day}
+                  {guarded ? (
+                    <Lock
+                      aria-hidden
+                      strokeWidth={3}
+                      className="absolute -top-0.5 -right-0.5 size-3.5 rounded-full bg-sidebar p-0.5 text-foreground/80"
+                    />
+                  ) : null}
                 </span>
               </button>
             );

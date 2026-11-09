@@ -5,6 +5,7 @@ import { type ReactNode, type RefObject, useRef } from "react";
 
 import { DialogPortal } from "@/presentation/components/ui/dialog";
 import { useSheetDrag } from "@/presentation/hooks/use-sheet-drag";
+import { cn } from "@/presentation/lib/utils";
 
 /** Mounted only while open, so its refs exist when the drag listeners attach. */
 function BottomSheetSurface({
@@ -37,9 +38,12 @@ function BottomSheetSurface({
 
 export function BottomSheetContent({
   onDismiss,
+  compact = false,
   children,
 }: {
   onDismiss: () => void;
+  /** Fits its content instead of taking 70% of the screen. */
+  compact?: boolean;
   children: ReactNode;
 }) {
   const overlayRef = useRef<HTMLDivElement>(null);
@@ -56,7 +60,10 @@ export function BottomSheetContent({
           event.preventDefault();
           (event.currentTarget as HTMLElement).focus({ preventScroll: true });
         }}
-        className="fixed inset-x-0 bottom-0 z-[101] h-[70dvh] w-full outline-none data-open:animate-in data-open:duration-[420ms] data-open:ease-[cubic-bezier(0.32,0.72,0,1)] data-open:slide-in-from-bottom data-closed:animate-out data-closed:duration-[260ms] data-closed:ease-[cubic-bezier(0.32,0.72,0,1)] data-closed:slide-out-to-bottom motion-reduce:animate-none"
+        className={cn(
+          "fixed inset-x-0 bottom-0 z-[101] w-full outline-none data-open:animate-in data-open:duration-[420ms] data-open:ease-[cubic-bezier(0.32,0.72,0,1)] data-open:slide-in-from-bottom data-closed:animate-out data-closed:duration-[260ms] data-closed:ease-[cubic-bezier(0.32,0.72,0,1)] data-closed:slide-out-to-bottom motion-reduce:animate-none",
+          compact ? "max-h-[70dvh]" : "h-[70dvh]",
+        )}
       >
         <BottomSheetSurface overlayRef={overlayRef} onDismiss={onDismiss}>
           {children}

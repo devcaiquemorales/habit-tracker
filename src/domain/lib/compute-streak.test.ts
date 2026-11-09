@@ -4,6 +4,7 @@ import { describe, expect, test } from "bun:test";
 import type { Schedule } from "@/domain/types/schedule";
 
 import {
+  computeGuardedDateKeys,
   computeStreak,
   countLogsInCalendarMonth,
   type StreakResult,
@@ -80,12 +81,12 @@ describe("computeStreak - daily", () => {
     expect(result.unit).toBe("days");
   });
 
-  test("gap 2 days ago breaks streak", () => {
+  test("a single missed day is guarded and does not break the streak", () => {
     const schedule: Schedule = { type: "daily" };
     // Today, yesterday, gap at -2, have -3
     const keys = keysFrom("2026-07-05", [0, -1, -3]);
     const result = computeStreak(keys, schedule, "2026-07-05");
-    expect(result.count).toBe(2);
+    expect(result.count).toBe(3);
     expect(result.unit).toBe("days");
   });
 
@@ -143,12 +144,12 @@ describe("computeStreak - specificDays", () => {
     expect(result.unit).toBe("days");
   });
 
-  test("missed Wednesday, today=Friday logged, returns 1", () => {
+  test("missed Wednesday is guarded, today=Friday logged, returns 2", () => {
     const schedule: Schedule = { type: "specificDays", days: [1, 3, 5] };
     // Only Monday and Friday (no Wednesday)
     const keys = new Set(["2026-07-06", "2026-07-10"]);
     const result = computeStreak(keys, schedule, "2026-07-10");
-    expect(result.count).toBe(1);
+    expect(result.count).toBe(2);
     expect(result.unit).toBe("days");
   });
 
@@ -197,14 +198,14 @@ describe("computeStreak - everyOtherDay with anchorDateKey", () => {
     expect(result.unit).toBe("days");
   });
 
-  test("anchor=2026-07-01, missing 07-03, today=07-05 logged returns 1", () => {
+  test("anchor=2026-07-01, 07-03 guarded, today=07-05 logged returns 2", () => {
     const schedule: Schedule = {
       type: "everyOtherDay",
       anchorDateKey: "2026-07-01",
     };
     const keys = new Set(["2026-07-01", "2026-07-05"]);
     const result = computeStreak(keys, schedule, "2026-07-05");
-    expect(result.count).toBe(1);
+    expect(result.count).toBe(2);
     expect(result.unit).toBe("days");
   });
 
@@ -330,5 +331,78 @@ describe("countLogsInCalendarMonth", () => {
     const keys = new Set(["2026-07-01", "2026-07-05"]);
     const count = countLogsInCalendarMonth(keys, "invalid-date");
     expect(count).toBe(0);
+  });
+});
+
+describe("automatic streak guard", () => {
+  const today = "2026-11-11"; // Wednesday
+  const daily: Schedule = { type: "daily" };
+
+  test("one missed day keeps the streak", () => {
+    const done = new Set(["2026-11-08", "2026-11-09", "2026-11-11"]);
+    expect(computeStreak(done, daily, today).count).toBe(3);
+  });
+
+  test("two missed days in a row keep the streak", () => {
+    const done = new Set(["2026-11-07", "2026-11-08", "2026-11-11"]);
+    expect(computeStreak(done, daily, today).count).toBe(3);
+  });
+
+  test("the third missed day in a row breaks the streak", () => {
+    const done = new Set(["2026-11-07", "2026-11-11"]);
+    expect(computeStreak(done, daily, today).count).toBe(1);
+  });
+
+  test("the guard renews after a completed day", () => {
+    const done = new Set(["2026-11-04", "2026-11-07", "2026-11-10"]);
+    expect(computeStreak(done, daily, today).count).toBe(3);
+  });
+
+  test("guarded days do not count toward the streak", () => {
+    const done = new Set(["2026-11-08"]);
+    expect(computeStreak(done, daily, "2026-11-10").count).toBe(1);
+  });
+
+  test("days the schedule did not ask for do not use the guard", () => {
+    const mondays: Schedule = { type: "specificDays", days: [1] };
+    // Two Mondays missed in a row, with six unscheduled days around each.
+    const done = new Set(["2026-10-19", "2026-11-09"]);
+    expect(computeStreak(done, mondays, "2026-11-09").count).toBe(2);
+    // A third missed Monday breaks it.
+    expect(
+      computeStreak(new Set(["2026-10-12", "2026-11-09"]), mondays, "2026-11-09")
+        .count,
+    ).toBe(1);
+  });
+
+  test("marks only the first two missed days after a log", () => {
+    const done = new Set(["2026-11-05"]);
+    expect([...computeGuardedDateKeys(done, daily, today)]).toEqual([
+      "2026-11-06",
+      "2026-11-07",
+    ]);
+  });
+
+  test("never guards today or days before the first log", () => {
+    const done = new Set(["2026-11-10"]);
+    expect([...computeGuardedDateKeys(done, daily, today)]).toEqual([]);
+  });
+
+  test("guards nothing without any log", () => {
+    expect([...computeGuardedDateKeys(new Set(), daily, today)]).toEqual([]);
+  });
+
+  test("weekly and flexible habits have no daily guard", () => {
+    const done = new Set(["2026-11-01"]);
+    expect([
+      ...computeGuardedDateKeys(
+        done,
+        { type: "weeklyTarget", timesPerWeek: 2 },
+        today,
+      ),
+    ]).toEqual([]);
+    expect([
+      ...computeGuardedDateKeys(done, { type: "flexible" }, today),
+    ]).toEqual([]);
   });
 });

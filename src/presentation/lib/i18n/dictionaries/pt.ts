@@ -115,6 +115,7 @@ export const ptMessages: EnMessages = {
     invalidReminderTime: "Horário inválido.",
   },
   home: {
+    holdHint: "Segure um card para marcar hoje",
     loadError:
       "Não foi possível carregar seus hábitos. Atualize a página ou tente de novo.",
     emptyTitle: "Nenhum hábito ainda",
@@ -217,6 +218,7 @@ export const ptMessages: EnMessages = {
     markCompleted: "Marcar como feito",
   },
   heatmap: {
+    guarded: "Sequência protegida",
     completed: "Concluído",
     missedExpected: "Perdido (esperado)",
     notLogged: "Sem registro",
@@ -226,6 +228,8 @@ export const ptMessages: EnMessages = {
     selectDayAria: "Selecionar dia — {date}",
   },
   habitCard: {
+    confirmMarkToday: "Marcar hoje como feito?",
+    confirmRemoveToday: "Remover o registro de hoje?",
     openHabit: "Abrir {name}",
   },
   status: {

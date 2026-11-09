@@ -10,6 +10,8 @@ import { formatHomeHeaderDate } from "@/presentation/lib/i18n/format";
 import { useI18n } from "@/presentation/lib/i18n/i18n-provider";
 import { triggerInteractionFeedback } from "@/presentation/lib/interaction-feedback";
 
+import { AnimatedGreeting } from "./animated-greeting";
+
 interface HomeHeaderProps {
   /** Maps to profile / `user_metadata.display_name`. */
   userName?: string;
@@ -57,12 +59,7 @@ export function HomeHeader({
     <div className="flex flex-col">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1 space-y-0.5">
-          <h1
-            className="text-2xl leading-tight font-semibold tracking-tight text-balance text-foreground"
-            suppressHydrationWarning
-          >
-            {greeting}
-          </h1>
+          <AnimatedGreeting text={greeting} className="text-2xl leading-tight font-semibold tracking-tight text-balance text-foreground" />
           <p
             className="text-sm leading-snug text-muted-foreground"
             suppressHydrationWarning

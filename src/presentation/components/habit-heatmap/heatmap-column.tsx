@@ -19,7 +19,6 @@ interface HeatmapColumnProps {
   onDateSelect?: (dateKey: string) => void;
   /** Highlights the cell that matches the Update activity selection. */
   selectedDateKey?: string | null;
-  /** Month start/end tiny labels keyed by local `YYYY-MM-DD` */
   translate: TranslateFn;
   locale: AppLocale;
 }
@@ -101,6 +100,22 @@ export function HeatmapColumn({
         const selectDayLabel = translate("heatmap.selectDayAria", {
           date: formatUtcDateKeyLong(dateKey, locale),
         });
+
+        if (cell.guarded) {
+          return (
+            <HeatmapCell
+              key={dayIndex}
+              status="guarded"
+              cellColors={cellColors}
+              tooltip={translate("heatmap.guarded")}
+              size={cellSize}
+              isToday={dateKey === todayHighlightKey}
+              isStripSelected={isStripSelected}
+              onActivate={onActivate}
+              selectDayLabel={selectDayLabel}
+            />
+          );
+        }
 
         /** Logs-only schedules: cell color follows habit_logs, not fixed weekdays. */
         const logDrivenHeatmap = weekly || schedule.type === "flexible";

@@ -3,6 +3,8 @@ export type CellStatus =
   | "expectedMissed"
   | "completed"
   | "neutralEmpty"
+  /** Protected day: neither done nor missed */
+  | "guarded"
   /** Week grid placeholder: no calendar date for this month */
   | "monthPadding";
 
@@ -22,6 +24,8 @@ export interface HeatmapDayCell {
   trailing?: boolean;
   /** Logged day that follows a 1–2 day gap (subtle heatmap styling). */
   recovery?: boolean;
+  /** Protected day: neither done nor missed. */
+  guarded?: boolean;
 }
 
 export interface HeatmapMonthData {

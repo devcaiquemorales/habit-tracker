@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useLayoutEffect, useMemo, useState } from "react";
 
+import { computeGuardedDateKeys } from "@/domain/lib/compute-streak";
 import { getLocalToday, localDateFromDateKey } from "@/domain/types/date-key";
 import type { Habit } from "@/domain/types/habit";
 import { HabitDeleteConfirmDialog } from "@/presentation/components/habit-delete-confirm-dialog";
@@ -61,6 +62,16 @@ export function HabitDetailScreen({
   const keysSig = useMemo(
     () => sortedKeysSignature(completedKeys),
     [completedKeys],
+  );
+
+  const guardedKeys = useMemo(
+    () =>
+      computeGuardedDateKeys(
+        new Set(keysSig === "" ? [] : keysSig.split(",")),
+        habit.schedule,
+        todayKey,
+      ),
+    [keysSig, habit.schedule, todayKey],
   );
 
   const heatmapData = useMemo(() => {
@@ -140,6 +151,7 @@ export function HabitDetailScreen({
           ) : null}
 
           <HabitUpdateActivity
+            guardedKeys={guardedKeys}
             colorVariant={habit.colorVariant}
             schedule={habit.schedule}
             completedKeys={stripCompletedKeys}
