@@ -2,14 +2,9 @@
 
 import { useState } from "react";
 
-import { createHabitAction } from "@/app/actions/habit-actions";
 import { AddHabitFAB } from "@/presentation/components/add-habit-fab";
 import { HabitFormDialog } from "@/presentation/components/habit-form-dialog";
-import {
-  addTempHabitToDashboard,
-  removeTempHabitFromDashboard,
-} from "@/presentation/lib/dashboard-optimistic";
-import { revalidateDashboardCache } from "@/presentation/lib/dashboard-swr";
+import { useDashboardMutations } from "@/presentation/hooks/use-dashboard-mutations";
 import { cn } from "@/presentation/lib/utils";
 
 type CreateHabitDialogProps = {
@@ -18,6 +13,7 @@ type CreateHabitDialogProps = {
 };
 
 export function CreateHabitDialog({ isReordering }: CreateHabitDialogProps) {
+  const { createHabit } = useDashboardMutations();
   const [open, setOpen] = useState(false);
   const [formResetKey, setFormResetKey] = useState(0);
 
@@ -40,40 +36,10 @@ export function CreateHabitDialog({ isReordering }: CreateHabitDialogProps) {
           )}
         />
       }
-      onSave={async (payload) => {
-        // Close dialog immediately for optimistic UX
+      onSave={(payload) => {
+        // Closes at once: the new card appears optimistically on the dashboard.
         handleOpenChange(false);
-
-        // Add temp habit optimistically
-        const tempId = addTempHabitToDashboard(
-          payload.name,
-          payload.colorVariant,
-          payload.schedule,
-        );
-
-        try {
-          const result = await createHabitAction({
-            name: payload.name,
-            colorVariant: payload.colorVariant,
-            schedule: payload.schedule,
-          });
-
-          if (result.error || result.errorKey) {
-            // Remove temp habit on error
-            removeTempHabitFromDashboard(tempId);
-            revalidateDashboardCache({ immediate: true });
-            return result;
-          }
-
-          // Refetch dashboard to replace temp habit with real one
-          revalidateDashboardCache({ immediate: true });
-          return { error: null };
-        } catch {
-          // Rollback on exception
-          removeTempHabitFromDashboard(tempId);
-          revalidateDashboardCache({ immediate: true });
-          return { error: "Failed to create habit", errorKey: "errors.createHabitFailed" };
-        }
+        return createHabit(payload);
       }}
     />
   );

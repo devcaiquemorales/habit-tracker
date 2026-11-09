@@ -1,31 +1,23 @@
 "use client";
 
+import { useMutation } from "convex/react";
 import { Bell, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import {
-  deletePushSubscriptionAction,
-  deleteReminderAction,
-  savePushSubscriptionAction,
-  setReminderEnabledAction,
-  upsertReminderAction,
-} from "@/app/actions/push-actions";
+import { api } from "@/../convex/_generated/api";
+import type { Id } from "@/../convex/_generated/dataModel";
 import { Button } from "@/presentation/components/ui/button";
-import { Input } from "@/presentation/components/ui/input";
 import { Label } from "@/presentation/components/ui/label";
+import { useSafeQuery } from "@/presentation/hooks/use-safe-query";
 import { formatActionError } from "@/presentation/lib/action-error";
+import { toActionResult } from "@/presentation/lib/convex-result";
 import { useI18n } from "@/presentation/lib/i18n/i18n-provider";
 import { cn } from "@/presentation/lib/utils";
 
-type ReminderPreference = {
-  id: string;
-  reminderTime: string;
-  enabled: boolean;
-};
-
-type NotificationSettingsProps = {
-  initialPreferences: ReminderPreference[];
-};
+const HOURS = Array.from(
+  { length: 24 },
+  (_, hour) => `${String(hour).padStart(2, "0")}:00`,
+);
 
 /**
  * Resolves the active service worker registration WITHOUT hanging.
@@ -63,16 +55,42 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
   return outputArray;
 }
 
-export function NotificationSettings({
-  initialPreferences,
-}: NotificationSettingsProps) {
+export function NotificationSettings() {
   const { t } = useI18n();
+  const reminderResult = useSafeQuery(api.reminders.list, {});
+  const reminders = Array.isArray(reminderResult) ? reminderResult : [];
+  const saveSubscription = useMutation(api.reminders.saveSubscription);
+  const deleteSubscription = useMutation(api.reminders.deleteSubscription);
+  const upsertReminder = useMutation(api.reminders.upsert);
+  const removeReminder = useMutation(api.reminders.remove).withOptimisticUpdate(
+    (store, { reminderId }) => {
+      const current = store.getQuery(api.reminders.list, {});
+      if (current) {
+        store.setQuery(
+          api.reminders.list,
+          {},
+          current.filter((reminder) => reminder.id !== reminderId),
+        );
+      }
+    },
+  );
+  const setReminderEnabled = useMutation(
+    api.reminders.setEnabled,
+  ).withOptimisticUpdate((store, { reminderId, enabled }) => {
+    const current = store.getQuery(api.reminders.list, {});
+    if (current) {
+      store.setQuery(
+        api.reminders.list,
+        {},
+        current.map((reminder) =>
+          reminder.id === reminderId ? { ...reminder, enabled } : reminder,
+        ),
+      );
+    }
+  });
   const [isSupported, setIsSupported] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [isIosStandalone, setIsIosStandalone] = useState(false);
-  const [reminders, setReminders] = useState<ReminderPreference[]>(
-    initialPreferences,
-  );
   const [newReminderTime, setNewReminderTime] = useState("09:00");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -146,12 +164,14 @@ export function NotificationSettings({
         keys: { p256dh: string; auth: string };
       };
 
-      const result = await savePushSubscriptionAction({
-        endpoint: subJson.endpoint,
-        p256dh: subJson.keys.p256dh,
-        auth: subJson.keys.auth,
-        userAgent: navigator.userAgent,
-      });
+      const result = await toActionResult(
+        saveSubscription({
+          endpoint: subJson.endpoint,
+          p256dh: subJson.keys.p256dh,
+          auth: subJson.keys.auth,
+          userAgent: navigator.userAgent,
+        }),
+      );
 
       const errMsg = formatActionError(result, t);
       if (errMsg) {
@@ -185,7 +205,7 @@ export function NotificationSettings({
       if (subscription) {
         await subscription.unsubscribe();
         const subJson = subscription.toJSON() as { endpoint: string };
-        await deletePushSubscriptionAction(subJson.endpoint);
+        await deleteSubscription({ endpoint: subJson.endpoint });
       }
 
       setIsSubscribed(false);
@@ -202,110 +222,43 @@ export function NotificationSettings({
   async function handleAddReminder() {
     setError(null);
     setIsLoading(true);
-
-    // Optimistic: add temp reminder immediately
-    const tempId = `temp-${Date.now()}`;
-    const tempReminder: ReminderPreference = {
-      id: tempId,
-      reminderTime: newReminderTime,
-      enabled: true,
-    };
-    setReminders((prev) => [...prev, tempReminder]);
-    setNewReminderTime("09:00");
-
-    try {
-      const result = await upsertReminderAction(newReminderTime, true);
-      const errMsg = formatActionError(result, t);
-      if (errMsg) {
-        // Rollback on error
-        setReminders((prev) => prev.filter((r) => r.id !== tempId));
-        setError(errMsg);
-        return;
-      }
-
-      // Refetch reminders to get the real one with proper ID
-      const response = await fetch("/api/reminders");
-      if (response.ok) {
-        const prefs = await response.json();
-        setReminders(prefs);
-      }
-    } catch (err) {
-      // Rollback on exception
-      setReminders((prev) => prev.filter((r) => r.id !== tempId));
-      console.error("Error adding reminder:", err);
-      setError(
-        err instanceof Error ? err.message : "Failed to add reminder",
-      );
-    } finally {
-      setIsLoading(false);
-    }
+    const result = await toActionResult(
+      upsertReminder({ reminderTime: newReminderTime, enabled: true }),
+    );
+    setError(formatActionError(result, t));
+    setIsLoading(false);
   }
 
   async function handleDeleteReminder(id: string) {
     setError(null);
-
-    // Optimistic: remove immediately
-    const previousReminders = reminders;
-    setReminders((prev) => prev.filter((r) => r.id !== id));
-
-    try {
-      const result = await deleteReminderAction(id);
-      const errMsg = formatActionError(result, t);
-      if (errMsg) {
-        // Rollback on error
-        setReminders(previousReminders);
-        setError(errMsg);
-        return;
-      }
-    } catch (err) {
-      // Rollback on exception
-      setReminders(previousReminders);
-      console.error("Error deleting reminder:", err);
-      setError(
-        err instanceof Error ? err.message : "Failed to delete reminder",
-      );
-    }
+    const result = await toActionResult(
+      removeReminder({ reminderId: id as Id<"reminders"> }),
+    );
+    setError(formatActionError(result, t));
   }
 
   async function handleToggleReminder(id: string, enabled: boolean) {
     setError(null);
-
-    // Optimistic: toggle immediately
-    const previousReminders = reminders;
-    setReminders((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, enabled: !enabled } : r)),
+    const result = await toActionResult(
+      setReminderEnabled({
+        reminderId: id as Id<"reminders">,
+        enabled: !enabled,
+      }),
     );
-
-    try {
-      const result = await setReminderEnabledAction(id, !enabled);
-      const errMsg = formatActionError(result, t);
-      if (errMsg) {
-        // Rollback on error
-        setReminders(previousReminders);
-        setError(errMsg);
-        return;
-      }
-    } catch (err) {
-      // Rollback on exception
-      setReminders(previousReminders);
-      console.error("Error toggling reminder:", err);
-      setError(
-        err instanceof Error ? err.message : "Failed to update reminder",
-      );
-    }
+    setError(formatActionError(result, t));
   }
 
   if (!isSupported) {
     if (isIosStandalone) {
       return (
         <section className="space-y-3">
-          <div className="flex gap-3 rounded-lg border border-amber-500/20 bg-amber-500/5 p-4">
-            <Bell className="h-5 w-5 shrink-0 text-amber-400" aria-hidden />
+          <div className="flex gap-3 rounded-xl bg-amber-500/10 p-4">
+            <Bell className="size-5 shrink-0 text-amber-800 dark:text-amber-300" aria-hidden />
             <div className="flex flex-col gap-1">
-              <p className="text-sm font-medium text-white/90">
+              <p className="text-sm font-medium text-foreground">
                 {t("notifications.iosStandalone")}
               </p>
-              <p className="text-xs text-white/50">
+              <p className="text-xs text-muted-foreground">
                 {t("notifications.iosStandaloneDescription")}
               </p>
             </div>
@@ -316,25 +269,25 @@ export function NotificationSettings({
 
     return (
       <section className="space-y-3">
-        <div className="text-sm text-white/45">{t("notifications.unsupported")}</div>
+        <div className="text-sm text-muted-foreground">{t("notifications.unsupported")}</div>
       </section>
     );
   }
 
   return (
     <section className="space-y-4">
-      <p className="text-sm text-white/45">{t("notifications.description")}</p>
+      <p className="text-sm text-muted-foreground">{t("notifications.description")}</p>
 
       {error && (
-        <p className="text-sm text-red-400/90" role="alert">
+        <p className="text-sm text-destructive" role="alert">
           {error}
         </p>
       )}
 
       {!isSubscribed ? (
         <div className="space-y-4">
-          <div className="rounded-lg border border-white/10 bg-white/5 p-4">
-            <p className="text-sm text-white/65">
+          <div className="rounded-xl bg-foreground/5 p-4">
+            <p className="text-sm text-foreground/80">
               {t("notifications.permissionPrompt")}
             </p>
           </div>
@@ -342,7 +295,7 @@ export function NotificationSettings({
             onClick={handleEnableReminders}
             loading={isLoading}
             loadingText={t("common.loading")}
-            className="w-full"
+            className="h-11 w-full rounded-full md:h-9"
           >
             {t("notifications.enableButton")}
           </Button>
@@ -355,10 +308,10 @@ export function NotificationSettings({
                 {reminders.map((reminder) => (
                   <div
                     key={reminder.id}
-                    className="flex items-center gap-3 rounded-lg border border-white/10 bg-white/5 p-3"
+                    className="flex items-center gap-3 rounded-xl bg-foreground/5 p-3"
                   >
                     <div className="flex-1">
-                      <time className="text-sm font-medium text-white">
+                      <time className="text-sm font-medium text-foreground">
                         {reminder.reminderTime}
                       </time>
                     </div>
@@ -367,10 +320,10 @@ export function NotificationSettings({
                         handleToggleReminder(reminder.id, reminder.enabled)
                       }
                       className={cn(
-                        "inline-flex h-6 w-11 items-center rounded-full border border-transparent transition-colors duration-200",
+                        "relative inline-flex h-6 w-11 items-center rounded-full border border-transparent transition-colors duration-200 after:absolute after:-inset-2.5 motion-reduce:transition-none",
                         reminder.enabled
-                          ? "bg-green-500/80"
-                          : "bg-white/10 hover:bg-white/20",
+                          ? "bg-primary"
+                          : "bg-foreground/15 hover:bg-foreground/25",
                       )}
                       aria-label={
                         reminder.enabled
@@ -380,14 +333,14 @@ export function NotificationSettings({
                     >
                       <span
                         className={cn(
-                          "h-5 w-5 rounded-full bg-white shadow-sm transition-transform duration-200",
+                          "size-5 rounded-full bg-background shadow-xs transition-transform duration-200 motion-reduce:transition-none",
                           reminder.enabled ? "translate-x-5" : "translate-x-0.5",
                         )}
                       />
                     </button>
                     <button
                       onClick={() => handleDeleteReminder(reminder.id)}
-                      className="flex min-h-9 min-w-9 items-center justify-center rounded-lg text-white/60 transition-colors duration-150 hover:text-white"
+                      className="flex size-11 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:size-8"
                       aria-label={t("notifications.removeReminder")}
                     >
                       <Trash2 className="h-4 w-4" aria-hidden />
@@ -396,28 +349,32 @@ export function NotificationSettings({
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-white/45">{t("notifications.noReminders")}</p>
+              <p className="text-sm text-muted-foreground">{t("notifications.noReminders")}</p>
             )}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="reminder-time" className="text-white/70">
+            <Label htmlFor="reminder-time" className="text-foreground/80">
               {t("notifications.addReminder")}
             </Label>
             <div className="flex gap-2">
-              <Input
+              <select
                 id="reminder-time"
-                type="time"
                 value={newReminderTime}
                 onChange={(e) => setNewReminderTime(e.target.value)}
-                step={900}
-                className="min-h-11 text-base sm:min-h-10 sm:text-sm flex-1"
-              />
+                className="h-11 min-w-0 flex-1 rounded-lg border border-input bg-transparent px-3 text-base tabular-nums outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 md:h-9 md:text-sm dark:bg-input/30"
+              >
+                {HOURS.map((hour) => (
+                  <option key={hour} value={hour}>
+                    {hour}
+                  </option>
+                ))}
+              </select>
               <Button
                 onClick={handleAddReminder}
                 loading={isLoading}
                 loadingText={t("common.loading")}
-                className="min-h-11 sm:min-h-10"
+                className="h-11 rounded-full md:h-9"
               >
                 {t("notifications.addReminderButton")}
               </Button>
@@ -429,7 +386,7 @@ export function NotificationSettings({
             loading={isLoading}
             loadingText={t("common.loading")}
             variant="outline"
-            className="w-full"
+            className="h-11 w-full rounded-full md:h-9"
           >
             {t("notifications.disableButton")}
           </Button>

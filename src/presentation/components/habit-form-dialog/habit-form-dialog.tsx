@@ -161,8 +161,8 @@ function HabitFormDialogFields({
       onSubmit={(e) => void handleSubmit(e)}
       className="flex min-h-0 flex-1 flex-col"
     >
-      <DialogHeader className="shrink-0 space-y-1 px-5 pt-6 pr-14 pb-4 sm:px-6 sm:pr-16">
-        <DialogTitle className="text-xl font-semibold tracking-tight">
+      <DialogHeader className="shrink-0 px-5 pt-5 pr-14 pb-4 sm:px-6 sm:pr-16">
+        <DialogTitle>
           {title}
         </DialogTitle>
         <DialogDescription className="text-sm text-muted-foreground">
@@ -170,7 +170,7 @@ function HabitFormDialogFields({
         </DialogDescription>
       </DialogHeader>
 
-      <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-5 pb-6 sm:px-6">
+      <div className="app-scroll min-h-0 flex-1 space-y-6 overflow-y-auto overscroll-contain px-5 pb-6 sm:px-6">
         <div className="space-y-2">
           <Label htmlFor="habit-name">{t("habitForm.name")}</Label>
           <Input
@@ -181,7 +181,6 @@ function HabitFormDialogFields({
             onChange={(e) => setName(e.target.value)}
             autoComplete="off"
             autoFocus={mode === "create"}
-            className="min-h-11 text-base sm:min-h-10 sm:text-sm"
           />
         </div>
 
@@ -209,7 +208,7 @@ function HabitFormDialogFields({
       </div>
 
       <div
-        className="flex shrink-0 flex-col gap-3 border-t border-border/40 bg-background px-5 py-4 sm:flex-row sm:justify-end sm:px-6"
+        className="grid shrink-0 grid-cols-2 gap-2 border-t border-border bg-popover px-5 py-4 sm:px-6"
         style={{
           paddingBottom: "max(1rem, env(safe-area-inset-bottom))",
         }}
@@ -217,9 +216,9 @@ function HabitFormDialogFields({
         <DialogClose asChild>
           <Button
             type="button"
-            variant="outline"
+            variant="secondary"
             disabled={saving}
-            className="min-h-11 w-full transition-transform duration-150 ease-out active:scale-[0.98] sm:min-h-9 sm:w-auto"
+            className="h-11 rounded-full"
             onClick={() => triggerInteractionFeedback({ haptic: false })}
           >
             {t("common.cancel")}
@@ -232,7 +231,7 @@ function HabitFormDialogFields({
             mode === "create" ? t("common.creating") : t("common.saving")
           }
           disabled={!submitEnabled}
-          className="min-h-11 w-full min-w-42 transition-transform duration-150 ease-out enabled:active:scale-[0.98] sm:min-h-9 sm:w-auto"
+          className="h-11 rounded-full"
         >
           {mode === "create"
             ? t("habitForm.createHabit")
@@ -263,10 +262,10 @@ export function HabitFormDialog({
       {trigger ? <DialogTrigger asChild>{trigger}</DialogTrigger> : null}
       <DialogContent
         showCloseButton
-        closeButtonClassName="top-[calc(env(safe-area-inset-top,0px)+0.5rem)] right-[calc(env(safe-area-inset-right,0px)+0.5rem)]"
+        closeButtonClassName="top-[calc(env(safe-area-inset-top,0px)+0.75rem)] right-[calc(env(safe-area-inset-right,0px)+0.75rem)]"
         className={cn(
-          "flex max-h-dvh flex-col gap-0 overflow-hidden border-0 p-0 shadow-xl",
-          "inset-0! h-dvh! w-full! max-w-none! translate-x-0! translate-y-0! rounded-none sm:inset-auto! sm:top-1/2! sm:left-1/2! sm:h-auto! sm:max-h-[min(90dvh,640px)]! sm:w-full! sm:max-w-md! sm:-translate-x-1/2! sm:-translate-y-1/2! sm:rounded-xl! sm:border! sm:p-0!",
+          "flex max-h-dvh flex-col gap-0 overflow-hidden p-0",
+          "inset-0! h-dvh! w-full! max-w-none! translate-x-0! translate-y-0! rounded-none sm:inset-auto! sm:top-1/2! sm:left-1/2! sm:h-auto! sm:max-h-[min(90dvh,640px)]! sm:w-full! sm:max-w-md! sm:-translate-x-1/2! sm:-translate-y-1/2! sm:rounded-[1.5rem]!",
         )}
         style={{
           paddingTop: "env(safe-area-inset-top, 0px)",

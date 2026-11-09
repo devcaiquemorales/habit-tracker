@@ -91,7 +91,7 @@ export function StreakMilestoneToast({
             role="status"
             aria-live="polite"
             className={cn(
-              "pointer-events-none fixed left-1/2 z-40 max-w-xs -translate-x-1/2 rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-3 shadow-lg",
+              "pointer-events-none fixed left-1/2 z-40 max-w-xs -translate-x-1/2 rounded-[1.25rem] bg-popover px-4 py-3 shadow-sm ring-1 ring-foreground/10",
               "bottom-[calc(6rem+env(safe-area-inset-bottom,0px))]",
             )}
             initial={
@@ -108,14 +108,10 @@ export function StreakMilestoneToast({
             transition={
               prefersReducedMotion
                 ? { duration: 0.15 }
-                : {
-                    type: "spring",
-                    stiffness: 300,
-                    damping: 22,
-                  }
+                : { duration: 0.32, ease: [0.32, 0.72, 0, 1] }
             }
           >
-            <p className="text-center text-sm leading-snug text-zinc-100">
+            <p className="text-center text-sm leading-snug text-popover-foreground">
               {message}
             </p>
           </m.div>

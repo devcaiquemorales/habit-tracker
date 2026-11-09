@@ -1,6 +1,6 @@
 "use client";
 
-import type { DashboardJson } from "@/app/(app)/lib/dashboard-json";
+import type { DashboardJson } from "@/domain/types/dashboard";
 
 const DASHBOARD_LS_KEY = "dashboard-cache-v2";
 
@@ -31,5 +31,14 @@ export function writeDashboardCache(data: DashboardJson): void {
     localStorage.setItem(DASHBOARD_LS_KEY, JSON.stringify(data));
   } catch {
     // storage full or unavailable — ignore silently
+  }
+}
+
+/** Forgets the snapshot so the next account on this device never sees it. */
+export function clearDashboardCache(): void {
+  try {
+    localStorage.removeItem(DASHBOARD_LS_KEY);
+  } catch {
+    // storage unavailable: nothing to clear
   }
 }

@@ -6,15 +6,17 @@ import type { MetadataRoute } from "next";
  */
 export default function manifest(): MetadataRoute.Manifest {
   return {
+    id: "/",
     name: "Habit Tracker — Visual habits & heatmaps",
     short_name: "Habit Tracker",
     description:
       "Build consistency with daily check-ins and GitHub-style heatmaps. Track habits offline-friendly; install for a focused, app-like experience.",
     start_url: "/",
+    scope: "/",
     display: "standalone",
     orientation: "portrait",
-    background_color: "#16141f",
-    theme_color: "#16141f",
+    background_color: "#191919",
+    theme_color: "#191919",
     categories: ["lifestyle", "health", "productivity"],
     icons: [
       {
@@ -22,6 +24,12 @@ export default function manifest(): MetadataRoute.Manifest {
         sizes: "192x192",
         type: "image/png",
         purpose: "any",
+      },
+      {
+        src: "/pwa-icons/icon-192",
+        sizes: "192x192",
+        type: "image/png",
+        purpose: "maskable",
       },
       {
         src: "/pwa-icons/icon-512",

@@ -73,8 +73,7 @@ export function HabitCard({
     <div
       {...panPointerProps}
       className={cn(
-        "flex w-full flex-col gap-3 rounded-xl bg-white/5 p-4 pt-0 transition-[background-color] duration-150 ease-out",
-        "hover:bg-white/[0.07]",
+        "flex w-full flex-col gap-3 rounded-[1.25rem] bg-sidebar p-4 pt-0 transition-colors hover:bg-sidebar-accent",
       )}
     >
       <Link
@@ -88,7 +87,7 @@ export function HabitCard({
           beginRouteTransitionFeedback();
           triggerInteractionFeedback();
         }}
-        className="flex touch-manipulation flex-col gap-3 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+        className="flex touch-manipulation flex-col gap-3 rounded-xl outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
       >
         <HabitCardHeader
           name={name}
@@ -97,7 +96,7 @@ export function HabitCard({
           schedule={schedule}
           completedKeys={completedKeys}
         />
-        <p className="text-xs text-white/30">
+        <p className="text-xs text-muted-foreground/70">
           {t("common.schedulePrefix")} {formatScheduleLabel(schedule, locale)}
         </p>
       </Link>
@@ -105,7 +104,7 @@ export function HabitCard({
         role="link"
         tabIndex={0}
         aria-label={t("habitCard.openHabit", { name })}
-        className="cursor-pointer touch-manipulation rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+        className="cursor-pointer touch-manipulation rounded-xl outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
         onClick={onHeatmapRegionClick}
         onKeyDown={onHeatmapRegionKeyDown}
       >

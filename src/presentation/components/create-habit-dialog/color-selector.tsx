@@ -41,11 +41,11 @@ export function ColorSelector({ value, onChange }: ColorSelectorProps) {
               onChange(opt.id);
             }}
             className={cn(
-              "size-9 shrink-0 rounded-full transition-shadow outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+              "size-11 shrink-0 rounded-full transition-shadow md:size-9 outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
               opt.swatch,
               selected
-                ? "ring-2 ring-white/70 ring-offset-2 ring-offset-background"
-                : "ring-1 ring-white/15 hover:ring-white/30",
+                ? "ring-2 ring-foreground/70 ring-offset-2 ring-offset-background"
+                : "ring-1 ring-foreground/15 hover:ring-foreground/30",
             )}
           />
         );

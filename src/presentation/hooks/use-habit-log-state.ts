@@ -1,18 +1,16 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
-import {
-  logHabitDayAction,
-  unlogHabitDayAction,
-} from "@/app/actions/habit-log-actions";
 import { getLocalToday, toLocalDateKey } from "@/domain/types/date-key";
 import type { Habit } from "@/domain/types/habit";
 import type { HeatmapData } from "@/domain/types/heatmap";
 import { isTodayScheduled } from "@/domain/types/schedule";
-import type { HabitFormPayload } from "@/presentation/components/habit-form-dialog";
-import { formatActionError } from "@/presentation/lib/action-error";
-import { patchDashboardAfterLogMutation } from "@/presentation/lib/dashboard-swr";
+import { useDashboardMutations } from "@/presentation/hooks/use-dashboard-mutations";
+import {
+  formatActionError,
+  type LocalizedActionResult,
+} from "@/presentation/lib/action-error";
 import { getTodayStatusPresentation } from "@/presentation/lib/habit-today-status";
 import { getCompletedKeysFromHeatmapData } from "@/presentation/lib/heatmap-completed-keys";
 import { formatScheduleLabel } from "@/presentation/lib/i18n/format-schedule";
@@ -24,65 +22,31 @@ import {
 } from "@/presentation/lib/update-activity-day-window";
 import { getDefaultActivitySelectedKey } from "@/presentation/lib/update-activity-selectable";
 
-export function useHabitLogState(
-  initialHabit: Habit,
-  heatmapData: HeatmapData,
-  habitId: string,
-) {
+/** Detail-screen state. Completion comes from the live dashboard, which updates optimistically. */
+export function useHabitLogState(habit: Habit, heatmapData: HeatmapData) {
   const { t, locale } = useI18n();
-  const [habit, setHabit] = useState(initialHabit);
-  const [completedToday, setCompletedToday] = useState(
-    initialHabit.completedToday,
-  );
-  const [extraPastCompleted, setExtraPastCompleted] = useState<Set<string>>(
-    () => new Set(),
-  );
-  const [removalOverrides, setRemovalOverrides] = useState<Set<string>>(
-    () => new Set(),
-  );
+  const { markDay, unmarkDay } = useDashboardMutations();
   const [persistenceError, setPersistenceError] = useState<string | null>(null);
   const [logActionPending, setLogActionPending] = useState<
     "mark" | "remove" | null
   >(null);
 
-  useEffect(() => {
-    setHabit((prev) => ({
-      ...prev,
-      streak: initialHabit.streak,
-      completedToday: initialHabit.completedToday,
-    }));
-  }, [initialHabit.id, initialHabit.streak, initialHabit.completedToday]);
-
   const [today] = useState(() => getLocalToday());
   const todayKey = useMemo(() => toLocalDateKey(today), [today]);
 
-  const [activitySelectedKey, setActivitySelectedKey] = useState<string | null>(
-    () => {
-      const w = computeUpdateActivityDayWindow(
-        null,
-        today,
-        ACTIVITY_STRIP_DAY_COUNT,
-      );
-      const merged = new Set(getCompletedKeysFromHeatmapData(heatmapData));
-      const tk = toLocalDateKey(today);
-      if (
-        initialHabit.completedToday &&
-        isTodayScheduled(initialHabit.schedule, today)
-      ) {
-        merged.add(tk);
-      }
-      return getDefaultActivitySelectedKey(
-        w,
-        initialHabit.schedule,
-        today,
-        merged,
-      );
-    },
-  );
-
-  const baseCompletedKeys = useMemo(
+  const stripCompletedKeys = useMemo(
     () => getCompletedKeysFromHeatmapData(heatmapData),
     [heatmapData],
+  );
+
+  const [activitySelectedKey, setActivitySelectedKey] = useState<string | null>(
+    () =>
+      getDefaultActivitySelectedKey(
+        computeUpdateActivityDayWindow(null, today, ACTIVITY_STRIP_DAY_COUNT),
+        habit.schedule,
+        today,
+        stripCompletedKeys,
+      ),
   );
 
   const defaultActivityWindow = computeUpdateActivityDayWindow(
@@ -91,50 +55,17 @@ export function useHabitLogState(
     ACTIVITY_STRIP_DAY_COUNT,
   );
   const activityWindowDays =
-    activitySelectedKey === null
+    activitySelectedKey === null ||
+    defaultActivityWindow.some((d) => toLocalDateKey(d) === activitySelectedKey)
       ? defaultActivityWindow
-      : defaultActivityWindow.some(
-            (d) => toLocalDateKey(d) === activitySelectedKey,
-          )
-        ? defaultActivityWindow
-        : computeUpdateActivityDayWindow(
-            activitySelectedKey,
-            today,
-            ACTIVITY_STRIP_DAY_COUNT,
-          );
+      : computeUpdateActivityDayWindow(
+          activitySelectedKey,
+          today,
+          ACTIVITY_STRIP_DAY_COUNT,
+        );
 
-  const todayScheduled = useMemo(
-    () => isTodayScheduled(habit.schedule, today),
-    [habit.schedule, today],
-  );
-
-  const completionOverrides = useMemo(() => {
-    const s = new Set(extraPastCompleted);
-    if (completedToday && todayScheduled) {
-      s.add(todayKey);
-    }
-    return s;
-  }, [extraPastCompleted, completedToday, todayScheduled, todayKey]);
-
-  /** Same completion truth as the heatmap strip: base data + edits + “completed today” when applicable. */
-  const stripCompletedKeys = useMemo(() => {
-    const merged = new Set<string>();
-    baseCompletedKeys.forEach((k) => {
-      if (!removalOverrides.has(k)) merged.add(k);
-    });
-    extraPastCompleted.forEach((k) => merged.add(k));
-    if (completedToday && todayScheduled && !removalOverrides.has(todayKey)) {
-      merged.add(todayKey);
-    }
-    return merged;
-  }, [
-    baseCompletedKeys,
-    extraPastCompleted,
-    removalOverrides,
-    completedToday,
-    todayScheduled,
-    todayKey,
-  ]);
+  const completedToday =
+    stripCompletedKeys.has(todayKey) && isTodayScheduled(habit.schedule, today);
 
   const { label: todayLabel, kind: todayStatusKind } = useMemo(
     () =>
@@ -148,114 +79,31 @@ export function useHabitLogState(
     [habit.schedule, completedToday, today, stripCompletedKeys, t],
   );
 
-  const handleMarkPastDay = useCallback(
-    async (dateKey: string) => {
+  const runLogAction = useCallback(
+    async (
+      pending: "mark" | "remove",
+      call: () => Promise<LocalizedActionResult>,
+    ) => {
       setPersistenceError(null);
-      setLogActionPending("mark");
-
-      // Store previous state for rollback
-      const previousRemovalOverrides = removalOverrides;
-      const previousExtraPastCompleted = extraPastCompleted;
-      const previousCompletedToday = completedToday;
-
-      // Apply optimistic state updates immediately
-      setRemovalOverrides((prev) => {
-        const next = new Set(prev);
-        next.delete(dateKey);
-        return next;
-      });
-      setExtraPastCompleted((prev) => new Set([...prev, dateKey]));
-      if (dateKey === todayKey) {
-        setCompletedToday(true);
-      }
-      patchDashboardAfterLogMutation(habitId, dateKey, "add");
-
-      try {
-        const result = await logHabitDayAction(habitId, dateKey);
-        const msg = formatActionError(result, t);
-        if (msg) {
-          // Rollback on error
-          setRemovalOverrides(previousRemovalOverrides);
-          setExtraPastCompleted(previousExtraPastCompleted);
-          setCompletedToday(previousCompletedToday);
-          setPersistenceError(msg);
-        }
-      } catch {
-        // Rollback on exception
-        setRemovalOverrides(previousRemovalOverrides);
-        setExtraPastCompleted(previousExtraPastCompleted);
-        setCompletedToday(previousCompletedToday);
-        setPersistenceError(t("common.error"));
-      } finally {
-        setLogActionPending(null);
-      }
+      setLogActionPending(pending);
+      const message = formatActionError(await call(), t);
+      if (message) setPersistenceError(message);
+      setLogActionPending(null);
     },
-    [habitId, todayKey, t, removalOverrides, extraPastCompleted, completedToday],
+    [t],
+  );
+
+  const handleMarkPastDay = useCallback(
+    (dateKey: string) =>
+      runLogAction("mark", () => markDay(habit.id, dateKey)),
+    [runLogAction, markDay, habit.id],
   );
 
   const handleRemovePastDay = useCallback(
-    async (dateKey: string) => {
-      setPersistenceError(null);
-      setLogActionPending("remove");
-
-      // Store previous state for rollback
-      const previousExtraPastCompleted = extraPastCompleted;
-      const previousCompletedToday = completedToday;
-      const previousRemovalOverrides = removalOverrides;
-
-      // Apply optimistic state updates immediately
-      setExtraPastCompleted((prev) => {
-        const next = new Set(prev);
-        next.delete(dateKey);
-        return next;
-      });
-      if (dateKey === todayKey) {
-        setCompletedToday(false);
-      }
-      if (baseCompletedKeys.has(dateKey) || dateKey === todayKey) {
-        setRemovalOverrides((r) => new Set([...r, dateKey]));
-      }
-      patchDashboardAfterLogMutation(habitId, dateKey, "remove");
-
-      try {
-        const result = await unlogHabitDayAction(habitId, dateKey);
-        const msg = formatActionError(result, t);
-        if (msg) {
-          // Rollback on error
-          setExtraPastCompleted(previousExtraPastCompleted);
-          setCompletedToday(previousCompletedToday);
-          setRemovalOverrides(previousRemovalOverrides);
-          setPersistenceError(msg);
-        }
-      } catch {
-        // Rollback on exception
-        setExtraPastCompleted(previousExtraPastCompleted);
-        setCompletedToday(previousCompletedToday);
-        setRemovalOverrides(previousRemovalOverrides);
-        setPersistenceError(t("common.error"));
-      } finally {
-        setLogActionPending(null);
-      }
-    },
-    [
-      habitId,
-      baseCompletedKeys,
-      todayKey,
-      t,
-      extraPastCompleted,
-      completedToday,
-      removalOverrides,
-    ],
+    (dateKey: string) =>
+      runLogAction("remove", () => unmarkDay(habit.id, dateKey)),
+    [runLogAction, unmarkDay, habit.id],
   );
-
-  const handleSaveEdit = useCallback((payload: HabitFormPayload) => {
-    setHabit((prev) => ({
-      ...prev,
-      name: payload.name,
-      colorVariant: payload.colorVariant,
-      schedule: payload.schedule,
-    }));
-  }, []);
 
   const scheduleLabel = useMemo(
     () => formatScheduleLabel(habit.schedule, locale),
@@ -277,13 +125,9 @@ export function useHabitLogState(
   }, []);
 
   return {
-    habit,
-    completedToday,
     activitySelectedKey,
     setActivitySelectedKey,
     activityWindowDays,
-    completionOverrides,
-    removalOverrides,
     stripCompletedKeys,
     todayLabel,
     todayStatusKind,
@@ -291,7 +135,6 @@ export function useHabitLogState(
     editInitialHabit,
     handleMarkPastDay,
     handleRemovePastDay,
-    handleSaveEdit,
     handleHeatmapDateSelect,
     persistenceError,
     logActionPending,

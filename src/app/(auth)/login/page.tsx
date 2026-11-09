@@ -20,10 +20,8 @@ export default async function LoginPage({
 
   return (
     <AuthShell
-      brandLabel={t("auth.brandName")}
-      brandTagline={t("auth.brandTagline")}
-      title={t("auth.welcomeBack")}
-      subtitle={t("auth.signInSubtitle")}
+      title={t("auth.brandName")}
+      subtitle={t("auth.signInShort")}
     >
       <Suspense fallback={<AuthShellSkeleton statusLabel={t("common.loading")} />}>
         <LoginForm />

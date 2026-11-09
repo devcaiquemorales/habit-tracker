@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 
-import type { DashboardJson } from "@/app/(app)/lib/dashboard-json";
 import { streakUnitForSchedule } from "@/domain/lib/compute-streak";
+import type { DashboardJson } from "@/domain/types/dashboard";
 import { getLocalToday, toLocalDateKey } from "@/domain/types/date-key";
 import type { StreakMilestoneToastPayload } from "@/presentation/components/streak-milestone-toast";
 import { recoveryMissedDayCountBefore } from "@/presentation/lib/detect-streak-recovery";

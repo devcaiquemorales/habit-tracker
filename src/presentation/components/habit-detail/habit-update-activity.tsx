@@ -117,10 +117,10 @@ export function HabitUpdateActivity({
       aria-busy={logBusy || undefined}
     >
       <div className="flex flex-col gap-2">
-        <p className="text-sm font-medium text-white/50">
+        <p className="text-sm font-medium text-muted-foreground">
           {t("updateActivity.sectionTitle")}
         </p>
-        <p className="text-sm leading-relaxed text-white/45">
+        <p className="text-sm leading-relaxed text-muted-foreground">
           {t("updateActivity.subtitle")}
         </p>
       </div>
@@ -152,29 +152,29 @@ export function HabitUpdateActivity({
                   onSelectedKeyChange(selectedKey === key ? null : key);
                 }}
                 className={cn(
-                  "flex min-h-11 shrink-0 flex-col items-center justify-center rounded-lg px-3 py-2 text-center transition-colors",
+                  "flex min-h-11 shrink-0 flex-col items-center justify-center rounded-xl px-3 py-2 text-center transition-colors",
                   !selectable && "cursor-not-allowed opacity-35",
                   selected && selectable
-                    ? "bg-white/10 text-white"
+                    ? "bg-foreground/8 text-foreground"
                     : selectable
-                      ? "text-white/65 hover:bg-white/5 hover:text-white/80"
-                      : "text-white/35",
+                      ? "text-foreground/80 hover:bg-foreground/5 hover:text-foreground"
+                      : "text-muted-foreground/70",
                   !selected && selectable && "bg-transparent",
-                  done && !selected && selectable && "text-emerald-400/85",
+                  done && !selected && selectable && "text-emerald-700 dark:text-emerald-400",
                 )}
               >
                 <span className="text-xs leading-snug font-medium tabular-nums">
                   {formatActivityChipDate(d, locale)}
                 </span>
                 {done ? (
-                  <span className="mt-0.5 text-[0.65rem] font-medium text-emerald-400/80">
+                  <span className="mt-0.5 text-[0.65rem] font-medium text-emerald-700 dark:text-emerald-400">
                     {t("common.done")}
                   </span>
                 ) : (
                   <span
                     className={cn(
                       "mt-0.5 text-[0.65rem] leading-snug",
-                      selectable ? "text-white/30" : "text-white/20",
+                      selectable ? "text-muted-foreground/70" : "text-muted-foreground/70",
                     )}
                   >
                     {selectable ? t("common.tap") : t("common.dash")}
@@ -190,7 +190,7 @@ export function HabitUpdateActivity({
         type="button"
         size="lg"
         variant={updateActivitySelection.buttonVariant}
-        className="min-h-11 w-full min-w-44 sm:w-auto"
+        className="h-11 w-full min-w-44 rounded-full sm:w-auto md:h-9"
         loading={logBusy}
         loadingText={
           logActionPending === "remove"

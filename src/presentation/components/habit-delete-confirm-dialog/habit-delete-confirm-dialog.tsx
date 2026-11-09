@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
-import { deleteHabitAction } from "@/app/actions/habit-actions";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -13,11 +12,8 @@ import {
   AlertDialogTitle,
 } from "@/presentation/components/ui/alert-dialog";
 import { Button } from "@/presentation/components/ui/button";
+import { useDashboardMutations } from "@/presentation/hooks/use-dashboard-mutations";
 import { formatActionError } from "@/presentation/lib/action-error";
-import {
-  removeHabitFromDashboard,
-  revalidateDashboardCache,
-} from "@/presentation/lib/dashboard-swr";
 import { useI18n } from "@/presentation/lib/i18n/i18n-provider";
 
 type HabitDeleteConfirmDialogProps = {
@@ -36,45 +32,31 @@ export function HabitDeleteConfirmDialog({
   onDeleted,
 }: HabitDeleteConfirmDialogProps) {
   const { t } = useI18n();
+  const { deleteHabit } = useDashboardMutations();
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (open) setError(null);
-  }, [open]);
+  const handleOpenChange = (next: boolean) => {
+    if (!next) setError(null);
+    onOpenChange(next);
+  };
 
   const handleConfirm = async () => {
     setError(null);
     setDeleting(true);
+    const message = formatActionError(await deleteHabit(habitId), t);
+    setDeleting(false);
 
-    // Close dialog and remove from cache optimistically
-    onOpenChange(false);
-    removeHabitFromDashboard(habitId);
-
-    try {
-      const result = await deleteHabitAction(habitId);
-      const msg = formatActionError(result, t);
-      if (msg) {
-        // Restore on error
-        revalidateDashboardCache({ immediate: true });
-        setError(msg);
-        setDeleting(false);
-        return;
-      }
-      onDeleted();
-    } catch (err) {
-      // Restore on exception
-      revalidateDashboardCache({ immediate: true });
-      setError(
-        err instanceof Error ? err.message : t("deleteHabit.genericError"),
-      );
-    } finally {
-      setDeleting(false);
+    if (message) {
+      setError(message);
+      return;
     }
+    handleOpenChange(false);
+    onDeleted();
   };
 
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
+    <AlertDialog open={open} onOpenChange={handleOpenChange}>
       <AlertDialogContent className="max-w-[min(100%-2rem,22rem)]">
         <AlertDialogHeader>
           <AlertDialogTitle>{t("deleteHabit.title")}</AlertDialogTitle>
@@ -89,12 +71,11 @@ export function HabitDeleteConfirmDialog({
             {error}
           </p>
         ) : null}
-        <AlertDialogFooter className="gap-2 sm:gap-2">
+        <AlertDialogFooter>
           <AlertDialogCancel asChild>
             <Button
               type="button"
-              variant="outline"
-              className="min-h-11 w-full sm:w-auto"
+              variant="secondary"
               disabled={deleting}
             >
               {t("deleteHabit.cancel")}
@@ -102,8 +83,7 @@ export function HabitDeleteConfirmDialog({
           </AlertDialogCancel>
           <Button
             type="button"
-            variant="destructive"
-            className="min-h-11 w-full sm:w-auto"
+            variant="destructive-solid"
             loading={deleting}
             loadingText={t("common.deleting")}
             onClick={() => void handleConfirm()}

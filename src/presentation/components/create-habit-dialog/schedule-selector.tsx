@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 
-import { Button } from "@/presentation/components/ui/button";
+import { SegmentedControl } from "@/presentation/components/ui/segmented-control";
 import { weekdayLabelsForSelector } from "@/presentation/lib/i18n/format";
 import { useI18n } from "@/presentation/lib/i18n/i18n-provider";
 import { triggerInteractionFeedback } from "@/presentation/lib/interaction-feedback";
@@ -82,104 +82,35 @@ export function ScheduleSelector({ value, onChange }: ScheduleSelectorProps) {
 
   return (
     <div className="flex flex-col gap-5">
-      <div
-        className="flex flex-col gap-2 sm:flex-row sm:flex-wrap"
-        role="tablist"
+      <SegmentedControl
         aria-label={t("schedule.scheduleModelAria")}
-      >
-        <Button
-          type="button"
-          role="tab"
-          aria-selected={displayCategory === "fixed"}
-          variant={displayCategory === "fixed" ? "default" : "outline"}
-          size="sm"
-          className={cn(
-            "min-h-10 justify-center sm:min-h-8",
-            displayCategory === "fixed" && "shadow-none",
-          )}
-          onClick={() => {
-            triggerInteractionFeedback({ haptic: false });
-            setCategory("fixed");
-          }}
-        >
-          {t("schedule.fixed")}
-        </Button>
-        <Button
-          type="button"
-          role="tab"
-          aria-selected={displayCategory === "weeklyTarget"}
-          variant={displayCategory === "weeklyTarget" ? "default" : "outline"}
-          size="sm"
-          className={cn(
-            "min-h-10 justify-center sm:min-h-8",
-            displayCategory === "weeklyTarget" && "shadow-none",
-          )}
-          onClick={() => {
-            triggerInteractionFeedback({ haptic: false });
-            setCategory("weeklyTarget");
-          }}
-        >
-          {t("schedule.weeklyTarget")}
-        </Button>
-        <Button
-          type="button"
-          role="tab"
-          aria-selected={displayCategory === "flexible"}
-          variant={displayCategory === "flexible" ? "default" : "outline"}
-          size="sm"
-          className={cn(
-            "min-h-10 justify-center sm:min-h-8",
-            displayCategory === "flexible" && "shadow-none",
-          )}
-          onClick={() => {
-            triggerInteractionFeedback({ haptic: false });
-            setCategory("flexible");
-          }}
-        >
-          {t("schedule.flexible")}
-        </Button>
-      </div>
+        value={displayCategory}
+        onChange={(next) => {
+          triggerInteractionFeedback({ haptic: false });
+          setCategory(next);
+        }}
+        options={[
+          { value: "fixed", label: t("schedule.fixed") },
+          { value: "weeklyTarget", label: t("schedule.weeklyTarget") },
+          { value: "flexible", label: t("schedule.flexible") },
+        ]}
+      />
 
       {value.category === "fixed" && (
         <>
-          <div
-            className="flex flex-col gap-2 sm:flex-row sm:flex-wrap"
-            role="tablist"
+          <SegmentedControl
             aria-label={t("schedule.fixedTypeAria")}
-          >
-            {(
-              [
-                { mode: "daily" as const, labelKey: "schedule.daily" as const },
-                {
-                  mode: "specificDays" as const,
-                  labelKey: "schedule.specificDays" as const,
-                },
-                {
-                  mode: "everyOtherDay" as const,
-                  labelKey: "schedule.everyOtherDay" as const,
-                },
-              ] as const
-            ).map(({ mode, labelKey }) => (
-              <Button
-                key={mode}
-                type="button"
-                role="tab"
-                aria-selected={value.mode === mode}
-                variant={value.mode === mode ? "default" : "outline"}
-                size="sm"
-                className={cn(
-                  "min-h-10 justify-center sm:min-h-8",
-                  value.mode === mode && "shadow-none",
-                )}
-                onClick={() => {
-                  triggerInteractionFeedback({ haptic: false });
-                  setFixedMode(mode);
-                }}
-              >
-                {t(labelKey)}
-              </Button>
-            ))}
-          </div>
+            value={value.mode}
+            onChange={(mode) => {
+              triggerInteractionFeedback({ haptic: false });
+              setFixedMode(mode);
+            }}
+            options={[
+              { value: "daily", label: t("schedule.daily") },
+              { value: "specificDays", label: t("schedule.specificDays") },
+              { value: "everyOtherDay", label: t("schedule.everyOtherDay") },
+            ]}
+          />
 
           {value.mode === "specificDays" && (
             <div className="flex flex-col gap-2">
@@ -203,10 +134,10 @@ export function ScheduleSelector({ value, onChange }: ScheduleSelectorProps) {
                         toggleDay(day);
                       }}
                       className={cn(
-                        "flex min-h-11 min-w-11 items-center justify-center rounded-lg text-xs font-medium transition-colors sm:min-h-9 sm:min-w-9",
+                        "flex size-11 shrink-0 items-center justify-center rounded-full border text-sm transition-colors md:size-9",
                         on
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-muted/60 text-muted-foreground hover:bg-muted",
+                          ? "border-foreground bg-foreground text-background"
+                          : "border-border text-muted-foreground hover:border-foreground/30 hover:text-foreground",
                       )}
                     >
                       {label}
@@ -253,10 +184,10 @@ export function ScheduleSelector({ value, onChange }: ScheduleSelectorProps) {
                     });
                   }}
                   className={cn(
-                    "flex min-h-11 min-w-11 items-center justify-center rounded-lg text-sm font-semibold tabular-nums transition-colors sm:min-h-9 sm:min-w-9",
+                    "flex size-11 shrink-0 items-center justify-center rounded-full border text-sm tabular-nums transition-colors md:size-9",
                     selected
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted/60 text-muted-foreground hover:bg-muted",
+                      ? "border-foreground bg-foreground text-background"
+                      : "border-border text-muted-foreground hover:border-foreground/30 hover:text-foreground",
                   )}
                 >
                   {n}

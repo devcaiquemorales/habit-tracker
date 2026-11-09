@@ -1,28 +1,29 @@
 "use client";
 
+import { useConvexAuth, useMutation } from "convex/react";
 import { useEffect } from "react";
 
-import { syncTimezoneAction } from "@/app/actions/profile-actions";
+import { api } from "@/../convex/_generated/api";
+import { useI18n } from "@/presentation/lib/i18n/i18n-provider";
+
+const SYNCED_KEY = "device-synced";
 
 export function TimezoneSyncProvider() {
+  const { isAuthenticated } = useConvexAuth();
+  const { locale } = useI18n();
+  const syncDevice = useMutation(api.profiles.syncDevice);
+
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (!isAuthenticated || sessionStorage.getItem(SYNCED_KEY)) return;
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    if (!timezone) return;
 
-    const key = "tz-synced";
-    if (sessionStorage.getItem(key)) return;
-
-    try {
-      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      if (!tz) return;
-
-      sessionStorage.setItem(key, "1");
-      syncTimezoneAction(tz).catch(() => {
-        // Fire-and-forget; ignore errors
-      });
-    } catch {
-      // Ignore errors
-    }
-  }, []);
+    sessionStorage.setItem(SYNCED_KEY, "1");
+    syncDevice({ timezone, locale }).catch(() => {
+      // Retried next session; the last synced values stay valid meanwhile.
+      sessionStorage.removeItem(SYNCED_KEY);
+    });
+  }, [isAuthenticated, locale, syncDevice]);
 
   return null;
 }

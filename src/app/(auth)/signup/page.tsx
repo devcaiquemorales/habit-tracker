@@ -1,5 +1,7 @@
+import { Suspense } from "react";
+
 import { getServerAppLocale } from "@/lib/get-server-app-locale";
-import { AuthShell, SignupForm } from "@/presentation/components/auth";
+import { AuthShell, AuthShellSkeleton, SignupForm } from "@/presentation/components/auth";
 import { createTranslator, getMessages } from "@/presentation/lib/i18n/messages";
 
 export default async function SignupPage() {
@@ -8,12 +10,12 @@ export default async function SignupPage() {
 
   return (
     <AuthShell
-      brandLabel={t("auth.brandName")}
-      brandTagline={t("auth.brandTagline")}
       title={t("auth.createAccountTitle")}
       subtitle={t("auth.createAccountSubtitle")}
     >
-      <SignupForm />
+      <Suspense fallback={<AuthShellSkeleton statusLabel={t("common.loading")} />}>
+        <SignupForm />
+      </Suspense>
     </AuthShell>
   );
 }

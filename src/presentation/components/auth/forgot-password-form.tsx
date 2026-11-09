@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { type FormEvent, useState } from "react";
 
-import { createBrowserSupabaseClient } from "@/infrastructure/supabase/client";
+import { authClient } from "@/infrastructure/auth/auth-client";
 import { AuthFormNotice } from "@/presentation/components/auth/auth-form-notice";
 import { Button } from "@/presentation/components/ui/button";
 import { Input } from "@/presentation/components/ui/input";
@@ -31,19 +31,14 @@ export function ForgotPasswordForm() {
     setLoading(true);
     triggerInteractionFeedback({ haptic: false });
 
-    const origin = window.location.origin;
-    const redirectTo = `${origin}/auth/callback?next=${encodeURIComponent("/update-password")}`;
-
-    const supabase = createBrowserSupabaseClient();
-    const { error: resetError } = await supabase.auth.resetPasswordForEmail(
-      email.trim(),
-      { redirectTo },
-    );
+    const { error: resetError } = await authClient.requestPasswordReset({
+      email: email.trim(),
+    });
 
     setLoading(false);
 
     if (resetError) {
-      setError(formatAuthErrorMessage(resetError.message, t));
+      setError(formatAuthErrorMessage(resetError, t));
       return;
     }
 
@@ -68,7 +63,6 @@ export function ForgotPasswordForm() {
           value={email}
           onChange={(ev) => setEmail(ev.target.value)}
           disabled={loading || success}
-          className="min-h-11 text-base sm:min-h-10 sm:text-sm"
           placeholder={t("auth.emailPlaceholder")}
           aria-invalid={email.length > 0 && !emailValid}
         />
@@ -80,7 +74,7 @@ export function ForgotPasswordForm() {
       <Button
         type="submit"
         size="lg"
-        className="min-h-11 w-full min-w-0"
+        className="h-11 w-full rounded-full"
         loading={loading}
         loadingText={t("auth.forgotPasswordSending")}
         disabled={!canSubmit}

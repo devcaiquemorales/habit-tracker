@@ -1,26 +1,22 @@
 import { redirect } from "next/navigation";
 
-import { createServerSupabaseClient } from "@/infrastructure/supabase/server";
+import { isAuthenticated } from "@/infrastructure/auth/auth-server";
 import { TimezoneSyncProvider } from "@/presentation/components/timezone-sync";
+import { DashboardProvider } from "@/presentation/lib/dashboard-context";
 
 export default async function AppGroupLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const supabase = await createServerSupabaseClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
+  if (!(await isAuthenticated())) {
     redirect("/login");
   }
 
   return (
-    <>
+    <DashboardProvider>
       <TimezoneSyncProvider />
       {children}
-    </>
+    </DashboardProvider>
   );
 }

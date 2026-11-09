@@ -18,11 +18,11 @@ export const AddHabitFAB = React.forwardRef<
       ref={ref}
       type="button"
       className={cn(
-        "fixed z-40 flex size-12 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-[transform,filter] duration-150 ease-out hover:scale-105 hover:brightness-110 active:scale-[0.97]",
+        "fixed z-40 flex size-12 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm transition-colors outline-none hover:bg-primary/80 focus-visible:ring-3 focus-visible:ring-ring/50 active:translate-y-px",
         /* Mobile: base margin + safe area (gesture bar / curved corners). */
         "right-[calc(1.25rem+env(safe-area-inset-right,0px))] bottom-[calc(1.25rem+env(safe-area-inset-bottom,0px))]",
         /* Desktop / tablet: larger float, still respects safe area (e.g. iPad). */
-        "md:right-[calc(2rem+env(safe-area-inset-right,0px))] md:bottom-[calc(2rem+env(safe-area-inset-bottom,0px))] md:h-14 md:w-14",
+        "md:right-[calc(2rem+env(safe-area-inset-right,0px))] md:bottom-[calc(2rem+env(safe-area-inset-bottom,0px))] tablet:right-[calc(2rem+env(safe-area-inset-right,0px))] tablet:bottom-[calc(2rem+env(safe-area-inset-bottom,0px))]",
         className,
       )}
       aria-label={label}

@@ -7,7 +7,7 @@ export type HeatmapCellSize = "default" | "comfortable" | "large";
 const SIZE_CLASS: Record<HeatmapCellSize, string> = {
   default: "h-3 w-3",
   comfortable: "h-3.5 w-3.5 sm:h-4 sm:w-4",
-  large: "h-4 w-4 sm:h-[18px] sm:w-[18px] md:h-5 md:w-5",
+  large: "h-4 w-4 sm:h-[18px] sm:w-[18px] md:h-5 md:w-5 tablet:h-5 tablet:w-5",
 };
 
 /** Tiny month boundary annotation (1st / last day); scales slightly with cell size */
@@ -68,7 +68,7 @@ export function HeatmapCell({
       >
         <div
           className={cn(
-            "rounded-full bg-white/[0.10]",
+            "rounded-full bg-foreground/[0.10]",
             PADDING_DOT_CLASS[size],
           )}
         />
@@ -86,13 +86,13 @@ export function HeatmapCell({
             : cellColors.notExpected;
 
   const ringClass = isStripSelected
-    ? "ring-2 ring-white/70 ring-inset"
+    ? "ring-2 ring-foreground/70 ring-inset"
     : isToday && isRecovery && status === "completed"
-      ? "ring-1 ring-inset ring-white/30"
+      ? "ring-1 ring-inset ring-foreground/30"
       : isToday
-        ? "ring-1 ring-inset ring-white/25"
+        ? "ring-1 ring-inset ring-foreground/25"
         : isRecovery && status === "completed"
-          ? "ring-1 ring-inset ring-white/20"
+          ? "ring-1 ring-inset ring-foreground/20"
           : "";
 
   const sharedClass = cn(
@@ -111,7 +111,9 @@ export function HeatmapCell({
           "pointer-events-none absolute top-px left-px z-1 leading-none font-medium tracking-tight tabular-nums select-none",
           BOUNDARY_MARKER_TEXT[size],
           /** High-contrast on saturated cubes: light fill + tight dark halo (no heavy badge) */
-          "text-white/95 [text-shadow:0_0_1px_rgb(0_0_0/_0.95),0_0.5px_1.5px_rgb(0_0_0/_0.75)]",
+          status === "completed"
+            ? "text-white/95 [text-shadow:0_0_1px_rgb(0_0_0/_0.95),0_0.5px_1.5px_rgb(0_0_0/_0.75)]"
+            : "text-foreground/70",
         )}
         aria-hidden
       >

@@ -23,13 +23,13 @@ export function AuthFormNotice({
   return (
     <p
       className={cn(
-        "rounded-lg border px-3 py-2.5 text-sm leading-snug",
+        "rounded-xl px-3 py-2.5 text-sm leading-snug",
         variant === "error" &&
-          "border-destructive/30 bg-destructive/10 text-destructive",
+          "bg-destructive/10 text-destructive",
         variant === "info" &&
-          "border-border/50 bg-muted/30 text-foreground",
+          "bg-muted text-foreground",
         variant === "success" &&
-          "border-emerald-500/25 bg-emerald-500/10 text-emerald-100/90",
+          "bg-emerald-500/12 text-emerald-700 dark:text-emerald-400",
         className,
       )}
       role={resolvedRole}

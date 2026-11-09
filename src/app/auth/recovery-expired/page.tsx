@@ -11,16 +11,14 @@ export default async function RecoveryExpiredPage() {
 
   return (
     <AuthShell
-      brandLabel={t("auth.brandName")}
-      brandTagline={t("auth.brandTagline")}
       title={t("auth.recoveryExpiredTitle")}
       subtitle={t("auth.recoveryExpiredSubtitle")}
     >
       <div className="flex flex-col gap-3 sm:gap-4">
-        <Button asChild size="lg" className="min-h-11 w-full">
+        <Button asChild size="lg" className="h-11 w-full rounded-full">
           <Link href="/forgot-password">{t("auth.recoveryExpiredCtaForgot")}</Link>
         </Button>
-        <Button asChild variant="outline" size="lg" className="min-h-11 w-full">
+        <Button asChild variant="outline" size="lg" className="h-11 w-full rounded-full">
           <Link href="/login">{t("auth.backToSignIn")}</Link>
         </Button>
       </div>

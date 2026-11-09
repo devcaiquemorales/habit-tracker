@@ -1,6 +1,6 @@
 "use client";
 
-import { domAnimation,LazyMotion } from "framer-motion";
+import { domAnimation, LazyMotion, MotionConfig } from "framer-motion";
 
 export const sharedVariants = {
   fadeInUp: {
@@ -30,5 +30,9 @@ export function MotionProvider({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return <LazyMotion features={domAnimation}>{children}</LazyMotion>;
+  return (
+    <MotionConfig reducedMotion="user">
+      <LazyMotion features={domAnimation}>{children}</LazyMotion>
+    </MotionConfig>
+  );
 }

@@ -7,6 +7,10 @@ export type LocalizedActionResult = {
   errorParams?: Record<string, string | number>;
 };
 
+export function hasActionError(result: LocalizedActionResult): boolean {
+  return Boolean(result.errorKey) || Boolean(result.error);
+}
+
 export function formatActionError(
   result: LocalizedActionResult,
   t: TranslateFn,

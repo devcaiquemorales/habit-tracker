@@ -3,18 +3,13 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useLayoutEffect, useMemo, useState } from "react";
 
-import { updateHabitAction } from "@/app/actions/habit-actions";
 import type { Habit } from "@/domain/types/habit";
 import { HabitDeleteConfirmDialog } from "@/presentation/components/habit-delete-confirm-dialog";
 import { HabitFormDialog } from "@/presentation/components/habit-form-dialog";
 import { Button } from "@/presentation/components/ui/button";
+import { useDashboardMutations } from "@/presentation/hooks/use-dashboard-mutations";
 import { useHabitLogState } from "@/presentation/hooks/use-habit-log-state";
 import { buildHeatmapDataFromCompletedKeys } from "@/presentation/lib/build-heatmap-data";
-import {
-  patchDashboardHabit,
-  removeHabitFromDashboard,
-  useCachedDashboard,
-} from "@/presentation/lib/dashboard-swr";
 import { useI18n } from "@/presentation/lib/i18n/i18n-provider";
 import { triggerInteractionFeedback } from "@/presentation/lib/interaction-feedback";
 
@@ -40,58 +35,25 @@ function resetViewportScrollTop(): void {
 
 interface HabitDetailScreenProps {
   habit: Habit;
-  /** Log date keys from the server; heatmap is built on the client in local time. */
-  initialCompletedKeys: string[];
+  /** Log date keys from the dashboard; the heatmap is built in local time. */
+  completedKeys: string[];
 }
 
 export function HabitDetailScreen({
-  habit: initialHabit,
-  initialCompletedKeys,
+  habit,
+  completedKeys,
 }: HabitDetailScreenProps) {
   const { t, locale } = useI18n();
   const router = useRouter();
+  const { updateHabit } = useDashboardMutations();
   const [editOpen, setEditOpen] = useState(false);
   const [editFormResetKey, setEditFormResetKey] = useState(0);
   const [deleteOpen, setDeleteOpen] = useState(false);
 
-  // Seed from dashboard cache for instant render on navigation; SSR props remain authoritative
-  const cachedDashboard = useCachedDashboard();
-  const cachedCompletedKeys = cachedDashboard?.logKeysRecord[initialHabit.id] ?? initialCompletedKeys;
-
   const keysSig = useMemo(
-    () => sortedKeysSignature(cachedCompletedKeys),
-    [cachedCompletedKeys],
+    () => sortedKeysSignature(completedKeys),
+    [completedKeys],
   );
-
-  const heatmapDataForHook = useMemo(() => {
-    const keys = keysSig === "" ? [] : keysSig.split(",");
-    return buildHeatmapDataFromCompletedKeys(
-      new Set(keys),
-      initialHabit.schedule,
-      new Date(),
-      locale,
-    );
-  }, [keysSig, locale, initialHabit.schedule]);
-
-  const {
-    habit,
-    activitySelectedKey,
-    setActivitySelectedKey,
-    activityWindowDays,
-    completionOverrides,
-    removalOverrides,
-    stripCompletedKeys,
-    todayLabel,
-    todayStatusKind,
-    scheduleLabel,
-    editInitialHabit,
-    handleMarkPastDay,
-    handleRemovePastDay,
-    handleSaveEdit,
-    handleHeatmapDateSelect,
-    persistenceError,
-    logActionPending,
-  } = useHabitLogState(initialHabit, heatmapDataForHook, initialHabit.id);
 
   const heatmapData = useMemo(() => {
     const keys = keysSig === "" ? [] : keysSig.split(",");
@@ -102,6 +64,22 @@ export function HabitDetailScreen({
       locale,
     );
   }, [keysSig, locale, habit.schedule]);
+
+  const {
+    activitySelectedKey,
+    setActivitySelectedKey,
+    activityWindowDays,
+    stripCompletedKeys,
+    todayLabel,
+    todayStatusKind,
+    scheduleLabel,
+    editInitialHabit,
+    handleMarkPastDay,
+    handleRemovePastDay,
+    handleHeatmapDateSelect,
+    persistenceError,
+    logActionPending,
+  } = useHabitLogState(habit, heatmapData);
 
   /**
    * Always open detail at the top (including when opening from a deep-scrolled home list).
@@ -117,7 +95,7 @@ export function HabitDetailScreen({
 
   return (
     <>
-      <main className="mx-auto flex min-h-dvh max-w-3xl flex-col pr-[calc(1rem+env(safe-area-inset-right,0px))] pb-[calc(5rem+env(safe-area-inset-bottom,0px))] pl-[calc(1rem+env(safe-area-inset-left,0px))] md:pr-[calc(1.5rem+env(safe-area-inset-right,0px))] md:pl-[calc(1.5rem+env(safe-area-inset-left,0px))] lg:pr-[calc(2rem+env(safe-area-inset-right,0px))] lg:pl-[calc(2rem+env(safe-area-inset-left,0px))]">
+      <main className="mx-auto flex min-h-dvh max-w-3xl flex-col pr-[calc(1rem+env(safe-area-inset-right,0px))] pb-[calc(5rem+env(safe-area-inset-bottom,0px))] pl-[calc(1rem+env(safe-area-inset-left,0px))] md:pr-[calc(1.5rem+env(safe-area-inset-right,0px))] md:pl-[calc(1.5rem+env(safe-area-inset-left,0px))] tablet:pr-[calc(1.5rem+env(safe-area-inset-right,0px))] tablet:pl-[calc(1.5rem+env(safe-area-inset-left,0px))] lg:pr-[calc(2rem+env(safe-area-inset-right,0px))] lg:pl-[calc(2rem+env(safe-area-inset-left,0px))]">
         <HabitDetailHeader
           habitName={habit.name}
           onEdit={() => {
@@ -142,15 +120,13 @@ export function HabitDetailScreen({
             schedule={habit.schedule}
             colorVariant={habit.colorVariant}
             data={heatmapData}
-            completionOverrides={completionOverrides}
-            removalOverrides={removalOverrides}
             selectedDateKey={activitySelectedKey}
             onDateSelect={handleHeatmapDateSelect}
           />
 
           {persistenceError ? (
             <p
-              className="text-sm text-red-400/90"
+              className="text-sm text-destructive"
               role="alert"
               aria-live="polite"
             >
@@ -169,11 +145,11 @@ export function HabitDetailScreen({
             logActionPending={logActionPending}
           />
 
-          <div className="border-t border-white/10 pt-2">
+          <div className="border-t border-border pt-2">
             <Button
               type="button"
               variant="ghost"
-              className="min-h-11 w-full justify-center text-sm font-medium text-red-400/85 hover:bg-red-500/10 hover:text-red-300 sm:w-auto"
+              className="h-11 w-full justify-center rounded-full text-sm font-medium text-destructive hover:bg-destructive/10 hover:text-destructive sm:w-auto md:h-9"
               onClick={() => {
                 triggerInteractionFeedback({ haptic: false });
                 setDeleteOpen(true);
@@ -191,33 +167,7 @@ export function HabitDetailScreen({
         onOpenChange={setEditOpen}
         formResetKey={editFormResetKey}
         initialHabit={editInitialHabit}
-        onSave={async (payload) => {
-          // Optimistic: apply locally and to the dashboard cache first,
-          // roll back to the previous values if the server rejects.
-          const previous = {
-            name: habit.name,
-            colorVariant: habit.colorVariant,
-            schedule: habit.schedule,
-          };
-          patchDashboardHabit(habit.id, {
-            name: payload.name,
-            colorVariant: payload.colorVariant,
-            schedule: payload.schedule,
-          });
-          handleSaveEdit(payload);
-
-          const result = await updateHabitAction(habit.id, {
-            name: payload.name,
-            colorVariant: payload.colorVariant,
-            schedule: payload.schedule,
-          });
-          if (result.error) {
-            patchDashboardHabit(habit.id, previous);
-            handleSaveEdit(previous);
-            return result;
-          }
-          return { error: null };
-        }}
+        onSave={(payload) => updateHabit(habit.id, payload)}
       />
 
       <HabitDeleteConfirmDialog
@@ -225,10 +175,7 @@ export function HabitDetailScreen({
         onOpenChange={setDeleteOpen}
         habitId={habit.id}
         habitName={habit.name}
-        onDeleted={() => {
-          removeHabitFromDashboard(habit.id);
-          router.replace("/");
-        }}
+        onDeleted={() => router.replace("/")}
       />
     </>
   );

@@ -30,11 +30,11 @@ export function HabitDetailHeatmap({
   return (
     <section className="flex min-w-0 flex-col gap-3">
       <div className="flex flex-col gap-1">
-        <p className="text-sm font-medium text-white/50">
+        <p className="text-sm font-medium text-muted-foreground">
           {t("habitDetail.activity")}
         </p>
         {isWeeklyTargetSchedule(schedule) ? (
-          <p className="text-[10px] leading-snug text-white/30">
+          <p className="text-[10px] leading-snug text-muted-foreground/70">
             {t("habitDetail.flexibleScheduleGoal", {
               n: schedule.timesPerWeek,
             })}

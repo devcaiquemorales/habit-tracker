@@ -28,9 +28,9 @@ function getStatusColorClass(
     return STATUS_ACCENT_TEXT[colorVariant];
   }
   if (kind === "not_completed") {
-    return "text-white/70";
+    return "text-foreground/80";
   }
-  return "text-white/45";
+  return "text-muted-foreground";
 }
 
 export function HabitDetailInfo({
@@ -57,7 +57,7 @@ export function HabitDetailInfo({
       {streak > 0 && unit !== "none" ? (
         <p
           className={cn(
-            "inline-flex items-center gap-2 text-sm leading-snug font-medium text-white/60",
+            "inline-flex items-center gap-2 text-sm leading-snug font-medium text-muted-foreground",
           )}
         >
           <StreakBadge
@@ -71,12 +71,12 @@ export function HabitDetailInfo({
           />
         </p>
       ) : (
-        <p className="text-sm leading-snug font-medium text-white/45">
+        <p className="text-sm leading-snug font-medium text-muted-foreground">
           {t("detailInfo.noStreakYet")}
         </p>
       )}
 
-      <p className="text-xs leading-snug font-normal text-white/45">
+      <p className="text-xs leading-snug font-normal text-muted-foreground">
         {scheduleLabel}
       </p>
     </section>

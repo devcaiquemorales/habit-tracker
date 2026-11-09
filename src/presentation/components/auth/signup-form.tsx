@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { type FormEvent, useState } from "react";
 
-import { createBrowserSupabaseClient } from "@/infrastructure/supabase/client";
+import { authClient } from "@/infrastructure/auth/auth-client";
 import { AuthFormNotice } from "@/presentation/components/auth/auth-form-notice";
 import { Button } from "@/presentation/components/ui/button";
 import { Input } from "@/presentation/components/ui/input";
@@ -12,16 +12,15 @@ import { Label } from "@/presentation/components/ui/label";
 import { formatAuthErrorMessage } from "@/presentation/lib/auth-error-message";
 import { useI18n } from "@/presentation/lib/i18n/i18n-provider";
 import { triggerInteractionFeedback } from "@/presentation/lib/interaction-feedback";
-import { cn } from "@/presentation/lib/utils";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MOTIVATION_MAX = 120;
 
 export function SignupForm() {
   const { t } = useI18n();
-  const router = useRouter();
+  const invitedEmail = useSearchParams().get("email") ?? "";
   const [displayName, setDisplayName] = useState("");
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(invitedEmail);
   const [password, setPassword] = useState("");
   const [motivationPhrase, setMotivationPhrase] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -31,7 +30,7 @@ export function SignupForm() {
   const emailValid = EMAIL_RE.test(email.trim());
   const nameOk = displayName.trim().length >= 1;
   const motivationOk = motivationPhrase.trim().length >= 1;
-  const passwordOk = password.length >= 6;
+  const passwordOk = password.length >= 8;
   const canSubmit =
     nameOk && emailValid && passwordOk && motivationOk && !loading;
 
@@ -43,29 +42,19 @@ export function SignupForm() {
     setLoading(true);
     triggerInteractionFeedback({ haptic: false });
 
-    const supabase = createBrowserSupabaseClient();
-    const { data, error: signUpError } = await supabase.auth.signUp({
+    const { error: signUpError } = await authClient.signUp.email({
+      name: displayName.trim(),
       email: email.trim(),
       password,
-      options: {
-        emailRedirectTo: `${window.location.origin}/login`,
-        data: {
-          display_name: displayName.trim(),
-          motivation_phrase: motivationPhrase.trim().slice(0, MOTIVATION_MAX),
-        },
-      },
-    });
+      callbackURL: "/login?verified=1",
+      // Read by the sign-up hook in convex/auth.ts to seed the profile.
+      motivationPhrase: motivationPhrase.trim().slice(0, MOTIVATION_MAX),
+    } as Parameters<typeof authClient.signUp.email>[0]);
 
     setLoading(false);
 
     if (signUpError) {
-      setError(formatAuthErrorMessage(signUpError.message, t));
-      return;
-    }
-
-    if (data.session) {
-      router.push("/");
-      router.refresh();
+      setError(formatAuthErrorMessage(signUpError, t));
       return;
     }
 
@@ -86,7 +75,6 @@ export function SignupForm() {
           value={displayName}
           onChange={(ev) => setDisplayName(ev.target.value)}
           disabled={loading}
-          className="min-h-11 text-base sm:min-h-10 sm:text-sm"
           placeholder={t("auth.displayNamePlaceholder")}
           aria-invalid={displayName.length > 0 && !nameOk}
         />
@@ -103,7 +91,6 @@ export function SignupForm() {
           value={email}
           onChange={(ev) => setEmail(ev.target.value)}
           disabled={loading}
-          className="min-h-11 text-base sm:min-h-10 sm:text-sm"
           placeholder={t("auth.emailPlaceholder")}
           aria-invalid={email.length > 0 && !emailValid}
         />
@@ -122,17 +109,12 @@ export function SignupForm() {
           value={password}
           onChange={(ev) => setPassword(ev.target.value)}
           disabled={loading}
-          className="min-h-11 text-base sm:min-h-10 sm:text-sm"
           placeholder={t("auth.passwordMinPlaceholder")}
           aria-invalid={password.length > 0 && !passwordOk}
         />
       </div>
 
-      <div
-        className={cn(
-          "space-y-2 rounded-r-lg border-l-2 border-primary/35 pl-3.5",
-        )}
-      >
+      <div className="space-y-2">
         <Label htmlFor="signup-reason">{t("auth.yourReason")}</Label>
         <p className="text-xs leading-relaxed text-muted-foreground">
           {t("auth.reasonFieldHint")}
@@ -146,7 +128,6 @@ export function SignupForm() {
             setMotivationPhrase(ev.target.value.slice(0, MOTIVATION_MAX))
           }
           disabled={loading}
-          className="min-h-11 text-base sm:min-h-10 sm:text-sm"
           placeholder={t("auth.motivationPlaceholder")}
           aria-invalid={motivationPhrase.length > 0 && !motivationOk}
         />
@@ -158,7 +139,7 @@ export function SignupForm() {
       <Button
         type="submit"
         size="lg"
-        className="min-h-11 w-full min-w-0"
+        className="h-11 w-full rounded-full"
         loading={loading}
         loadingText={t("auth.creatingAccount")}
         disabled={!canSubmit}
@@ -166,7 +147,7 @@ export function SignupForm() {
         {t("auth.createAccount")}
       </Button>
 
-      <p className="border-t border-white/5 pt-5 text-center text-sm text-muted-foreground">
+      <p className="text-center text-sm text-muted-foreground">
         {t("auth.alreadyHaveAccount")}{" "}
         <Link
           href="/login"

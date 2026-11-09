@@ -11,8 +11,6 @@ export default async function ForgotPasswordPage() {
 
   return (
     <AuthShell
-      brandLabel={t("auth.brandName")}
-      brandTagline={t("auth.brandTagline")}
       title={t("auth.forgotPasswordTitle")}
       subtitle={t("auth.forgotPasswordSubtitle")}
     >

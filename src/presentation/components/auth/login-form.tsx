@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { type FormEvent, useState } from "react";
 
-import { createBrowserSupabaseClient } from "@/infrastructure/supabase/client";
+import { authClient } from "@/infrastructure/auth/auth-client";
 import { AuthFormNotice } from "@/presentation/components/auth/auth-form-notice";
 import { Button } from "@/presentation/components/ui/button";
 import { Input } from "@/presentation/components/ui/input";
@@ -29,20 +29,24 @@ export function LoginForm() {
   const resetHint =
     searchParams.get("reset") === "success"
       ? t("auth.resetCompleteSignIn")
-      : null;
+      : searchParams.get("verified") === "1"
+        ? t("auth.emailVerifiedSignIn")
+        : null;
 
   const emailValid = EMAIL_RE.test(email.trim());
-  const canSubmit = emailValid && password.length >= 6 && !loading;
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (!canSubmit) return;
+    if (loading) return;
+    if (!emailValid || password.length === 0) {
+      setError(t("authErrors.invalidCredentials"));
+      return;
+    }
     setError(null);
     setLoading(true);
     triggerInteractionFeedback({ haptic: false });
 
-    const supabase = createBrowserSupabaseClient();
-    const { error: authError } = await supabase.auth.signInWithPassword({
+    const { error: authError } = await authClient.signIn.email({
       email: email.trim(),
       password,
     });
@@ -50,7 +54,7 @@ export function LoginForm() {
     setLoading(false);
 
     if (authError) {
-      setError(formatAuthErrorMessage(authError.message, t));
+      setError(formatAuthErrorMessage(authError, t));
       return;
     }
 
@@ -76,8 +80,6 @@ export function LoginForm() {
           value={email}
           onChange={(ev) => setEmail(ev.target.value)}
           disabled={loading}
-          className="min-h-11 text-base sm:min-h-10 sm:text-sm"
-          placeholder={t("auth.emailPlaceholder")}
           aria-invalid={email.length > 0 && !emailValid}
         />
         {email.length > 0 && !emailValid ? (
@@ -86,15 +88,7 @@ export function LoginForm() {
       </div>
 
       <div className="space-y-2">
-        <div className="flex items-end justify-between gap-3">
-          <Label htmlFor="login-password">{t("auth.password")}</Label>
-          <Link
-            href="/forgot-password"
-            className="shrink-0 text-xs font-medium text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
-          >
-            {t("auth.forgotPasswordLink")}
-          </Link>
-        </div>
+        <Label htmlFor="login-password">{t("auth.password")}</Label>
         <Input
           id="login-password"
           name="password"
@@ -103,33 +97,29 @@ export function LoginForm() {
           value={password}
           onChange={(ev) => setPassword(ev.target.value)}
           disabled={loading}
-          className="min-h-11 text-base sm:min-h-10 sm:text-sm"
-          placeholder={t("auth.passwordPlaceholder")}
-          aria-invalid={password.length > 0 && password.length < 6}
         />
-        {password.length > 0 && password.length < 6 ? (
-          <p className="text-xs text-muted-foreground">{t("auth.passwordMin")}</p>
-        ) : null}
       </div>
 
       <Button
         type="submit"
         size="lg"
-        className="min-h-11 w-full min-w-0"
+        className="h-11 w-full rounded-full"
         loading={loading}
         loadingText={t("common.signingIn")}
-        disabled={!canSubmit}
       >
         {t("auth.signIn")}
       </Button>
 
-      <p className="border-t border-white/5 pt-5 text-center text-sm text-muted-foreground">
-        {t("auth.noAccount")}{" "}
+      <p className="text-center text-sm text-muted-foreground">
+        {t("auth.inviteOnlyNote")}
+      </p>
+
+      <p className="text-center">
         <Link
-          href="/signup"
-          className="font-semibold text-primary/95 underline-offset-4 transition-colors hover:text-primary hover:underline"
+          href="/forgot-password"
+          className="text-[15px] text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
         >
-          {t("auth.createOne")}
+          {t("auth.forgotPasswordLink")}
         </Link>
       </p>
     </form>

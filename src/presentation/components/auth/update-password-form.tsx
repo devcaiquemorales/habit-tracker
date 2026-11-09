@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { type FormEvent, useEffect, useState } from "react";
+import { type FormEvent, useState, useSyncExternalStore } from "react";
 
-import { createBrowserSupabaseClient } from "@/infrastructure/supabase/client";
+import { authClient } from "@/infrastructure/auth/auth-client";
 import { AuthFormNotice } from "@/presentation/components/auth/auth-form-notice";
 import { Button } from "@/presentation/components/ui/button";
 import { Input } from "@/presentation/components/ui/input";
@@ -13,28 +13,31 @@ import { formatAuthErrorMessage } from "@/presentation/lib/auth-error-message";
 import { useI18n } from "@/presentation/lib/i18n/i18n-provider";
 import { triggerInteractionFeedback } from "@/presentation/lib/interaction-feedback";
 
+const subscribeNoop = () => () => {};
+
+function readResetToken(): string | null {
+  return new URLSearchParams(window.location.hash.replace(/^#/, "")).get("token");
+}
+
 export function UpdatePasswordForm() {
   const { t } = useI18n();
   const router = useRouter();
-  const [sessionReady, setSessionReady] = useState(false);
-  const [hasRecoverySession, setHasRecoverySession] = useState(false);
+  // Undefined until hydrated: the token lives in the fragment, which only the browser sees.
+  const token = useSyncExternalStore(
+    subscribeNoop,
+    readResetToken,
+    () => undefined,
+  );
+  const sessionReady = token !== undefined;
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    const supabase = createBrowserSupabaseClient();
-    void supabase.auth.getSession().then(({ data }) => {
-      setHasRecoverySession(!!data.session);
-      setSessionReady(true);
-    });
-  }, []);
-
-  const passwordOk = password.length >= 6;
+  const passwordOk = password.length >= 8;
   const match = password === confirm && confirm.length > 0;
   const canSubmit =
-    sessionReady && hasRecoverySession && passwordOk && match && !loading;
+    sessionReady && token && passwordOk && match && !loading;
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -43,18 +46,21 @@ export function UpdatePasswordForm() {
     setLoading(true);
     triggerInteractionFeedback({ haptic: false });
 
-    const supabase = createBrowserSupabaseClient();
-    const { error: updateError } = await supabase.auth.updateUser({
-      password,
+    const { error: updateError } = await authClient.resetPassword({
+      newPassword: password,
+      token: token as string,
     });
 
     if (updateError) {
       setLoading(false);
-      setError(formatAuthErrorMessage(updateError.message, t));
+      if (updateError.code === "INVALID_TOKEN") {
+        router.replace("/auth/recovery-expired");
+        return;
+      }
+      setError(formatAuthErrorMessage(updateError, t));
       return;
     }
 
-    await supabase.auth.signOut();
     setLoading(false);
     router.push("/login?reset=success");
     router.refresh();
@@ -72,16 +78,16 @@ export function UpdatePasswordForm() {
     );
   }
 
-  if (!hasRecoverySession) {
+  if (!token) {
     return (
       <div className="flex flex-col gap-5">
         <AuthFormNotice variant="info">
           {t("auth.recoveryLinkInvalid")}
         </AuthFormNotice>
-        <Button asChild size="lg" className="min-h-11 w-full">
+        <Button asChild size="lg" className="h-11 w-full rounded-full">
           <Link href="/forgot-password">{t("auth.requestNewResetLink")}</Link>
         </Button>
-        <Button asChild variant="outline" size="lg" className="min-h-11 w-full">
+        <Button asChild variant="outline" size="lg" className="h-11 w-full rounded-full">
           <Link href="/login">{t("auth.backToSignIn")}</Link>
         </Button>
       </div>
@@ -102,7 +108,6 @@ export function UpdatePasswordForm() {
           value={password}
           onChange={(ev) => setPassword(ev.target.value)}
           disabled={loading}
-          className="min-h-11 text-base sm:min-h-10 sm:text-sm"
           placeholder={t("auth.passwordMinPlaceholder")}
           aria-invalid={password.length > 0 && !passwordOk}
         />
@@ -121,7 +126,6 @@ export function UpdatePasswordForm() {
           value={confirm}
           onChange={(ev) => setConfirm(ev.target.value)}
           disabled={loading}
-          className="min-h-11 text-base sm:min-h-10 sm:text-sm"
           placeholder={t("auth.passwordPlaceholder")}
           aria-invalid={confirm.length > 0 && !match}
         />
@@ -133,7 +137,7 @@ export function UpdatePasswordForm() {
       <Button
         type="submit"
         size="lg"
-        className="min-h-11 w-full min-w-0"
+        className="h-11 w-full rounded-full"
         loading={loading}
         loadingText={t("auth.updatingPassword")}
         disabled={!canSubmit}

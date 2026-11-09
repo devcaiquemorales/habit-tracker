@@ -8,8 +8,6 @@ export default async function UpdatePasswordPage() {
 
   return (
     <AuthShell
-      brandLabel={t("auth.brandName")}
-      brandTagline={t("auth.brandTagline")}
       title={t("auth.updatePasswordTitle")}
       subtitle={t("auth.updatePasswordSubtitle")}
     >

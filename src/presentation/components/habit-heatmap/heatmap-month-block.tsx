@@ -46,7 +46,7 @@ export function HeatmapMonthBlock({
   return (
     <div className="flex shrink-0 flex-col gap-2">
       <div className="flex min-h-4 min-w-0 items-end justify-start">
-        <span className="text-[10px] leading-none font-semibold tracking-wide text-white/55">
+        <span className="text-[10px] leading-none font-semibold tracking-wide text-muted-foreground">
           {month.label}
         </span>
       </div>

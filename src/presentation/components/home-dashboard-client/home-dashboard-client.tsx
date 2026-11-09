@@ -23,22 +23,15 @@ import {
 } from "framer-motion";
 import { Check, GripVertical } from "lucide-react";
 import { useEffect, useState } from "react";
-import useSWR, { mutate } from "swr";
 
+import { BrandMark } from "@/presentation/components/brand";
 import { CreateHabitDialog } from "@/presentation/components/create-habit-dialog";
 import { HomeHeader } from "@/presentation/components/home-header";
 import { sharedVariants } from "@/presentation/components/motion";
 import { StreakMilestoneToast } from "@/presentation/components/streak-milestone-toast";
 import { useHabitOrder } from "@/presentation/hooks/use-habit-order";
 import { useStreakMomentumToast } from "@/presentation/hooks/use-streak-momentum-toast";
-import {
-  readDashboardCache,
-  writeDashboardCache,
-} from "@/presentation/lib/dashboard-cache";
-import {
-  DASHBOARD_SWR_KEY,
-  fetchDashboardJson,
-} from "@/presentation/lib/dashboard-swr";
+import { useDashboard } from "@/presentation/lib/dashboard-context";
 import { useI18n } from "@/presentation/lib/i18n/i18n-provider";
 import { triggerInteractionFeedback } from "@/presentation/lib/interaction-feedback";
 import { cn } from "@/presentation/lib/utils";
@@ -58,39 +51,14 @@ export function HomeDashboardClient() {
   const prefersReducedMotion = useReducedMotion();
   const [staggerOnMount] = useState(() => !hasStaggeredThisSession);
 
-  /**
-   * Do not read localStorage during the first render: SSR and the client must
-   * agree on markup. After hydration, seed SWR from cache for instant data.
-   */
-  useEffect(() => {
-    const cached = readDashboardCache();
-    if (cached) {
-      void mutate(DASHBOARD_SWR_KEY, cached, { revalidate: true });
-    }
-  }, []);
-
-  const { data, error, isLoading } = useSWR(
-    DASHBOARD_SWR_KEY,
-    fetchDashboardJson,
-    {
-      // Let SWR decide when to revalidate on mount; dedupingInterval (60 s)
-      // prevents a redundant fetch when navigating back quickly from a detail page.
-      revalidateOnMount: true,
-      revalidateOnFocus: true,
-      focusThrottleInterval: 30_000,
-      keepPreviousData: true,
-      dedupingInterval: 60_000,
-      // Persist every fresh response so the next cold start is also instant.
-      onSuccess: writeDashboardCache,
-    },
-  );
+  const { data, isLive, error } = useDashboard();
 
   const profile = data?.profile;
   const habits = data?.habits ?? [];
   const logKeysRecord = data?.logKeysRecord ?? {};
 
-  const showEmptyState = !isLoading && habits.length === 0 && !error;
-  const showSkeleton = isLoading && !data;
+  const showEmptyState = isLive && habits.length === 0;
+  const showSkeleton = !data && !error;
 
   // Once real data has rendered, later dashboard mounts skip the entrance.
   useEffect(() => {
@@ -134,7 +102,7 @@ export function HomeDashboardClient() {
   return (
     <>
       <main className="flex flex-col pb-[calc(6rem+env(safe-area-inset-bottom,0px))]">
-        <div className="mx-auto flex w-full flex-col gap-6 pt-[calc(1.5rem+env(safe-area-inset-top,0px))] pr-[calc(1rem+env(safe-area-inset-right,0px))] pb-6 pl-[calc(1rem+env(safe-area-inset-left,0px))] md:pr-[calc(1.5rem+env(safe-area-inset-right,0px))] md:pl-[calc(1.5rem+env(safe-area-inset-left,0px))] lg:max-w-4xl lg:pr-[calc(2rem+env(safe-area-inset-right,0px))] lg:pl-[calc(2rem+env(safe-area-inset-left,0px))] xl:pr-[calc(2.5rem+env(safe-area-inset-right,0px))] xl:pl-[calc(2.5rem+env(safe-area-inset-left,0px))]">
+        <div className="mx-auto flex w-full flex-col gap-6 pt-[calc(1.5rem+env(safe-area-inset-top,0px))] pr-[calc(1rem+env(safe-area-inset-right,0px))] pb-6 pl-[calc(1rem+env(safe-area-inset-left,0px))] md:pr-[calc(1.5rem+env(safe-area-inset-right,0px))] md:pl-[calc(1.5rem+env(safe-area-inset-left,0px))] tablet:pr-[calc(1.5rem+env(safe-area-inset-right,0px))] tablet:pl-[calc(1.5rem+env(safe-area-inset-left,0px))] lg:max-w-4xl tablet:max-w-4xl lg:pr-[calc(2rem+env(safe-area-inset-right,0px))] lg:pl-[calc(2rem+env(safe-area-inset-left,0px))] xl:pr-[calc(2.5rem+env(safe-area-inset-right,0px))] xl:pl-[calc(2.5rem+env(safe-area-inset-left,0px))]">
           {/* Header dims in reorder mode to pull visual focus onto the cards */}
           <div
             className={cn(
@@ -149,8 +117,8 @@ export function HomeDashboardClient() {
               />
             ) : showSkeleton ? (
               <div className="flex flex-col gap-2" aria-hidden>
-                <div className="h-8 w-48 max-w-full rounded-md bg-white/10 skeleton-shimmer" />
-                <div className="h-4 w-full max-w-md rounded-md bg-white/5 skeleton-shimmer" />
+                <div className="h-8 w-48 max-w-full animate-pulse rounded-md bg-muted" />
+                <div className="h-4 w-full max-w-md animate-pulse rounded-md bg-muted" />
               </div>
             ) : (
               <HomeHeader />
@@ -159,20 +127,21 @@ export function HomeDashboardClient() {
 
           <div className="flex flex-col gap-4">
             {error ? (
-              <p className="text-base leading-relaxed text-red-400/90">
+              <p className="text-base leading-relaxed text-destructive">
                 {t("home.loadError")}
               </p>
             ) : showSkeleton ? (
               <div className="flex flex-col gap-4" aria-hidden>
-                <div className="h-40 w-full rounded-xl bg-white/5 skeleton-shimmer" />
-                <div className="h-40 w-full rounded-xl bg-white/5 skeleton-shimmer" />
+                <div className="h-40 w-full animate-pulse rounded-[1.25rem] bg-muted" />
+                <div className="h-40 w-full animate-pulse rounded-[1.25rem] bg-muted" />
               </div>
             ) : showEmptyState ? (
-              <div className="flex max-w-md flex-col gap-2 pt-1">
-                <h2 className="text-base font-semibold tracking-tight text-white/90">
+              <div className="mx-auto flex max-w-md flex-col items-center gap-2 pt-10 text-center">
+                <BrandMark className="mb-2 size-10 text-foreground" />
+                <h2 className="text-2xl font-semibold tracking-tight text-balance text-foreground">
                   {t("home.emptyTitle")}
                 </h2>
-                <p className="text-sm leading-relaxed text-white/45">
+                <p className="text-sm leading-relaxed text-pretty text-muted-foreground">
                   {t("home.emptyBody")}
                 </p>
               </div>
@@ -184,20 +153,20 @@ export function HomeDashboardClient() {
                       <button
                         onClick={() => setIsReordering((v) => !v)}
                         className={cn(
-                          "flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all duration-200",
+                          "flex h-11 items-center gap-1.5 rounded-full px-3.5 text-sm font-medium transition-colors active:translate-y-px md:h-8",
                           isReordering
-                            ? "bg-white/10 text-white/90 ring-1 ring-white/10"
-                            : "text-white/35 hover:text-white/60",
+                            ? "bg-foreground/8 text-foreground"
+                            : "text-muted-foreground hover:text-foreground",
                         )}
                       >
                         {isReordering ? (
                           <>
-                            <Check size={12} />
+                            <Check className="size-4" aria-hidden />
                             {t("home.reorderDone")}
                           </>
                         ) : (
                           <>
-                            <GripVertical size={12} />
+                            <GripVertical className="size-4" aria-hidden />
                             {t("home.reorder")}
                           </>
                         )}
@@ -208,7 +177,7 @@ export function HomeDashboardClient() {
                     <p
                       className={cn(
                         "text-right text-[11px] leading-none transition-[opacity] duration-300",
-                        isReordering ? "text-white/30 opacity-100" : "opacity-0",
+                        isReordering ? "text-muted-foreground/70 opacity-100" : "opacity-0",
                       )}
                       aria-hidden={!isReordering}
                     >
@@ -265,7 +234,7 @@ export function HomeDashboardClient() {
 
                     <DragOverlay dropAnimation={null}>
                       {activeHabit ? (
-                        <div className="rotate-[0.8deg] scale-[1.02] cursor-grabbing shadow-2xl shadow-black/50 ring-1 ring-white/10 rounded-xl">
+                        <div className="rotate-[0.8deg] scale-[1.02] cursor-grabbing rounded-[1.25rem] shadow-lg ring-1 ring-foreground/10">
                           <HabitCardWithHeatmap
                             habit={activeHabit}
                             completedKeys={logKeysRecord[activeHabit.id] ?? []}

@@ -1,5 +1,5 @@
 /**
- * Profile fields intended to align with a future Supabase `user_profiles` (or similar) row.
+ * Profile fields the user can customize.
  */
 export interface UserProfile {
   displayName: string;

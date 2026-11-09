@@ -18,25 +18,25 @@ export function HabitDetailHeader({
 }: HabitDetailHeaderProps) {
   const { t } = useI18n();
   return (
-    <header className="sticky top-0 z-20 -mx-4 bg-background/85 pt-[calc(0.75rem+env(safe-area-inset-top,0px))] pb-3 pr-[calc(1rem+env(safe-area-inset-right,0px))] pl-[calc(1rem+env(safe-area-inset-left,0px))] backdrop-blur-md supports-backdrop-filter:bg-background/70 md:-mx-6 md:pr-[calc(1.5rem+env(safe-area-inset-right,0px))] md:pl-[calc(1.5rem+env(safe-area-inset-left,0px))] lg:-mx-8 lg:pr-[calc(2rem+env(safe-area-inset-right,0px))] lg:pl-[calc(2rem+env(safe-area-inset-left,0px))]">
+    <header className="sticky top-0 z-20 -mx-4 bg-background/85 pt-[calc(0.75rem+env(safe-area-inset-top,0px))] pb-3 pr-[calc(1rem+env(safe-area-inset-right,0px))] pl-[calc(1rem+env(safe-area-inset-left,0px))] backdrop-blur-md supports-backdrop-filter:bg-background/70 md:-mx-6 tablet:-mx-6 md:pr-[calc(1.5rem+env(safe-area-inset-right,0px))] md:pl-[calc(1.5rem+env(safe-area-inset-left,0px))] tablet:pr-[calc(1.5rem+env(safe-area-inset-right,0px))] tablet:pl-[calc(1.5rem+env(safe-area-inset-left,0px))] lg:-mx-8 lg:pr-[calc(2rem+env(safe-area-inset-right,0px))] lg:pl-[calc(2rem+env(safe-area-inset-left,0px))]">
       <div className="mx-auto grid max-w-3xl grid-cols-[2.75rem_minmax(0,1fr)_2.75rem] items-center gap-2">
         <Link
           href="/"
           scroll={false}
           onClick={() => triggerInteractionFeedback()}
-          className="flex min-h-11 min-w-11 items-center justify-center rounded-lg text-white/75 transition-[transform,colors] duration-150 ease-out hover:text-white focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none active:scale-[0.96]"
+          className="flex size-11 shrink-0 items-center justify-center rounded-full text-foreground/80 transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none active:translate-y-px md:size-8"
           aria-label={t("habitDetail.backAria")}
         >
           <ArrowLeft className="h-5 w-5" aria-hidden />
         </Link>
-        <h1 className="min-w-0 truncate text-center text-lg leading-snug font-semibold tracking-tight text-white">
+        <h1 className="min-w-0 truncate text-center text-lg leading-snug font-semibold tracking-tight text-foreground">
           {habitName}
         </h1>
         <Button
           type="button"
           variant="ghost"
           size="icon"
-          className="min-h-11 min-w-11 shrink-0 text-white/75 transition-transform duration-150 ease-out hover:bg-white/10 hover:text-white active:scale-[0.96]"
+          className="size-11 shrink-0 rounded-full text-foreground/80 md:size-8"
           aria-label={t("habitDetail.editHabitAria")}
           onClick={() => {
             triggerInteractionFeedback({ haptic: false });

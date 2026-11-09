@@ -68,8 +68,8 @@ function EditMotivationDialogFields({
 
   return (
     <>
-      <DialogHeader className="space-y-1 border-b border-border/40 px-5 py-4 sm:px-6">
-        <DialogTitle className="text-lg font-semibold tracking-tight">
+      <DialogHeader className="border-b border-border px-5 py-4 pr-14 sm:px-6 sm:pr-16">
+        <DialogTitle>
           {t("editMotivation.title")}
         </DialogTitle>
         <DialogDescription className="text-sm text-muted-foreground">
@@ -80,7 +80,7 @@ function EditMotivationDialogFields({
       <div className="space-y-2 px-5 py-4 sm:px-6">
         {remoteError ? (
           <p
-            className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+            className="rounded-xl bg-destructive/10 px-3 py-2 text-sm text-destructive"
             role="alert"
           >
             {remoteError}
@@ -99,7 +99,6 @@ function EditMotivationDialogFields({
           placeholder={t("editMotivation.placeholder")}
           maxLength={PROFILE_MOTIVATION_PHRASE_MAX}
           autoComplete="off"
-          className="min-h-11 text-base sm:min-h-10 sm:text-sm"
           onKeyDown={(e) => {
             if (e.key === "Enter") {
               e.preventDefault();
@@ -112,13 +111,13 @@ function EditMotivationDialogFields({
         </p>
       </div>
 
-      <div className="flex shrink-0 flex-col-reverse gap-2 border-t border-border/40 px-5 py-4 sm:flex-row sm:justify-end sm:px-6">
+      <div className="grid shrink-0 grid-cols-2 gap-2 border-t border-border px-5 py-4 sm:px-6">
         <DialogClose asChild>
           <Button
             type="button"
-            variant="outline"
+            variant="secondary"
             disabled={saving}
-            className="min-h-11 w-full sm:min-h-9 sm:w-auto"
+            className="h-11 rounded-full"
             onClick={() => triggerInteractionFeedback({ haptic: false })}
           >
             {t("common.cancel")}
@@ -129,7 +128,7 @@ function EditMotivationDialogFields({
           loading={saving}
           loadingText={t("common.saving")}
           disabled={!canSave}
-          className="min-h-11 w-full min-w-30 sm:min-h-9 sm:w-auto"
+          className="h-11 rounded-full"
           onClick={() => void handleSave()}
         >
           {t("editMotivation.save")}
@@ -156,7 +155,7 @@ export function EditMotivationDialog({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent
         showCloseButton
-        className="max-h-dvh max-w-[calc(100%-2rem)] gap-0 overflow-hidden rounded-xl border border-border/40 p-0 shadow-xl sm:max-w-md"
+        className="max-h-dvh gap-0 overflow-hidden p-0 sm:max-w-md"
       >
         <EditMotivationDialogFields
           key={fieldsKey}
