@@ -34,7 +34,7 @@ export function AuthShell({
             aria-label="Habit Tracker"
             className="inline-flex rounded-xl outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
           >
-            <BrandMark className="size-9 text-foreground" />
+            <BrandMark className="size-9" />
           </Link>
           <h1 className="mt-4 text-xl font-semibold tracking-tight text-balance text-foreground">
             {title}

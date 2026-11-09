@@ -158,7 +158,7 @@ export function HomeDashboardClient() {
               </div>
             ) : showEmptyState ? (
               <div className="mx-auto flex min-h-[calc(100dvh-19rem)] max-w-md flex-col items-center justify-center gap-2 text-center">
-                <BrandMark className="mb-2 size-10 text-foreground" />
+                <BrandMark className="mb-2 size-10" />
                 <h2 className="text-2xl font-semibold tracking-tight text-balance text-foreground">
                   {t("home.emptyTitle")}
                 </h2>
