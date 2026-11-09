@@ -2,7 +2,7 @@
 
 import { Settings } from "lucide-react";
 import Link from "next/link";
-import { useMemo } from "react";
+import { type ReactNode, useMemo } from "react";
 
 import { formatHomeHeaderDate } from "@/presentation/lib/i18n/format";
 import { useI18n } from "@/presentation/lib/i18n/i18n-provider";
@@ -14,11 +14,14 @@ interface HomeHeaderProps {
   userName?: string;
   /** Maps to profile `motivation_phrase`. */
   initialMotivationPhrase?: string;
+  /** Extra controls shown before the settings button. */
+  actions?: ReactNode;
 }
 
 export function HomeHeader({
   userName = "there",
   initialMotivationPhrase = "",
+  actions,
 }: HomeHeaderProps) {
   const { t, locale } = useI18n();
 
@@ -51,15 +54,18 @@ export function HomeHeader({
             {dateStr}
           </p>
         </div>
-        <Link
+        <div className="-mr-2 flex shrink-0 items-center">
+          {actions}
+          <Link
           href="/settings"
           prefetch
           onClick={() => triggerInteractionFeedback({ haptic: false })}
-          className="mt-0.5 flex size-11 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none active:translate-y-px md:size-8"
+          className="flex size-11 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none active:translate-y-px md:size-8"
           aria-label={t("home.settingsAria")}
         >
           <Settings className="size-5 md:size-4" aria-hidden />
-        </Link>
+          </Link>
+        </div>
       </div>
 
       {phrase ? (
@@ -67,7 +73,9 @@ export function HomeHeader({
           <span className="text-xs font-medium text-muted-foreground">
             {t("home.motivationPrefix")}{" "}
           </span>
-          <span className="text-sm font-medium text-foreground/80">{phrase}</span>
+          <span className="text-sm font-medium text-foreground/80">
+            {phrase}
+          </span>
         </p>
       ) : null}
     </div>

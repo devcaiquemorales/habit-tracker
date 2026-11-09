@@ -107,6 +107,7 @@ export function HabitDetailScreen({
             colorVariant={habit.colorVariant}
             streak={habit.streak}
             schedule={habit.schedule}
+            completedKeys={stripCompletedKeys}
             scheduleLabel={scheduleLabel}
             todayStatusLabel={todayLabel}
             todayStatusKind={todayStatusKind}
@@ -131,6 +132,7 @@ export function HabitDetailScreen({
           ) : null}
 
           <HabitUpdateActivity
+            colorVariant={habit.colorVariant}
             schedule={habit.schedule}
             completedKeys={stripCompletedKeys}
             days={activityWindowDays}
@@ -141,7 +143,7 @@ export function HabitDetailScreen({
             logActionPending={logActionPending}
           />
 
-          <div className="border-t border-border pt-2">
+          <div>
             <Button
               type="button"
               variant="ghost"

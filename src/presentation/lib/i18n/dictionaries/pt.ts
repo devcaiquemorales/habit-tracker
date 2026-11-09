@@ -17,9 +17,7 @@ export const ptMessages: EnMessages = {
     removeEntry: "Remover registro",
     deleteHabit: "Excluir hábito",
     signOut: "Sair",
-    schedulePrefix: "Rotina:",
     dash: "—",
-    tap: "Toque",
     done: "Feito",
     selectDay: "Selecionar dia",
     future: "Futuro",
@@ -204,8 +202,6 @@ export const ptMessages: EnMessages = {
   habitDetail: {
     backAria: "Voltar",
     editHabitAria: "Editar hábito",
-    activity: "Atividade",
-    flexibleScheduleGoal: "Rotina flexível · Meta: {n} vezes esta semana",
     deleteHabit: "Excluir hábito",
   },
   deleteHabit: {
@@ -216,8 +212,6 @@ export const ptMessages: EnMessages = {
     confirm: "Excluir hábito",
   },
   updateActivity: {
-    sectionTitle: "Atualizar atividade",
-    subtitle: "Registre um dia em que cumpriu mas esqueceu de marcar.",
     selectDay: "Selecione um dia",
     markCompleted: "Marcar como feito",
   },
@@ -242,8 +236,10 @@ export const ptMessages: EnMessages = {
     notCompletedToday: "Não concluído hoje",
   },
   detailInfo: {
-    daysStreak: "{n} dias",
-    weeksStreak: "sequência de {n} semanas",
+    daysOne: "1 dia seguido",
+    daysMany: "{n} dias seguidos",
+    weeksOne: "1 semana seguida",
+    weeksMany: "{n} semanas seguidas",
     noStreakYet: "Sem sequência ainda",
   },
   streak: {
@@ -286,11 +282,9 @@ export const ptMessages: EnMessages = {
   },
   notifications: {
     title: "Lembretes",
-    description: "Receba um lembrete nos horários que escolher com seu progresso do dia.",
     enableButton: "Ativar lembretes",
     disableButton: "Desativar lembretes",
-    permissionPrompt:
-      "Enviaremos um lembrete nos horários que você escolher para verificar seu progresso. Você pode gerenciar isso nas configurações do seu navegador.",
+    permissionPrompt: "Receba um lembrete nos horários que você escolher.",
     permissionDenied:
       "Notificações estão desativadas. Ative-as nas configurações do seu navegador para receber lembretes.",
     addReminder: "Adicionar horário de lembrete",
@@ -303,7 +297,7 @@ export const ptMessages: EnMessages = {
     unsupported:
       "Lembretes não são suportados neste dispositivo ou navegador.",
     swUnavailable:
-      "Notificações exigem o app instalado. Em desenvolvimento o service worker fica desativado — use o build de produção ou o PWA instalado.",
+      "Lembretes exigem o app instalado. Abra pela tela inicial e tente de novo.",
     enabled: "Ativado",
     disabled: "Desativado",
   },

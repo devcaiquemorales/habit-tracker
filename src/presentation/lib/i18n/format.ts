@@ -14,13 +14,14 @@ export function formatHomeHeaderDate(date: Date, locale: AppLocale): string {
 }
 
 /** Activity strip chips: short weekday + day number, UTC calendar. */
-export function formatActivityChipDate(date: Date, locale: AppLocale): string {
-  const tag = intlLocaleForAppLocale(locale);
-  return new Intl.DateTimeFormat(tag, {
+export function formatActivityChipParts(
+  date: Date,
+  locale: AppLocale,
+): { weekday: string; day: string } {
+  const weekday = new Intl.DateTimeFormat(intlLocaleForAppLocale(locale), {
     weekday: "short",
-    day: "numeric",
-    timeZone: "UTC",
   }).format(date);
+  return { weekday: weekday.replace(/\.$/, ""), day: String(date.getDate()) };
 }
 
 /** Long calendar date in UTC for aria labels (heatmap day selection). */
@@ -50,9 +51,16 @@ export function formatHeatmapMonthLabel(
 ): string {
   const tag = intlLocaleForAppLocale(locale);
   const d = new Date(Date.UTC(year, monthIndex0, 1));
-  const monthPart = new Intl.DateTimeFormat(tag, { month: "short" }).format(d);
+  // `d` is UTC midnight, so west of UTC a local format would show the previous month.
+  const monthPart = new Intl.DateTimeFormat(tag, {
+    month: "short",
+    timeZone: "UTC",
+  }).format(d);
   if (!includeYear) return monthPart;
-  const y = new Intl.DateTimeFormat(tag, { year: "numeric" }).format(d);
+  const y = new Intl.DateTimeFormat(tag, {
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(d);
   return `${monthPart} ${y}`;
 }
 

@@ -69,7 +69,7 @@ export function HabitCard({
     <div
       {...panPointerProps}
       className={cn(
-        "flex w-full flex-col gap-3 rounded-[1.25rem] bg-sidebar p-4 pt-0 transition-colors hover:bg-sidebar-accent",
+        "flex w-full flex-col gap-4 rounded-[1.25rem] bg-sidebar p-4 transition-colors hover:bg-sidebar-accent",
       )}
     >
       <Link
@@ -84,7 +84,7 @@ export function HabitCard({
           beginRouteTransitionFeedback();
           triggerInteractionFeedback();
         }}
-        className="flex touch-manipulation flex-col gap-3 rounded-xl outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+        className="flex min-h-11 touch-manipulation flex-col justify-center gap-0.5 rounded-xl outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
       >
         <HabitCardHeader
           name={name}
@@ -93,8 +93,8 @@ export function HabitCard({
           schedule={schedule}
           completedKeys={completedKeys}
         />
-        <p className="text-xs text-muted-foreground/70">
-          {t("common.schedulePrefix")} {formatScheduleLabel(schedule, locale)}
+        <p className="pl-4 text-[13px] text-muted-foreground">
+          {formatScheduleLabel(schedule, locale)}
         </p>
       </Link>
       <div

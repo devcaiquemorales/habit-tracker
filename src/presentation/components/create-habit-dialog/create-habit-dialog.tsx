@@ -8,18 +8,22 @@ import { useDashboardMutations } from "@/presentation/hooks/use-dashboard-mutati
 import { cn } from "@/presentation/lib/utils";
 
 type CreateHabitDialogProps = {
-  /** When true, hides the FAB so the reorder UI has full focus. */
-  isReordering?: boolean;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  hideAddButton?: boolean;
 };
 
-export function CreateHabitDialog({ isReordering }: CreateHabitDialogProps) {
+export function CreateHabitDialog({
+  open,
+  onOpenChange,
+  hideAddButton,
+}: CreateHabitDialogProps) {
   const { createHabit } = useDashboardMutations();
-  const [open, setOpen] = useState(false);
   const [formResetKey, setFormResetKey] = useState(0);
 
   const handleOpenChange = (next: boolean) => {
     if (next) setFormResetKey((k) => k + 1);
-    setOpen(next);
+    onOpenChange(next);
   };
 
   return (
@@ -32,7 +36,7 @@ export function CreateHabitDialog({ isReordering }: CreateHabitDialogProps) {
         <AddHabitFAB
           className={cn(
             "transition-[transform,opacity] duration-200",
-            isReordering && "pointer-events-none scale-0 opacity-0",
+            hideAddButton && "pointer-events-none scale-0 opacity-0",
           )}
         />
       }

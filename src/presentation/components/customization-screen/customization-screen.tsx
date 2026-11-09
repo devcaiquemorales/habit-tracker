@@ -8,6 +8,7 @@ import {
   PROFILE_DISPLAY_NAME_MAX,
   PROFILE_MOTIVATION_PHRASE_MAX,
 } from "@/domain/constants/profile-limits";
+import { SettingsSection } from "@/presentation/components/customization-screen/settings-section";
 import { SignOutForm } from "@/presentation/components/sign-out-form";
 import { ThemeSelector } from "@/presentation/components/theme-selector";
 import { Button } from "@/presentation/components/ui/button";
@@ -18,6 +19,11 @@ import { formatActionError } from "@/presentation/lib/action-error";
 import { useI18n } from "@/presentation/lib/i18n/i18n-provider";
 import { triggerInteractionFeedback } from "@/presentation/lib/interaction-feedback";
 import { cn } from "@/presentation/lib/utils";
+
+/** Counters only earn their space once the limit is close. */
+function nearLimit(length: number, max: number): boolean {
+  return length >= max * 0.8;
+}
 
 type CustomizationScreenProps = {
   initialDisplayName: string;
@@ -60,6 +66,8 @@ export function CustomizationScreen({
     trimmedMotivation.length > 0 &&
     trimmedName.length <= PROFILE_DISPLAY_NAME_MAX &&
     motivationPhrase.length <= PROFILE_MOTIVATION_PHRASE_MAX &&
+    (trimmedName !== initialDisplayName.trim() ||
+      trimmedMotivation !== initialMotivationPhrase.trim()) &&
     !saving;
 
   const handleSubmit = async (e: FormEvent) => {
@@ -94,8 +102,8 @@ export function CustomizationScreen({
         "md:pr-[calc(1.5rem+env(safe-area-inset-right,0px))] tablet:pr-[calc(1.5rem+env(safe-area-inset-right,0px))]",
       )}
     >
-      <header className="sticky top-0 z-10 -mx-4 border-b border-border bg-background/90 pt-[calc(0.75rem+env(safe-area-inset-top,0px))] pb-3 backdrop-blur-md supports-backdrop-filter:bg-background/75 md:-mx-6 tablet:-mx-6">
-        <div className="mx-auto flex max-w-lg items-center gap-3 px-4 md:px-6 tablet:px-6">
+      <header className="sticky top-0 z-10 -mx-4 bg-background/90 pt-[calc(0.75rem+env(safe-area-inset-top,0px))] pb-3 backdrop-blur-md supports-backdrop-filter:bg-background/75 md:-mx-6 tablet:-mx-6">
+        <div className="mx-auto grid max-w-lg grid-cols-[2.75rem_minmax(0,1fr)_2.75rem] items-center gap-2 px-4 md:px-6 tablet:px-6">
           <Link
             href="/"
             prefetch
@@ -106,25 +114,18 @@ export function CustomizationScreen({
           >
             <ArrowLeft className="h-5 w-5" aria-hidden />
           </Link>
-          <h1 className="min-w-0 flex-1 text-lg font-semibold tracking-tight text-foreground">
+          <h1 className="min-w-0 truncate text-center text-lg font-semibold tracking-tight text-foreground">
             {t("settings.title")}
           </h1>
         </div>
       </header>
 
-      <div className="flex flex-1 flex-col gap-4 pt-6">
-        <form onSubmit={(e) => void handleSubmit(e)} className="flex flex-col gap-4">
-          <section className="rounded-[1.5rem] bg-sidebar p-5">
-            <div className="mb-4 flex items-center gap-2.5 border-b border-border pb-3">
-              <User className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
-              <p className="text-sm font-medium text-muted-foreground">
-                {t("settings.profileSection")}
-              </p>
-            </div>
-
+      <div className="flex flex-1 flex-col gap-6 pt-4">
+        <form onSubmit={(e) => void handleSubmit(e)}>
+          <SettingsSection title={t("settings.profileSection")} icon={User}>
             <div className="flex flex-col gap-4">
               <div className="space-y-2">
-                <Label htmlFor="settings-display-name" className="text-foreground/80">
+                <Label htmlFor="settings-display-name">
                   {t("settings.displayName")}
                 </Label>
                 <Input
@@ -141,13 +142,15 @@ export function CustomizationScreen({
                     trimmedName.length > PROFILE_DISPLAY_NAME_MAX || undefined
                   }
                 />
-                <p className="text-xs text-muted-foreground/70">
-                  {displayName.length}/{PROFILE_DISPLAY_NAME_MAX}
-                </p>
+                {nearLimit(displayName.length, PROFILE_DISPLAY_NAME_MAX) ? (
+                  <p className="text-xs text-muted-foreground tabular-nums">
+                    {displayName.length}/{PROFILE_DISPLAY_NAME_MAX}
+                  </p>
+                ) : null}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="settings-motivation" className="text-foreground/80">
+                <Label htmlFor="settings-motivation">
                   {t("settings.yourReason")}
                 </Label>
                 <Input
@@ -161,9 +164,14 @@ export function CustomizationScreen({
                   }
                   placeholder={t("settings.reasonPlaceholder")}
                 />
-                <p className="text-xs text-muted-foreground/70">
-                  {motivationPhrase.length}/{PROFILE_MOTIVATION_PHRASE_MAX}
-                </p>
+                {nearLimit(
+                  motivationPhrase.length,
+                  PROFILE_MOTIVATION_PHRASE_MAX,
+                ) ? (
+                  <p className="text-xs text-muted-foreground tabular-nums">
+                    {motivationPhrase.length}/{PROFILE_MOTIVATION_PHRASE_MAX}
+                  </p>
+                ) : null}
               </div>
 
               {saveError ? (
@@ -181,7 +189,7 @@ export function CustomizationScreen({
               >
                 {saved ? (
                   <>
-                    <Check className="h-4 w-4" aria-hidden />
+                    <Check aria-hidden />
                     {t("settings.saved")}
                   </>
                 ) : (
@@ -189,53 +197,34 @@ export function CustomizationScreen({
                 )}
               </Button>
             </div>
-          </section>
+          </SettingsSection>
         </form>
 
-        <section className="rounded-[1.5rem] bg-sidebar p-5">
-          <div className="mb-4 flex items-center gap-2.5 border-b border-border pb-3">
-            <SunMoon className="size-4 shrink-0 text-muted-foreground" aria-hidden />
-            <p className="text-sm font-medium text-muted-foreground">
-              {t("settings.appearanceSection")}
-            </p>
-          </div>
+        <SettingsSection title={t("settings.appearanceSection")} icon={SunMoon}>
           <ThemeSelector />
-        </section>
+        </SettingsSection>
 
-        {children && (
-          <section className="rounded-[1.5rem] bg-sidebar p-5">
-            <div className="mb-4 flex items-center gap-2.5 border-b border-border pb-3">
-              <Bell className="size-4 shrink-0 text-muted-foreground" aria-hidden />
-              <p className="text-sm font-medium text-muted-foreground">
-                {t("settings.remindersSection")}
-              </p>
-            </div>
-            <div className="[&>section]:!space-y-0 [&>section>div:first-child]:!mb-0 [&>section>div:first-child]:!border-b-0 [&>section>div:first-child]:!pb-0 [&>section>h2]:!hidden [&>section>p:first-of-type]:!hidden">
-              {children}
-            </div>
-          </section>
-        )}
+        {children ? (
+          <SettingsSection title={t("settings.remindersSection")} icon={Bell}>
+            {children}
+          </SettingsSection>
+        ) : null}
 
-        <section className="rounded-[1.5rem] bg-sidebar p-5">
-          <div className="mb-4 flex items-center gap-2.5 border-b border-border pb-3">
-            <Shield className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
-            <p className="text-sm font-medium text-muted-foreground">
-              {t("settings.accountSection")}
-            </p>
-          </div>
-
-          <div className="flex flex-col gap-3">
-            {userEmail && (
-              <div className="space-y-1">
-                <Label className="text-foreground/80">
+        <SettingsSection title={t("settings.accountSection")} icon={Shield}>
+          <div className="flex flex-col gap-4">
+            {userEmail ? (
+              <div className="flex items-baseline justify-between gap-4 text-sm">
+                <span className="shrink-0 text-muted-foreground">
                   {t("settings.email")}
-                </Label>
-                <p className="text-sm text-muted-foreground">{userEmail}</p>
+                </span>
+                <span className="min-w-0 truncate text-foreground">
+                  {userEmail}
+                </span>
               </div>
-            )}
+            ) : null}
             <SignOutForm />
           </div>
-        </section>
+        </SettingsSection>
       </div>
     </main>
   );

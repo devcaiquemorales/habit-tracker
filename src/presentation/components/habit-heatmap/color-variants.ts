@@ -35,9 +35,9 @@ export const STATUS_ACCENT_TEXT: Record<ColorVariant, string> = {
 export const COLOR_VARIANTS: Record<ColorVariant, VariantConfig> = {
   green: {
     doneClass: "bg-emerald-500",
-    missedClass: "bg-foreground/15",
+    missedClass: "bg-foreground/12",
     notExpectedClass: "bg-foreground/[0.02]",
-    emptyDayClass: "bg-foreground/[0.08]",
+    emptyDayClass: "bg-foreground/[0.07]",
     monthPaddingClass: "bg-foreground/[0.045]",
     indicatorClass: "bg-emerald-500",
     streakClasses: {
@@ -48,9 +48,9 @@ export const COLOR_VARIANTS: Record<ColorVariant, VariantConfig> = {
   },
   blue: {
     doneClass: "bg-blue-500",
-    missedClass: "bg-foreground/15",
+    missedClass: "bg-foreground/12",
     notExpectedClass: "bg-foreground/[0.02]",
-    emptyDayClass: "bg-foreground/[0.08]",
+    emptyDayClass: "bg-foreground/[0.07]",
     monthPaddingClass: "bg-foreground/[0.045]",
     indicatorClass: "bg-blue-500",
     streakClasses: {
@@ -61,9 +61,9 @@ export const COLOR_VARIANTS: Record<ColorVariant, VariantConfig> = {
   },
   amber: {
     doneClass: "bg-amber-500",
-    missedClass: "bg-foreground/15",
+    missedClass: "bg-foreground/12",
     notExpectedClass: "bg-foreground/[0.02]",
-    emptyDayClass: "bg-foreground/[0.08]",
+    emptyDayClass: "bg-foreground/[0.07]",
     monthPaddingClass: "bg-foreground/[0.045]",
     indicatorClass: "bg-amber-500",
     streakClasses: {
@@ -74,9 +74,9 @@ export const COLOR_VARIANTS: Record<ColorVariant, VariantConfig> = {
   },
   purple: {
     doneClass: "bg-purple-500",
-    missedClass: "bg-foreground/15",
+    missedClass: "bg-foreground/12",
     notExpectedClass: "bg-foreground/[0.02]",
-    emptyDayClass: "bg-foreground/[0.08]",
+    emptyDayClass: "bg-foreground/[0.07]",
     monthPaddingClass: "bg-foreground/[0.045]",
     indicatorClass: "bg-purple-500",
     streakClasses: {
@@ -87,9 +87,9 @@ export const COLOR_VARIANTS: Record<ColorVariant, VariantConfig> = {
   },
   red: {
     doneClass: "bg-[#D64B3B]",
-    missedClass: "bg-foreground/15",
+    missedClass: "bg-foreground/12",
     notExpectedClass: "bg-foreground/[0.02]",
-    emptyDayClass: "bg-foreground/[0.08]",
+    emptyDayClass: "bg-foreground/[0.07]",
     monthPaddingClass: "bg-foreground/[0.045]",
     indicatorClass: "bg-[#D64B3B]",
     streakClasses: {

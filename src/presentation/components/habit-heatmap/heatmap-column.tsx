@@ -8,8 +8,6 @@ import type { TranslateFn } from "@/presentation/lib/i18n/messages";
 
 import { HeatmapCell, type HeatmapCellSize } from "./heatmap-cell";
 
-const EMPTY_BOUNDARY_LABELS = new Map<string, string>();
-
 interface HeatmapColumnProps {
   week: HeatmapDayCell[];
   schedule: Schedule;
@@ -24,7 +22,6 @@ interface HeatmapColumnProps {
   /** Highlights the cell that matches the Update activity selection. */
   selectedDateKey?: string | null;
   /** Month start/end tiny labels keyed by local `YYYY-MM-DD` */
-  boundaryLabelByDateKey?: ReadonlyMap<string, string>;
   translate: TranslateFn;
   locale: AppLocale;
 }
@@ -58,7 +55,6 @@ export function HeatmapColumn({
   removalOverrides,
   onDateSelect,
   selectedDateKey,
-  boundaryLabelByDateKey = EMPTY_BOUNDARY_LABELS,
   translate,
   locale,
 }: HeatmapColumnProps) {
@@ -83,7 +79,6 @@ export function HeatmapColumn({
 
         const dateKey = toLocalDateKey(cell.date);
         const cellTimeMs = cell.date.getTime();
-        const monthBoundaryLabel = boundaryLabelByDateKey.get(dateKey);
 
         if (cellTimeMs > tt) {
           return (
@@ -94,7 +89,6 @@ export function HeatmapColumn({
               tooltip={translate("heatmap.future")}
               size={cellSize}
               isToday={false}
-              monthBoundaryLabel={monthBoundaryLabel}
             />
           );
         }
@@ -142,7 +136,6 @@ export function HeatmapColumn({
               isStripSelected={isStripSelected}
               onActivate={onActivate}
               selectDayLabel={selectDayLabel}
-              monthBoundaryLabel={monthBoundaryLabel}
             />
           );
         }
@@ -174,7 +167,6 @@ export function HeatmapColumn({
             isStripSelected={isStripSelected}
             onActivate={onActivate}
             selectDayLabel={selectDayLabel}
-            monthBoundaryLabel={monthBoundaryLabel}
           />
         );
       })}

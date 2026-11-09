@@ -14,9 +14,7 @@ export const enMessages = {
     removeEntry: "Remove entry",
     deleteHabit: "Delete habit",
     signOut: "Sign out",
-    schedulePrefix: "Schedule:",
     dash: "—",
-    tap: "Tap",
     done: "Done",
     selectDay: "Select day",
     future: "Future",
@@ -201,8 +199,6 @@ export const enMessages = {
   habitDetail: {
     backAria: "Back",
     editHabitAria: "Edit habit",
-    activity: "Activity",
-    flexibleScheduleGoal: "Flexible schedule · Goal: {n} times this week",
     deleteHabit: "Delete habit",
   },
   deleteHabit: {
@@ -213,8 +209,6 @@ export const enMessages = {
     confirm: "Delete habit",
   },
   updateActivity: {
-    sectionTitle: "Update activity",
-    subtitle: "Log a day you completed but forgot to record.",
     selectDay: "Select a day",
     markCompleted: "Mark as completed",
   },
@@ -239,8 +233,10 @@ export const enMessages = {
     notCompletedToday: "Not completed today",
   },
   detailInfo: {
-    daysStreak: "{n} days",
-    weeksStreak: "{n}-week streak",
+    daysOne: "1 day in a row",
+    daysMany: "{n} days in a row",
+    weeksOne: "1 week in a row",
+    weeksMany: "{n} weeks in a row",
     noStreakYet: "No streak yet",
   },
   streak: {
@@ -283,11 +279,9 @@ export const enMessages = {
   },
   notifications: {
     title: "Reminders",
-    description: "Get a reminder at times you choose with your daily progress.",
     enableButton: "Enable reminders",
     disableButton: "Disable reminders",
-    permissionPrompt:
-      "We'll send you a reminder at your chosen times to check your progress. You can manage this in your browser settings.",
+    permissionPrompt: "Get a reminder at the times you choose.",
     permissionDenied:
       "Notifications are disabled. Enable them in your browser settings to receive reminders.",
     addReminder: "Add reminder time",
@@ -300,7 +294,7 @@ export const enMessages = {
     unsupported:
       "Reminders are not supported on this device or browser.",
     swUnavailable:
-      "Notifications need the installed app. In development the service worker is disabled — use the production build or the installed PWA.",
+      "Reminders need the installed app. Open it from your home screen and try again.",
     enabled: "On",
     disabled: "Off",
   },

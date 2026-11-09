@@ -29,7 +29,7 @@ export function HabitCardHeader({
   const { t } = useI18n();
   const unit = schedule ? streakUnitForSchedule(schedule) : "days";
   const monthCount =
-    schedule && schedule.type === "flexible" && completedKeys.length > 0
+    schedule?.type === "flexible" && completedKeys.length > 0
       ? countLogsInCalendarMonth(
           new Set(completedKeys),
           toLocalDateKey(getLocalToday()),
@@ -37,26 +37,24 @@ export function HabitCardHeader({
       : 0;
 
   return (
-    <div className="flex items-center justify-between">
-      <div className="flex items-center gap-2">
-        <span className={`h-2 w-2 shrink-0 rounded-full ${indicatorClass}`} />
-        <span className="text-sm font-medium text-foreground">{name}</span>
-        {schedule && schedule.type === "flexible" ? (
-          monthCount > 0 ? (
-            <span className="inline-flex items-center text-xs text-muted-foreground">
-              {t("streak.monthCount", { n: monthCount })}
-            </span>
-          ) : null
-        ) : streak !== undefined && streak > 0 ? (
-          <StreakBadge streak={streak} unit={unit as "days" | "weeks"} />
-        ) : null}
-      </div>
-      <span
-        className="-mr-2 flex min-h-[44px] min-w-[44px] items-center justify-center text-muted-foreground"
-        aria-hidden
-      >
-        <ChevronRightIcon className="h-4 w-4" />
+    <div className="flex items-center gap-2">
+      <span className={`size-2 shrink-0 rounded-full ${indicatorClass}`} />
+      <span className="min-w-0 flex-1 truncate text-[15px] font-medium text-foreground">
+        {name}
       </span>
+      {schedule?.type === "flexible" ? (
+        monthCount > 0 ? (
+          <span className="text-xs text-muted-foreground tabular-nums">
+            {t("streak.monthCount", { n: monthCount })}
+          </span>
+        ) : null
+      ) : streak !== undefined && streak > 0 ? (
+        <StreakBadge streak={streak} unit={unit as "days" | "weeks"} />
+      ) : null}
+      <ChevronRightIcon
+        className="size-4 shrink-0 text-muted-foreground/70"
+        aria-hidden
+      />
     </div>
   );
 }

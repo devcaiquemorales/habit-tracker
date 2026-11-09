@@ -3,15 +3,21 @@
 import { useLayoutEffect, useMemo, useRef } from "react";
 
 import { getLocalToday, toLocalDateKey } from "@/domain/types/date-key";
+import type { ColorVariant } from "@/domain/types/habit";
 import type { Schedule } from "@/domain/types/schedule";
+import { COLOR_VARIANTS } from "@/presentation/components/habit-heatmap/color-variants";
 import { Button } from "@/presentation/components/ui/button";
-import { formatActivityChipDate } from "@/presentation/lib/i18n/format";
+import {
+  formatActivityChipParts,
+  formatUtcDateKeyLong,
+} from "@/presentation/lib/i18n/format";
 import { useI18n } from "@/presentation/lib/i18n/i18n-provider";
 import { triggerInteractionFeedback } from "@/presentation/lib/interaction-feedback";
 import { isUpdateActivitySelectable } from "@/presentation/lib/update-activity-selectable";
 import { cn } from "@/presentation/lib/utils";
 
 interface HabitUpdateActivityProps {
+  colorVariant: ColorVariant;
   schedule: Schedule;
   completedKeys: Set<string>;
   /** UTC calendar days shown in the strip (oldest → newest). */
@@ -25,6 +31,7 @@ interface HabitUpdateActivityProps {
 }
 
 export function HabitUpdateActivity({
+  colorVariant,
   schedule,
   completedKeys,
   days,
@@ -86,7 +93,7 @@ export function HabitUpdateActivity({
       buttonLabel,
       buttonVariant:
         isSelectable && isCompleted
-          ? ("outline" as const)
+          ? ("secondary" as const)
           : ("default" as const),
     };
   }, [selectedKey, days, schedule, todayDate, completedKeys, t]);
@@ -111,25 +118,16 @@ export function HabitUpdateActivity({
   return (
     <section
       className={cn(
-        "flex flex-col gap-4 transition-opacity duration-150",
+        "flex flex-col gap-3 rounded-[1.25rem] bg-sidebar p-3 transition-opacity duration-150",
         logBusy && "opacity-90",
       )}
       aria-busy={logBusy || undefined}
     >
-      <div className="flex flex-col gap-2">
-        <p className="text-sm font-medium text-muted-foreground">
-          {t("updateActivity.sectionTitle")}
-        </p>
-        <p className="text-sm leading-relaxed text-muted-foreground">
-          {t("updateActivity.subtitle")}
-        </p>
-      </div>
-
       <div
         ref={scrollRef}
-        className="scrollbar-hidden -mx-1 overflow-x-auto overscroll-x-contain pb-1"
+        className="scrollbar-hidden overflow-x-auto overscroll-x-contain"
       >
-        <div className="flex w-max gap-2 px-1">
+        <div className="flex gap-0.5">
           {days.map((d) => {
             const key = toLocalDateKey(d);
             const selectable = isUpdateActivitySelectable(
@@ -151,35 +149,33 @@ export function HabitUpdateActivity({
                   triggerInteractionFeedback();
                   onSelectedKeyChange(selectedKey === key ? null : key);
                 }}
+                aria-pressed={selected}
+                aria-label={
+                  done
+                    ? `${formatUtcDateKeyLong(key, locale)}, ${t("common.done")}`
+                    : formatUtcDateKeyLong(key, locale)
+                }
                 className={cn(
-                  "flex min-h-11 shrink-0 flex-col items-center justify-center rounded-xl px-3 py-2 text-center transition-colors",
+                  "flex min-w-11 flex-1 flex-col items-center gap-1.5 rounded-xl py-2 transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
                   !selectable && "cursor-not-allowed opacity-35",
                   selected && selectable
-                    ? "bg-foreground/8 text-foreground"
-                    : selectable
-                      ? "text-foreground/80 hover:bg-foreground/5 hover:text-foreground"
-                      : "text-muted-foreground/70",
-                  !selected && selectable && "bg-transparent",
-                  done && !selected && selectable && "text-emerald-700 dark:text-emerald-400",
+                    ? "bg-foreground/8"
+                    : selectable && "hover:bg-foreground/5",
                 )}
               >
-                <span className="text-xs leading-snug font-medium tabular-nums">
-                  {formatActivityChipDate(d, locale)}
+                <span className="text-[11px] leading-none text-muted-foreground">
+                  {formatActivityChipParts(d, locale).weekday}
                 </span>
-                {done ? (
-                  <span className="mt-0.5 text-[0.65rem] font-medium text-emerald-700 dark:text-emerald-400">
-                    {t("common.done")}
-                  </span>
-                ) : (
-                  <span
-                    className={cn(
-                      "mt-0.5 text-[0.65rem] leading-snug",
-                      selectable ? "text-muted-foreground/70" : "text-muted-foreground/70",
-                    )}
-                  >
-                    {selectable ? t("common.tap") : t("common.dash")}
-                  </span>
-                )}
+                <span
+                  className={cn(
+                    "flex size-8 items-center justify-center rounded-full text-sm font-medium tabular-nums",
+                    done
+                      ? cn(COLOR_VARIANTS[colorVariant].doneClass, "text-white")
+                      : "text-foreground",
+                  )}
+                >
+                  {formatActivityChipParts(d, locale).day}
+                </span>
               </button>
             );
           })}
@@ -190,7 +186,7 @@ export function HabitUpdateActivity({
         type="button"
         size="lg"
         variant={updateActivitySelection.buttonVariant}
-        className="h-11 w-full min-w-44 rounded-full sm:w-auto md:h-9"
+        className="h-11 w-full rounded-full md:h-9"
         loading={logBusy}
         loadingText={
           logActionPending === "remove"

@@ -276,8 +276,6 @@ export function NotificationSettings() {
 
   return (
     <section className="space-y-4">
-      <p className="text-sm text-muted-foreground">{t("notifications.description")}</p>
-
       {error && (
         <p className="text-sm text-destructive" role="alert">
           {error}
@@ -286,13 +284,12 @@ export function NotificationSettings() {
 
       {!isSubscribed ? (
         <div className="space-y-4">
-          <div className="rounded-xl bg-foreground/5 p-4">
-            <p className="text-sm text-foreground/80">
-              {t("notifications.permissionPrompt")}
-            </p>
-          </div>
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            {t("notifications.permissionPrompt")}
+          </p>
           <Button
             onClick={handleEnableReminders}
+            variant="secondary"
             loading={isLoading}
             loadingText={t("common.loading")}
             className="h-11 w-full rounded-full md:h-9"
@@ -354,7 +351,7 @@ export function NotificationSettings() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="reminder-time" className="text-foreground/80">
+            <Label htmlFor="reminder-time">
               {t("notifications.addReminder")}
             </Label>
             <div className="flex gap-2">
@@ -372,6 +369,7 @@ export function NotificationSettings() {
               </select>
               <Button
                 onClick={handleAddReminder}
+                variant="secondary"
                 loading={isLoading}
                 loadingText={t("common.loading")}
                 className="h-11 rounded-full md:h-9"
@@ -385,7 +383,7 @@ export function NotificationSettings() {
             onClick={handleDisableReminders}
             loading={isLoading}
             loadingText={t("common.loading")}
-            variant="outline"
+            variant="ghost"
             className="h-11 w-full rounded-full md:h-9"
           >
             {t("notifications.disableButton")}

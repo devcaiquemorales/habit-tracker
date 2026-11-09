@@ -21,7 +21,7 @@ import {
   m,
   useReducedMotion,
 } from "framer-motion";
-import { Check, GripVertical } from "lucide-react";
+import { ArrowUpDown, Check, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { BrandMark } from "@/presentation/components/brand";
@@ -29,6 +29,7 @@ import { CreateHabitDialog } from "@/presentation/components/create-habit-dialog
 import { HomeHeader } from "@/presentation/components/home-header";
 import { sharedVariants } from "@/presentation/components/motion";
 import { StreakMilestoneToast } from "@/presentation/components/streak-milestone-toast";
+import { Button } from "@/presentation/components/ui/button";
 import { useHabitOrder } from "@/presentation/hooks/use-habit-order";
 import { useStreakMomentumToast } from "@/presentation/hooks/use-streak-momentum-toast";
 import { useDashboard } from "@/presentation/lib/dashboard-context";
@@ -72,6 +73,7 @@ export function HomeDashboardClient() {
   const { orderedHabits, handleDragEnd } = useHabitOrder(habits);
   const { toast: streakToast, dismissToast } = useStreakMomentumToast(data);
   const [isReordering, setIsReordering] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
 
   const sensors = useSensors(
@@ -114,6 +116,18 @@ export function HomeDashboardClient() {
               <HomeHeader
                 userName={profile.displayName}
                 initialMotivationPhrase={profile.motivationPhrase}
+                actions={
+                  orderedHabits.length > 1 ? (
+                    <button
+                      type="button"
+                      onClick={() => setIsReordering(true)}
+                      aria-label={t("home.reorder")}
+                      className="flex size-11 items-center justify-center rounded-full text-muted-foreground transition-colors outline-none hover:bg-muted hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 active:translate-y-px md:size-8"
+                    >
+                      <ArrowUpDown className="size-5 md:size-4" aria-hidden />
+                    </button>
+                  ) : null
+                }
               />
             ) : showSkeleton ? (
               <div className="flex flex-col gap-2" aria-hidden>
@@ -136,7 +150,7 @@ export function HomeDashboardClient() {
                 <div className="h-40 w-full animate-pulse rounded-[1.25rem] bg-muted" />
               </div>
             ) : showEmptyState ? (
-              <div className="mx-auto flex max-w-md flex-col items-center gap-2 pt-10 text-center">
+              <div className="mx-auto flex min-h-[calc(100dvh-19rem)] max-w-md flex-col items-center justify-center gap-2 text-center">
                 <BrandMark className="mb-2 size-10 text-foreground" />
                 <h2 className="text-2xl font-semibold tracking-tight text-balance text-foreground">
                   {t("home.emptyTitle")}
@@ -144,47 +158,21 @@ export function HomeDashboardClient() {
                 <p className="text-sm leading-relaxed text-pretty text-muted-foreground">
                   {t("home.emptyBody")}
                 </p>
+                <Button
+                  className="mt-4 h-11 gap-1 rounded-full pr-4 pl-3 md:h-9"
+                  onClick={() => setCreateOpen(true)}
+                >
+                  <Plus aria-hidden />
+                  {t("habitForm.createHabit")}
+                </Button>
               </div>
             ) : (
               <>
-                {orderedHabits.length > 1 && (
-                  <div className="flex flex-col gap-1.5 -mb-1">
-                    <div className="flex items-center justify-end">
-                      <button
-                        onClick={() => setIsReordering((v) => !v)}
-                        className={cn(
-                          "flex h-11 items-center gap-1.5 rounded-full px-3.5 text-sm font-medium transition-colors active:translate-y-px md:h-8",
-                          isReordering
-                            ? "bg-foreground/8 text-foreground"
-                            : "text-muted-foreground hover:text-foreground",
-                        )}
-                      >
-                        {isReordering ? (
-                          <>
-                            <Check className="size-4" aria-hidden />
-                            {t("home.reorderDone")}
-                          </>
-                        ) : (
-                          <>
-                            <GripVertical className="size-4" aria-hidden />
-                            {t("home.reorder")}
-                          </>
-                        )}
-                      </button>
-                    </div>
-
-                    {/* Hint fades in when reorder mode is active */}
-                    <p
-                      className={cn(
-                        "text-right text-[11px] leading-none transition-[opacity] duration-300",
-                        isReordering ? "text-muted-foreground/70 opacity-100" : "opacity-0",
-                      )}
-                      aria-hidden={!isReordering}
-                    >
-                      {t("home.reorderHint")}
-                    </p>
-                  </div>
-                )}
+                {isReordering ? (
+                  <p className="text-center text-sm text-muted-foreground">
+                    {t("home.reorderHint")}
+                  </p>
+                ) : null}
 
                 <LazyMotion features={domAnimation}>
                   <DndContext
@@ -249,7 +237,22 @@ export function HomeDashboardClient() {
           </div>
         </div>
       </main>
-      <CreateHabitDialog isReordering={isReordering} />
+      <CreateHabitDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        hideAddButton={isReordering || showEmptyState}
+      />
+      {isReordering ? (
+        <div className="fixed inset-x-0 bottom-[calc(1.25rem+env(safe-area-inset-bottom,0px))] z-40 flex justify-center">
+          <Button
+            className="h-11 gap-1.5 rounded-full pr-5 pl-4 shadow-sm md:h-9"
+            onClick={() => setIsReordering(false)}
+          >
+            <Check aria-hidden />
+            {t("home.reorderDone")}
+          </Button>
+        </div>
+      ) : null}
       {streakToast ? (
         <StreakMilestoneToast
           payload={streakToast}

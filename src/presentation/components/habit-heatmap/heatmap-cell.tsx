@@ -10,11 +10,11 @@ const SIZE_CLASS: Record<HeatmapCellSize, string> = {
   large: "h-4 w-4 sm:h-[18px] sm:w-[18px] md:h-5 md:w-5 tablet:h-5 tablet:w-5",
 };
 
-/** Tiny month boundary annotation (1st / last day); scales slightly with cell size */
-const BOUNDARY_MARKER_TEXT: Record<HeatmapCellSize, string> = {
-  default: "text-[5px]",
-  comfortable: "text-[5px] sm:text-[5.5px]",
-  large: "text-[5.5px] sm:text-[6px]",
+/** Dot sizes that sit centered inside a padding cell — one step below the cell size. */
+const PADDING_DOT_CLASS: Record<HeatmapCellSize, string> = {
+  default: "h-[3px] w-[3px]",
+  comfortable: "h-1 w-1",
+  large: "h-[5px] w-[5px]",
 };
 
 interface HeatmapCellProps {
@@ -33,16 +33,9 @@ interface HeatmapCellProps {
   /** Accessible label when `onActivate` is set */
   selectDayLabel?: string;
   /** First/last calendar day of month — tiny top-left label, non-interactive */
-  monthBoundaryLabel?: string;
 }
 
 /** Dot sizes that sit centered inside a padding cell — one step below the cell size. */
-const PADDING_DOT_CLASS: Record<HeatmapCellSize, string> = {
-  default: "h-[3px] w-[3px]",
-  comfortable: "h-1 w-1",
-  large: "h-[5px] w-[5px]",
-};
-
 export function HeatmapCell({
   status,
   cellColors,
@@ -53,16 +46,14 @@ export function HeatmapCell({
   isStripSelected = false,
   onActivate,
   selectDayLabel,
-  monthBoundaryLabel,
 }: HeatmapCellProps) {
-  // Padding cells: tiny centered dot — same outer footprint as a real cell so
-  // the grid aligns correctly, but clearly not an actionable day.
+  // Week-alignment gaps: same footprint as a real cell, drawn as a tiny dot.
   if (status === "monthPadding") {
     return (
       <div
         aria-hidden
         className={cn(
-          "relative shrink-0 flex items-center justify-center",
+          "relative flex shrink-0 items-center justify-center",
           SIZE_CLASS[size],
         )}
       >
@@ -86,40 +77,19 @@ export function HeatmapCell({
             : cellColors.notExpected;
 
   const ringClass = isStripSelected
-    ? "ring-2 ring-foreground/70 ring-inset"
-    : isToday && isRecovery && status === "completed"
-      ? "ring-1 ring-inset ring-foreground/30"
-      : isToday
-        ? "ring-1 ring-inset ring-foreground/25"
-        : isRecovery && status === "completed"
-          ? "ring-1 ring-inset ring-foreground/20"
-          : "";
+    ? "ring-2 ring-foreground ring-inset"
+    : isToday
+      ? "ring-1 ring-inset ring-foreground/70"
+      : "";
 
   const sharedClass = cn(
-    "relative shrink-0 rounded-[2px]",
+    "relative shrink-0 rounded-[3px]",
     SIZE_CLASS[size],
     statusClass,
     status === "completed" && isRecovery && "opacity-70",
     ringClass,
     onActivate && "cursor-pointer touch-manipulation",
   );
-
-  const boundaryMarker =
-    monthBoundaryLabel !== undefined && monthBoundaryLabel !== "" ? (
-      <span
-        className={cn(
-          "pointer-events-none absolute top-px left-px z-1 leading-none font-medium tracking-tight tabular-nums select-none",
-          BOUNDARY_MARKER_TEXT[size],
-          /** High-contrast on saturated cubes: light fill + tight dark halo (no heavy badge) */
-          status === "completed"
-            ? "text-white/95 [text-shadow:0_0_1px_rgb(0_0_0/_0.95),0_0.5px_1.5px_rgb(0_0_0/_0.75)]"
-            : "text-foreground/70",
-        )}
-        aria-hidden
-      >
-        {monthBoundaryLabel}
-      </span>
-    ) : null;
 
   if (onActivate) {
     return (
@@ -136,9 +106,7 @@ export function HeatmapCell({
           e.stopPropagation();
           onActivate();
         }}
-      >
-        {boundaryMarker}
-      </button>
+      />
     );
   }
 
@@ -146,9 +114,6 @@ export function HeatmapCell({
     <div
       className={sharedClass}
       title={tooltip}
-      aria-hidden={undefined}
-    >
-      {boundaryMarker}
-    </div>
+    />
   );
 }
