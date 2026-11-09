@@ -2,17 +2,42 @@
 
 import { useMutation } from "convex/react";
 import { Bell, Trash2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 
 import { api } from "@/../convex/_generated/api";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { Button } from "@/presentation/components/ui/button";
 import { Label } from "@/presentation/components/ui/label";
-import { useSafeQuery } from "@/presentation/hooks/use-safe-query";
 import { formatActionError } from "@/presentation/lib/action-error";
 import { toActionResult } from "@/presentation/lib/convex-result";
+import { useDashboard } from "@/presentation/lib/dashboard-context";
+import { PUSH_ENABLED_KEY } from "@/presentation/lib/device-sync";
 import { useI18n } from "@/presentation/lib/i18n/i18n-provider";
 import { cn } from "@/presentation/lib/utils";
+
+const subscribeNoop = () => () => {};
+
+function readPushSupport(): "supported" | "ios" | "unsupported" {
+  if (
+    "serviceWorker" in navigator &&
+    "PushManager" in window &&
+    "Notification" in window
+  ) {
+    return "supported";
+  }
+  return /(iPhone|iPad|iPod)/.test(navigator.userAgent) &&
+    !window.matchMedia("(display-mode: standalone)").matches
+    ? "ios"
+    : "unsupported";
+}
+
+function readPushEnabled(): boolean {
+  try {
+    return localStorage.getItem(PUSH_ENABLED_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
 
 const HOURS = Array.from(
   { length: 24 },
@@ -57,8 +82,23 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
 
 export function NotificationSettings() {
   const { t } = useI18n();
-  const reminderResult = useSafeQuery(api.reminders.list, {});
-  const reminders = Array.isArray(reminderResult) ? reminderResult : [];
+  const { reminders: liveReminders } = useDashboard();
+  const reminders = liveReminders ?? [];
+  const support = useSyncExternalStore(
+    subscribeNoop,
+    readPushSupport,
+    () => "pending",
+  );
+  const storedEnabled = useSyncExternalStore(
+    subscribeNoop,
+    readPushEnabled,
+    () => false,
+  );
+  // Starts from the last known state and only changes if the browser disagrees.
+  const [verifiedEnabled, setVerifiedEnabled] = useState<boolean | null>(null);
+  const isSubscribed = verifiedEnabled ?? storedEnabled;
+  const isSupported = support === "supported";
+  const isIosStandalone = support === "ios";
   const saveSubscription = useMutation(api.reminders.saveSubscription);
   const deleteSubscription = useMutation(api.reminders.deleteSubscription);
   const upsertReminder = useMutation(api.reminders.upsert);
@@ -88,39 +128,29 @@ export function NotificationSettings() {
       );
     }
   });
-  const [isSupported, setIsSupported] = useState(false);
-  const [isSubscribed, setIsSubscribed] = useState(false);
-  const [isIosStandalone, setIsIosStandalone] = useState(false);
   const [newReminderTime, setNewReminderTime] = useState("09:00");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    const supported =
-      "serviceWorker" in navigator &&
-      "PushManager" in window &&
-      "Notification" in window;
-
-    setIsSupported(supported);
-
-    const iosNotStandalone =
-      /(iPhone|iPad|iPod)/.test(navigator.userAgent) &&
-      !window.matchMedia("(display-mode: standalone)").matches;
-
-    setIsIosStandalone(iosNotStandalone);
-
-    if (supported) {
-      checkSubscription();
+  const setIsSubscribed = (enabled: boolean) => {
+    setVerifiedEnabled(enabled);
+    try {
+      localStorage.setItem(PUSH_ENABLED_KEY, enabled ? "1" : "0");
+    } catch {
+      // Only a paint hint: the browser stays the source of truth.
     }
-  }, []);
+  };
+
+  useEffect(() => {
+    if (support === "supported") void checkSubscription();
+    // Runs once support is known; the check itself only reads the browser.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [support]);
 
   async function checkSubscription() {
     try {
       const registration = await getPushRegistration();
-      if (!registration) return;
-      const subscription = await registration.pushManager.getSubscription();
+      const subscription = await registration?.pushManager.getSubscription();
       setIsSubscribed(!!subscription);
     } catch (err) {
       console.error("Error checking subscription:", err);
@@ -248,6 +278,10 @@ export function NotificationSettings() {
     setError(formatActionError(result, t));
   }
 
+  if (support === "pending") {
+    return <div className="h-24 animate-pulse rounded-xl bg-muted" aria-hidden />;
+  }
+
   if (!isSupported) {
     if (isIosStandalone) {
       return (
@@ -345,9 +379,9 @@ export function NotificationSettings() {
                   </div>
                 ))}
               </div>
-            ) : (
+            ) : liveReminders ? (
               <p className="text-sm text-muted-foreground">{t("notifications.noReminders")}</p>
-            )}
+            ) : null}
           </div>
 
           <div className="space-y-2">

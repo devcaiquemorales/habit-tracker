@@ -1,6 +1,7 @@
 "use client";
 
 import { useConvexAuth } from "convex/react";
+import type { FunctionReturnType } from "convex/server";
 import {
   createContext,
   type ReactNode,
@@ -21,8 +22,10 @@ import {
   toLocalDateKey,
 } from "@/domain/types/date-key";
 import { isTodayScheduled } from "@/domain/types/schedule";
+import { authClient } from "@/infrastructure/auth/auth-client";
 import { useSafeQuery } from "@/presentation/hooks/use-safe-query";
 import {
+  clearDashboardCache,
   readDashboardCache,
   writeDashboardCache,
 } from "@/presentation/lib/dashboard-cache";
@@ -35,12 +38,18 @@ type DashboardState = {
   /** True once `data` comes from the server, not the local snapshot. */
   isLive: boolean;
   error: Error | undefined;
+  /** The user's current local day; rolls over when the app comes back. */
+  todayKey: string;
+  /** Undefined until first loaded. */
+  reminders: FunctionReturnType<typeof api.reminders.list> | undefined;
 };
 
 const DashboardContext = createContext<DashboardState>({
   data: undefined,
   isLive: false,
   error: undefined,
+  todayKey: "",
+  reminders: undefined,
 });
 
 const subscribeNoop = () => () => {};
@@ -82,6 +91,19 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
     api.dashboard.get,
     isAuthenticated ? { sinceKey } : "skip",
   );
+  // The server no longer recognizes this session: end it so login cannot loop back.
+  useEffect(() => {
+    if (result !== null) return;
+    clearDashboardCache();
+    void authClient.signOut().finally(() => window.location.assign("/login"));
+  }, [result]);
+
+  const reminderResult = useSafeQuery(
+    api.reminders.list,
+    isAuthenticated ? {} : "skip",
+  );
+  const reminders = reminderResult instanceof Error ? undefined : reminderResult;
+
   const error = result instanceof Error ? result : undefined;
   const raw = result instanceof Error ? undefined : (result ?? undefined);
 
@@ -108,8 +130,14 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
   }, [live]);
 
   const value = useMemo<DashboardState>(
-    () => ({ data: live ?? cached ?? undefined, isLive: !!live, error }),
-    [live, cached, error],
+    () => ({
+      data: live ?? cached ?? undefined,
+      isLive: !!live,
+      error,
+      todayKey,
+      reminders,
+    }),
+    [live, cached, error, todayKey, reminders],
   );
 
   return (

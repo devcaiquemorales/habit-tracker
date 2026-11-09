@@ -40,11 +40,8 @@ export function CreateHabitDialog({
           )}
         />
       }
-      onSave={(payload) => {
-        // Closes at once: the new card appears optimistically on the dashboard.
-        handleOpenChange(false);
-        return createHabit(payload);
-      }}
+      // The form closes itself on success and shows the message on failure.
+      onSave={createHabit}
     />
   );
 }

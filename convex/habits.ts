@@ -10,6 +10,8 @@ import { assertDateKey } from "./lib/date";
 import { colorVariantValidator, scheduleValidator } from "./lib/validators";
 
 const NAME_MAX = 80;
+/** Matches what the dashboard query returns; a habit past it would be invisible. */
+const MAX_HABITS = 200;
 
 async function requireOwnedHabit(
   ctx: MutationCtx,
@@ -85,11 +87,15 @@ export const create = mutation({
     const name = normalizeName(args.name);
     const schedule = await normalizeSchedule(ctx, userId, args.schedule);
 
-    const last = await ctx.db
+    const existing = await ctx.db
       .query("habits")
       .withIndex("by_user_position", (q) => q.eq("userId", userId))
       .order("desc")
-      .first();
+      .take(MAX_HABITS);
+    if (existing.length >= MAX_HABITS) {
+      throw new ConvexError("errors.invalidInput");
+    }
+    const last = existing[0];
 
     return await ctx.db.insert("habits", {
       userId,

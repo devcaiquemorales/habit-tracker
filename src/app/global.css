@@ -216,45 +216,38 @@
 /**
  * Route motion targets `main`, never the wrapper: a transform on the wrapper would
  * re-anchor everything `position: fixed` inside it, such as the add button.
+ * No opacity here: below 1 it changes what the blurred sticky headers see, and they
+ * visibly flash when the animation ends.
  */
 .page-route-tap-response > main {
-  opacity: 0.96;
   transform: translateY(1px);
-  transition:
-    opacity 85ms cubic-bezier(0.32, 0.72, 0, 1),
-    transform 85ms cubic-bezier(0.32, 0.72, 0, 1);
+  transition: transform 85ms cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 @keyframes app-page-forward {
   from {
-    opacity: 0.35;
     transform: translate3d(28px, 0, 0);
   }
   to {
-    opacity: 1;
     transform: translate3d(0, 0, 0);
   }
 }
 
 @keyframes app-page-back {
   from {
-    opacity: 0.35;
     transform: translate3d(-28px, 0, 0);
   }
   to {
-    opacity: 1;
     transform: translate3d(0, 0, 0);
   }
 }
 
 .page-route-forward > main {
   animation: app-page-forward 280ms cubic-bezier(0.32, 0.72, 0, 1) both;
-  will-change: transform, opacity;
 }
 
 .page-route-back > main {
   animation: app-page-back 280ms cubic-bezier(0.32, 0.72, 0, 1) both;
-  will-change: transform, opacity;
 }
 
 /**
@@ -272,7 +265,6 @@
 
 @media (prefers-reduced-motion: reduce) {
   .page-route-tap-response > main {
-    opacity: 1;
     transform: none;
     transition: none;
   }

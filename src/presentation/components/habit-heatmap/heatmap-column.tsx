@@ -15,8 +15,6 @@ interface HeatmapColumnProps {
   cellSize?: HeatmapCellSize;
   today: Date;
   todayHighlightKey: string;
-  completionOverrides?: Set<string>;
-  removalOverrides?: Set<string>;
   /** When set, past/today cells (not padding, not future) call this with their local `YYYY-MM-DD` key. */
   onDateSelect?: (dateKey: string) => void;
   /** Highlights the cell that matches the Update activity selection. */
@@ -51,8 +49,6 @@ export function HeatmapColumn({
   cellSize = "default",
   today,
   todayHighlightKey,
-  completionOverrides,
-  removalOverrides,
   onDateSelect,
   selectedDateKey,
   translate,
@@ -93,14 +89,7 @@ export function HeatmapColumn({
           );
         }
 
-        const forcedComplete = completionOverrides?.has(dateKey) ?? false;
-        const forcedIncomplete = removalOverrides?.has(dateKey) ?? false;
-        /** Explicit removal must win over forced completion (e.g. clear “today” or mock data). */
-        const effectiveDone = forcedIncomplete
-          ? 0
-          : forcedComplete
-            ? 1
-            : cell.done;
+        const effectiveDone = cell.done;
 
         const onActivate =
           onDateSelect !== undefined
@@ -140,18 +129,15 @@ export function HeatmapColumn({
           );
         }
 
-        const isExpected = isDayExpected(schedule, cell.date);
-        const status = forcedIncomplete
-          ? isExpected
-            ? "expectedMissed"
-            : "notExpected"
-          : forcedComplete
+        const isToday = dateKey === todayHighlightKey;
+        const status =
+          effectiveDone > 0
             ? "completed"
-            : isExpected
-              ? effectiveDone > 0
-                ? "completed"
-                : "expectedMissed"
-              : "notExpected";
+            : !isDayExpected(schedule, cell.date)
+              ? "notExpected"
+              : isToday
+                ? "neutralEmpty" // Not missed until the day is over.
+                : "expectedMissed";
 
         return (
           <HeatmapCell

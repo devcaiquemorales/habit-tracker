@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo, useState } from "react";
 
-import { getLocalToday, toLocalDateKey } from "@/domain/types/date-key";
+import { toLocalDateKey } from "@/domain/types/date-key";
 import type { Habit } from "@/domain/types/habit";
 import type { HeatmapData } from "@/domain/types/heatmap";
 import { isTodayScheduled } from "@/domain/types/schedule";
@@ -23,7 +23,11 @@ import {
 import { getDefaultActivitySelectedKey } from "@/presentation/lib/update-activity-selectable";
 
 /** Detail-screen state. Completion comes from the live dashboard, which updates optimistically. */
-export function useHabitLogState(habit: Habit, heatmapData: HeatmapData) {
+export function useHabitLogState(
+  habit: Habit,
+  heatmapData: HeatmapData,
+  today: Date,
+) {
   const { t, locale } = useI18n();
   const { markDay, unmarkDay } = useDashboardMutations();
   const [persistenceError, setPersistenceError] = useState<string | null>(null);
@@ -31,7 +35,6 @@ export function useHabitLogState(habit: Habit, heatmapData: HeatmapData) {
     "mark" | "remove" | null
   >(null);
 
-  const [today] = useState(() => getLocalToday());
   const todayKey = useMemo(() => toLocalDateKey(today), [today]);
 
   const stripCompletedKeys = useMemo(

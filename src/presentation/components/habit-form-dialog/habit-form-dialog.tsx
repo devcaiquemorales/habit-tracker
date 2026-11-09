@@ -14,7 +14,6 @@ import { Button } from "@/presentation/components/ui/button";
 import {
   Dialog,
   DialogClose,
-  DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
@@ -30,7 +29,6 @@ import {
 } from "@/presentation/lib/habit-schedule-form";
 import { useI18n } from "@/presentation/lib/i18n/i18n-provider";
 import { triggerInteractionFeedback } from "@/presentation/lib/interaction-feedback";
-import { cn } from "@/presentation/lib/utils";
 
 export interface HabitFormPayload {
   name: string;
@@ -162,12 +160,7 @@ function HabitFormDialogFields({
       onSubmit={(e) => void handleSubmit(e)}
       className="flex min-h-0 flex-1 flex-col"
     >
-      <DialogHeader
-        className={cn(
-          "mx-auto w-full shrink-0 px-5 pb-4 sm:px-6",
-          mode === "create" ? "max-w-xl pr-5" : "pt-5 pr-14 sm:pr-16",
-        )}
-      >
+      <DialogHeader className="mx-auto w-full max-w-xl shrink-0 px-5 pb-4 pr-5 sm:px-6">
         <DialogTitle>
           {title}
         </DialogTitle>
@@ -280,27 +273,9 @@ export function HabitFormDialog({
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       {trigger ? <DialogTrigger asChild>{trigger}</DialogTrigger> : null}
-      {mode === "create" ? (
-        <BottomSheetContent onDismiss={() => handleOpenChange(false)}>
-          {fields}
-        </BottomSheetContent>
-      ) : (
-        <DialogContent
-          showCloseButton
-          closeButtonClassName="top-[calc(env(safe-area-inset-top,0px)+0.75rem)] right-[calc(env(safe-area-inset-right,0px)+0.75rem)]"
-          className={cn(
-            "flex max-h-dvh flex-col gap-0 overflow-hidden p-0",
-            "inset-0! h-dvh! w-full! max-w-none! translate-x-0! translate-y-0! rounded-none sm:inset-auto! sm:top-1/2! sm:left-1/2! sm:h-auto! sm:max-h-[min(90dvh,640px)]! sm:w-full! sm:max-w-md! sm:-translate-x-1/2! sm:-translate-y-1/2! sm:rounded-[1.5rem]!",
-          )}
-          style={{
-            paddingTop: "env(safe-area-inset-top, 0px)",
-            paddingLeft: "env(safe-area-inset-left, 0px)",
-            paddingRight: "env(safe-area-inset-right, 0px)",
-          }}
-        >
-          {fields}
-        </DialogContent>
-      )}
+      <BottomSheetContent onDismiss={() => handleOpenChange(false)}>
+        {fields}
+      </BottomSheetContent>
     </Dialog>
   );
 }

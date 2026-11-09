@@ -31,6 +31,8 @@ export const get = query({
         .withIndex("by_user_date", (q) =>
           q.eq("userId", userId).gte("logDate", sinceKey),
         )
+        // Newest first, so reaching the cap drops the oldest days, never today.
+        .order("desc")
         .take(MAX_LOG_ROWS),
     ]);
 

@@ -164,37 +164,21 @@ export function ScheduleSelector({ value, onChange }: ScheduleSelectorProps) {
           <p className="text-xs leading-relaxed text-muted-foreground">
             {t("schedule.timesPerWeekHelp")}
           </p>
-          <div
-            className="flex flex-wrap gap-2"
-            role="group"
+          <SegmentedControl
             aria-label={t("schedule.timesPerWeekAria")}
-          >
-            {TIMES_PER_WEEK.map((n) => {
-              const selected = value.timesPerWeek === n;
-              return (
-                <button
-                  key={n}
-                  type="button"
-                  aria-pressed={selected}
-                  onClick={() => {
-                    triggerInteractionFeedback();
-                    onChange({
-                      category: "weeklyTarget",
-                      timesPerWeek: n,
-                    });
-                  }}
-                  className={cn(
-                    "flex size-11 shrink-0 items-center justify-center rounded-full border text-sm tabular-nums transition-colors md:size-9",
-                    selected
-                      ? "border-foreground bg-foreground text-background"
-                      : "border-border text-muted-foreground hover:border-foreground/30 hover:text-foreground",
-                  )}
-                >
-                  {n}
-                </button>
-              );
-            })}
-          </div>
+            value={String(value.timesPerWeek)}
+            onChange={(next) => {
+              triggerInteractionFeedback();
+              onChange({
+                category: "weeklyTarget",
+                timesPerWeek: Number(next),
+              });
+            }}
+            options={TIMES_PER_WEEK.map((n) => ({
+              value: String(n),
+              label: String(n),
+            }))}
+          />
         </div>
       )}
     </div>

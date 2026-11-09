@@ -97,6 +97,10 @@ export const saveSubscription = mutation({
   },
   handler: async (ctx, args) => {
     const userId = await requireUserId(ctx);
+    // The server later POSTs to this address, so it must be a real push URL.
+    if (!args.endpoint.startsWith("https://") || args.endpoint.length > 2048) {
+      throw new ConvexError("errors.invalidInput");
+    }
     const existing = await ctx.db
       .query("pushSubscriptions")
       .withIndex("by_endpoint", (q) => q.eq("endpoint", args.endpoint))

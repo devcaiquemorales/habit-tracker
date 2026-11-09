@@ -12,6 +12,7 @@ import { Label } from "@/presentation/components/ui/label";
 import { formatAuthErrorMessage } from "@/presentation/lib/auth-error-message";
 import { useI18n } from "@/presentation/lib/i18n/i18n-provider";
 import { triggerInteractionFeedback } from "@/presentation/lib/interaction-feedback";
+import { safeNextPath } from "@/presentation/lib/safe-next-path";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -19,7 +20,7 @@ export function LoginForm() {
   const { t } = useI18n();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const nextPath = searchParams.get("next") || "/";
+  const nextPath = safeNextPath(searchParams.get("next"));
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -58,7 +59,7 @@ export function LoginForm() {
       return;
     }
 
-    router.push(nextPath.startsWith("/") ? nextPath : "/");
+    router.push(nextPath);
     router.refresh();
   }
 

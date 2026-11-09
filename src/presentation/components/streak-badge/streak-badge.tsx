@@ -2,6 +2,7 @@
 
 import { Flame, Zap } from "lucide-react";
 
+import { useI18n } from "@/presentation/lib/i18n/i18n-provider";
 import { getStreakTier } from "@/presentation/lib/streak-tier";
 
 export interface StreakBadgeProps {
@@ -9,13 +10,6 @@ export interface StreakBadgeProps {
   unit?: "days" | "weeks";
   /** When set, overrides visible label for assistive tech (avoids duplicating the number in nearby text). */
   "aria-label"?: string;
-}
-
-function getUnitLabel(unit: "days" | "weeks", count: number): string {
-  if (unit === "weeks") {
-    return count === 1 ? "1w" : `${count}w`;
-  }
-  return count.toString();
 }
 
 const TIER_CLASS = {
@@ -31,6 +25,7 @@ export function StreakBadge({
   unit = "days",
   "aria-label": ariaLabel,
 }: StreakBadgeProps) {
+  const { t } = useI18n();
   const tier = getStreakTier(streak);
   if (tier === "none") return null;
 
@@ -42,7 +37,7 @@ export function StreakBadge({
       aria-label={ariaLabel}
     >
       <Icon className="size-3.5" aria-hidden />
-      <span>{getUnitLabel(unit, streak)}</span>
+      <span>{unit === "weeks" ? t("streak.weeksShort", { n: streak }) : streak}</span>
     </span>
   );
 }

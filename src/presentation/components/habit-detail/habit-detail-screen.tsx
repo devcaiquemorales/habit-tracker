@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useLayoutEffect, useMemo, useState } from "react";
 
+import { getLocalToday, localDateFromDateKey } from "@/domain/types/date-key";
 import type { Habit } from "@/domain/types/habit";
 import { HabitDeleteConfirmDialog } from "@/presentation/components/habit-delete-confirm-dialog";
 import { HabitFormDialog } from "@/presentation/components/habit-form-dialog";
@@ -10,6 +11,7 @@ import { Button } from "@/presentation/components/ui/button";
 import { useDashboardMutations } from "@/presentation/hooks/use-dashboard-mutations";
 import { useHabitLogState } from "@/presentation/hooks/use-habit-log-state";
 import { buildHeatmapDataFromCompletedKeys } from "@/presentation/lib/build-heatmap-data";
+import { useDashboard } from "@/presentation/lib/dashboard-context";
 import { useI18n } from "@/presentation/lib/i18n/i18n-provider";
 import { triggerInteractionFeedback } from "@/presentation/lib/interaction-feedback";
 
@@ -50,6 +52,12 @@ export function HabitDetailScreen({
   const [editFormResetKey, setEditFormResetKey] = useState(0);
   const [deleteOpen, setDeleteOpen] = useState(false);
 
+  const { todayKey } = useDashboard();
+  const today = useMemo(
+    () => localDateFromDateKey(todayKey) ?? getLocalToday(),
+    [todayKey],
+  );
+
   const keysSig = useMemo(
     () => sortedKeysSignature(completedKeys),
     [completedKeys],
@@ -60,10 +68,10 @@ export function HabitDetailScreen({
     return buildHeatmapDataFromCompletedKeys(
       new Set(keys),
       habit.schedule,
-      new Date(),
+      today,
       locale,
     );
-  }, [keysSig, locale, habit.schedule]);
+  }, [keysSig, locale, habit.schedule, today]);
 
   const {
     activitySelectedKey,
@@ -79,7 +87,7 @@ export function HabitDetailScreen({
     handleHeatmapDateSelect,
     persistenceError,
     logActionPending,
-  } = useHabitLogState(habit, heatmapData);
+  } = useHabitLogState(habit, heatmapData, today);
 
   /**
    * Always open detail at the top (including when opening from a deep-scrolled home list).

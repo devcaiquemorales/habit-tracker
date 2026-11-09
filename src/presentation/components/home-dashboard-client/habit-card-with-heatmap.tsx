@@ -2,9 +2,11 @@
 
 import { memo, useMemo } from "react";
 
+import { localDateFromDateKey } from "@/domain/types/date-key";
 import type { Habit } from "@/domain/types/habit";
 import { HabitCard } from "@/presentation/components/habit-card";
 import { buildHeatmapDataFromCompletedKeys } from "@/presentation/lib/build-heatmap-data";
+import { useDashboard } from "@/presentation/lib/dashboard-context";
 import { useI18n } from "@/presentation/lib/i18n/i18n-provider";
 
 type HabitCardWithHeatmapProps = {
@@ -25,6 +27,7 @@ export const HabitCardWithHeatmap = memo(function HabitCardWithHeatmap({
   completedKeys,
 }: HabitCardWithHeatmapProps) {
   const { locale } = useI18n();
+  const { todayKey } = useDashboard();
   const keysSig = useMemo(
     () => sortedKeysSignature(completedKeys),
     [completedKeys],
@@ -35,10 +38,10 @@ export const HabitCardWithHeatmap = memo(function HabitCardWithHeatmap({
     return buildHeatmapDataFromCompletedKeys(
       new Set(keys),
       habit.schedule,
-      new Date(),
+      localDateFromDateKey(todayKey) ?? new Date(),
       locale,
     );
-  }, [keysSig, locale, habit.schedule]);
+  }, [keysSig, locale, habit.schedule, todayKey]);
 
   return (
     <HabitCard

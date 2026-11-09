@@ -15,8 +15,6 @@ interface HabitHeatmapProps {
   schedule: Schedule;
   colorVariant?: ColorVariant;
   density?: "default" | "comfortable" | "large";
-  completionOverrides?: Set<string>;
-  removalOverrides?: Set<string>;
   onDateSelect?: (dateKey: string) => void;
   selectedDateKey?: string | null;
 }
@@ -26,8 +24,6 @@ export function HabitHeatmap({
   schedule,
   colorVariant = "green",
   density = "default",
-  completionOverrides,
-  removalOverrides,
   onDateSelect,
   selectedDateKey,
 }: HabitHeatmapProps) {
@@ -77,8 +73,6 @@ export function HabitHeatmap({
             weekColumnGapClass={weekColumnGap}
             todayHighlightKey={todayHighlightKey}
             today={today}
-            completionOverrides={completionOverrides}
-            removalOverrides={removalOverrides}
             onDateSelect={onDateSelect}
             selectedDateKey={selectedDateKey}
             translate={t}

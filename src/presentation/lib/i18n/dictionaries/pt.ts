@@ -3,6 +3,7 @@ import type { EnMessages } from "./en";
 /** Mirrors `enMessages` keys; Portuguese copy. */
 export const ptMessages: EnMessages = {
   common: {
+    error: "Algo deu errado. Tente de novo.",
     loading: "Carregando...",
     saving: "Salvando...",
     creating: "Criando...",
@@ -275,10 +276,26 @@ export const ptMessages: EnMessages = {
     aria: "Adicionar hábito",
   },
   greeting: {
-    morning: "Bom dia, {name}",
-    afternoon: "Boa tarde, {name}",
-    evening: "Boa noite, {name}",
-    nameFallback: "—",
+    neutral: "Seus hábitos",
+    welcome: "Vamos começar, {name}?",
+    fresh1: "E aí, {name}. Por onde começamos?",
+    fresh2: "{name}, um hábito de cada vez.",
+    fresh3: "Que bom te ver, {name}.",
+    fresh4: "Bora, {name}? O dia é seu.",
+    fresh5: "{name}, o primeiro é sempre o mais difícil.",
+    fresh6: "Oi, {name}. Vamos com calma hoje.",
+    allDone1: "Tudo feito por hoje, {name}.",
+    allDone2: "Dia fechado, {name}. Pode descansar.",
+    allDone3: "Hoje foi seu, {name}.",
+    comeback1: "Que bom que você voltou, {name}.",
+    comeback2: "Sem culpa, {name}. Recomeça hoje.",
+    oneLeft: "Só falta {habit}, {name}.",
+    progress1: "Já foram {done} de {total}, {name}.",
+    progress2: "Segue assim, {name}. {done} de {total}.",
+    streak1: "{n} dias seguidos em {habit}, {name}.",
+    streak2: "{habit} já vai em {n} dias, {name}.",
+    rest: "Hoje a lista está livre, {name}.",
+    late: "Ainda dá tempo hoje, {name}.",
   },
   notifications: {
     title: "Lembretes",

@@ -238,6 +238,39 @@ describe("habit and reminder rules", () => {
   });
 });
 
+describe("input limits", () => {
+  test("stops creating habits at the dashboard limit", async () => {
+    const t = setup();
+    const { as, userId } = await signIn(t, "alice@example.test");
+    await t.run(async (ctx) => {
+      for (let position = 0; position < 200; position++) {
+        await ctx.db.insert("habits", {
+          userId,
+          name: "Gym",
+          colorVariant: "green",
+          schedule: daily,
+          position,
+        });
+      }
+    });
+    await expect(as.mutation(api.habits.create, newHabit)).rejects.toThrow(
+      /errors\.invalidInput/,
+    );
+  });
+
+  test("rejects push endpoints that are not https", async () => {
+    const t = setup();
+    const { as } = await signIn(t, "alice@example.test");
+    await expect(
+      as.mutation(api.reminders.saveSubscription, {
+        endpoint: "http://169.254.169.254/latest",
+        p256dh: "k",
+        auth: "a",
+      }),
+    ).rejects.toThrow(/errors\.invalidInput/);
+  });
+});
+
 describe("invites and rate limit", () => {
   test("an invite is valid once, then consumed at signup", async () => {
     const t = setup();

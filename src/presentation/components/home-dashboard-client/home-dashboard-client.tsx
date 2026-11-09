@@ -52,7 +52,7 @@ export function HomeDashboardClient() {
   const prefersReducedMotion = useReducedMotion();
   const [staggerOnMount] = useState(() => !hasStaggeredThisSession);
 
-  const { data, isLive, error } = useDashboard();
+  const { data, isLive, error, todayKey } = useDashboard();
 
   const profile = data?.profile;
   const habits = data?.habits ?? [];
@@ -71,7 +71,9 @@ export function HomeDashboardClient() {
   const shouldAnimateStagger = staggerOnMount && !prefersReducedMotion;
 
   const { orderedHabits, handleDragEnd } = useHabitOrder(habits);
-  const { toast: streakToast, dismissToast } = useStreakMomentumToast(data);
+  const { toast: streakToast, dismissToast } = useStreakMomentumToast(
+    isLive ? data : undefined,
+  );
   const [isReordering, setIsReordering] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -116,6 +118,9 @@ export function HomeDashboardClient() {
               <HomeHeader
                 userName={profile.displayName}
                 initialMotivationPhrase={profile.motivationPhrase}
+                habits={habits}
+                logKeysRecord={logKeysRecord}
+                todayKey={todayKey}
                 actions={
                   orderedHabits.length > 1 ? (
                     <button

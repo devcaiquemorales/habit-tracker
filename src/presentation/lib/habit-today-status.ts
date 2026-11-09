@@ -54,6 +54,13 @@ export function getTodayStatusPresentation(
     };
   }
 
+  // A log always counts, even on a day the schedule did not ask for.
+  if (mergedCompletedKeys.has(todayKey)) {
+    return { label: t("status.completedToday"), kind: "completed" };
+  }
+  if (schedule.type === "flexible") {
+    return { label: t("status.notCompletedToday"), kind: "not_scheduled" };
+  }
   if (!isDayExpected(schedule, referenceDate)) {
     return { label: t("status.notScheduledToday"), kind: "not_scheduled" };
   }

@@ -17,8 +17,6 @@ interface HeatmapMonthBlockProps {
   weekColumnGapClass: string;
   todayHighlightKey: string;
   today: Date;
-  completionOverrides?: Set<string>;
-  removalOverrides?: Set<string>;
   onDateSelect?: (dateKey: string) => void;
   selectedDateKey?: string | null;
   translate: TranslateFn;
@@ -33,8 +31,6 @@ export function HeatmapMonthBlock({
   weekColumnGapClass,
   todayHighlightKey,
   today,
-  completionOverrides,
-  removalOverrides,
   onDateSelect,
   selectedDateKey,
   translate,
@@ -57,8 +53,6 @@ export function HeatmapMonthBlock({
             cellSize={cellSize}
             today={today}
             todayHighlightKey={todayHighlightKey}
-            completionOverrides={completionOverrides}
-            removalOverrides={removalOverrides}
             onDateSelect={onDateSelect}
             selectedDateKey={selectedDateKey}
             translate={translate}
