@@ -57,39 +57,37 @@ export function HomeHeader({
 
   return (
     <div className="flex flex-col">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0 flex-1 space-y-0.5">
-          <AnimatedGreeting text={greeting} className="text-2xl leading-tight font-semibold tracking-tight text-balance text-foreground" />
-          <p
-            className="text-sm leading-snug text-muted-foreground"
-            suppressHydrationWarning
-          >
-            {dateStr}
-          </p>
-        </div>
+      <div className="flex min-h-11 items-center justify-between gap-3 md:min-h-8">
+        <p
+          className="min-w-0 truncate text-sm text-muted-foreground"
+          suppressHydrationWarning
+        >
+          {dateStr}
+        </p>
         <div className="-mr-2 flex shrink-0 items-center">
           {actions}
           <Link
-          href="/settings"
-          prefetch
-          onClick={() => triggerInteractionFeedback({ haptic: false })}
-          className="flex size-11 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none active:translate-y-px md:size-8"
-          aria-label={t("home.settingsAria")}
-        >
-          <Settings className="size-5 md:size-4" aria-hidden />
+            href="/settings"
+            prefetch
+            onClick={() => triggerInteractionFeedback({ haptic: false })}
+            className="flex size-11 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none active:translate-y-px md:size-8"
+            aria-label={t("home.settingsAria")}
+          >
+            <Settings className="size-5 md:size-4" aria-hidden />
           </Link>
         </div>
       </div>
 
+      <AnimatedGreeting
+        text={greeting}
+        className="mt-2 text-[1.75rem] leading-[1.15] font-semibold tracking-tight text-balance text-foreground"
+      />
+
       {phrase ? (
-        <p className="mt-3 min-w-0 leading-relaxed wrap-break-word">
-          <span className="text-xs font-medium text-muted-foreground">
-            {t("home.motivationPrefix")}{" "}
-          </span>
-          <span className="text-sm font-medium text-foreground/80">
-            {phrase}
-          </span>
-        </p>
+        <blockquote className="mt-4 min-w-0 border-l-2 border-brand pl-3 text-sm leading-relaxed font-medium wrap-break-word text-foreground/80">
+          <span className="sr-only">{t("home.motivationPrefix")} </span>
+          {phrase}
+        </blockquote>
       ) : null}
     </div>
   );
